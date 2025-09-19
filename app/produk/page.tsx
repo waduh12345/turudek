@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 
 interface Product {
   id: number;
@@ -448,32 +449,33 @@ const ProdukPage = () => {
 
               {/* Games Grid */}
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-4">
-                {games.map((game, index) => (
-                  <motion.div
-                    key={game.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.02 }}
-                    whileHover={{ scale: 1.05 }}
-                    className="bg-white border border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:shadow-lg transition-all duration-200 hover:border-green-300 group"
-                  >
-                    {/* Game Image */}
-                    <div className="w-16 h-16 mx-auto mb-3 rounded-lg overflow-hidden bg-gray-100 group-hover:shadow-md transition-all duration-200">
-                      <Image
-                        src={game.image}
-                        alt={game.name}
-                        width={64}
-                        height={64}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
+                 {games.map((game, index) => (
+                   <Link key={game.id} href={`/produk/${game.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`}>
+                     <motion.div
+                       initial={{ opacity: 0, y: 20 }}
+                       animate={{ opacity: 1, y: 0 }}
+                       transition={{ delay: index * 0.02 }}
+                       whileHover={{ scale: 1.05 }}
+                       className="bg-white border border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:shadow-lg transition-all duration-200 hover:border-green-300 group"
+                     >
+                       {/* Game Image */}
+                       <div className="w-16 h-16 mx-auto mb-3 rounded-lg overflow-hidden bg-gray-100 group-hover:shadow-md transition-all duration-200">
+                         <Image
+                           src={game.image}
+                           alt={game.name}
+                           width={64}
+                           height={64}
+                           className="w-full h-full object-cover"
+                         />
+                       </div>
 
-                    {/* Game Name */}
-                    <h3 className="font-medium text-gray-800 text-sm group-hover:text-green-600 transition-colors leading-tight">
-                      {game.name}
-                    </h3>
-                  </motion.div>
-                ))}
+                       {/* Game Name */}
+                       <h3 className="font-medium text-gray-800 text-sm group-hover:text-green-600 transition-colors leading-tight">
+                         {game.name}
+                       </h3>
+                     </motion.div>
+                   </Link>
+                 ))}
               </div>
             </div>
           ))}
