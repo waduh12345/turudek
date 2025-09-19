@@ -1142,7 +1142,7 @@ const ProdukPage = () => {
               </div>
 
               {/* Games Grid */}
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-4">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
                 {games.map((game, index) => (
                   <Link
                     key={game.id}
@@ -1156,23 +1156,24 @@ const ProdukPage = () => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.02 }}
                       whileHover={{ scale: 1.05 }}
-                      className="bg-white border border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:shadow-lg transition-all duration-200 hover:border-green-300 group"
+                      className="text-center cursor-pointer group"
                     >
                       {/* Game Image */}
-                      <div className="w-16 h-16 mx-auto mb-3 rounded-lg overflow-hidden bg-gray-100 group-hover:shadow-md transition-all duration-200">
+                      <div className="w-full aspect-square mb-2 rounded-xl overflow-hidden bg-gray-100 group-hover:shadow-md transition-all duration-200">
                         <Image
                           src={game.image}
                           alt={game.name}
-                          width={64}
-                          height={64}
+                          width={100}
+                          height={100}
                           className="w-full h-full object-cover"
+                          unoptimized
                         />
                       </div>
 
                       {/* Game Name */}
-                      <h3 className="font-medium text-gray-800 text-sm group-hover:text-green-600 transition-colors leading-tight">
+                      <p className="text-center font-mono text-sm sm:text-base group-hover:text-green-600 transition-colors">
                         {game.name}
-                      </h3>
+                      </p>
                     </motion.div>
                   </Link>
                 ))}
@@ -1201,7 +1202,7 @@ const ProdukPage = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsAlphabetOpen(!isAlphabetOpen)}
-          className="w-12 h-12 bg-green-500 text-white rounded-full shadow-lg flex items-center justify-center font-bold text-lg"
+          className="w-12 h-12 bg-green-500 text-white rounded-full shadow-lg flex items-center justify-center font-bold text-sm"
         >
           {isAlphabetOpen ? "✕" : "A-Z"}
         </motion.button>
@@ -1249,15 +1250,15 @@ const ProdukPage = () => {
 
       {/* Desktop Alphabet Navigation */}
       <div className="hidden md:block fixed right-4 top-1/2 transform -translate-y-1/2 z-30">
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 p-3">
-          <div className="space-y-1">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 p-2">
+          <div className="space-y-0.5">
             {getAlphabet(filteredGames).map((letter) => (
               <motion.button
                 key={letter}
                 whileHover={{ scale: 1.1, x: -2 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => scrollToSection(letter)}
-                className={`block w-10 h-10 text-sm font-bold rounded-xl transition-all duration-200 ${
+                className={`block w-7 h-7 text-xs font-bold rounded-md transition-all duration-200 ${
                   selectedLetter === letter
                     ? "bg-green-500 text-white shadow-lg"
                     : "text-gray-600 hover:bg-green-100 hover:text-green-600"
