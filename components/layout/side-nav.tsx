@@ -9,12 +9,10 @@ import {
   AlertCircle, 
   Ticket,
   Mail,
-  Facebook,
   Instagram,
   Music,
   Twitter,
-  Youtube,
-  Flag
+  Youtube
 } from "lucide-react";
 import clsx from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
@@ -81,7 +79,8 @@ const SideNav = () => {
                 <span className="sidebar-text font-medium text-black text-sm">Berita dan Promo</span>
               </motion.button>
 
-              <motion.button
+              <motion.a
+                href="/syarat-ketentuan"
                 whileHover={{ x: 3 }}
                 className="flex items-center gap-3 w-full text-left py-2 hover:bg-gray-50 transition-colors"
               >
@@ -89,9 +88,10 @@ const SideNav = () => {
                   <AlertCircle size={14} className="text-white" />
                 </div>
                 <span className="sidebar-text font-medium text-black text-sm">Syarat & Ketentuan</span>
-              </motion.button>
+              </motion.a>
 
-              <motion.button
+              <motion.a
+                href="/riwayat"
                 whileHover={{ x: 3 }}
                 className="flex items-center gap-3 w-full text-left py-2 hover:bg-gray-50 transition-colors"
               >
@@ -99,7 +99,7 @@ const SideNav = () => {
                   <Ticket size={14} className="text-white" />
                 </div>
                 <span className="sidebar-text font-medium text-black text-sm">Riwayat Order</span>
-              </motion.button>
+              </motion.a>
             </div>
 
             {/* Help & Support */}

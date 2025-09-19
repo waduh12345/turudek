@@ -31,7 +31,7 @@ export default function RootLayout({
         className={`${MontserratSans.variable} ${RussoOneMono.variable} antialiased`}
       >
         <DefaultHeader />
-        <main className="pt-28 xs:pt-28 min-h-screen flex flex-col">
+        <main className="pt-16 xs:pt-16 min-h-screen flex flex-col">
           <div className="flex-1">{children}</div>
           <Footer />
         </main>
