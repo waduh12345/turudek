@@ -13,6 +13,7 @@
   --font-sans: var(--font-montserrat);
   --font-mono: var(--font-russo-one);
   --container-padding: 1rem;
+  --breakpoint-xs: 475px;
 }
 
 body {
@@ -32,5 +33,15 @@ button {
   @variant md {
     padding-inline: 2rem;
   }
+}
+
+/* Custom font for sidebar to match the pixelated/digital style */
+.sidebar-text {
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
