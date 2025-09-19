@@ -4,9 +4,14 @@ import clsx from "clsx";
 import { Share2Icon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import SideNav from "./side-nav";
 
-const DefaultHeader = () => {
+interface DefaultHeaderProps {
+  showNavigationBars?: boolean;
+}
+
+const DefaultHeader = ({ showNavigationBars = false }: DefaultHeaderProps) => {
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -30,7 +35,7 @@ const DefaultHeader = () => {
         "bg-background shadow-sm",
         "flex flex-col"
       )}
-    >
+    > 
       {/* Main Header */}
       <div className="h-16 flex items-center">
         <div className="container flex items-center justify-between">
@@ -87,7 +92,100 @@ const DefaultHeader = () => {
           </section>
         </div>
       </div>
+      {/* Navigation Bars - Conditional Rendering */}
+      {showNavigationBars && <NavigationBars />}
     </header>
+  );
+};
+
+// Navigation Bars Component
+const NavigationBars = () => {
+  const gameCategories = [
+    "Mobile Legends",
+    "Free Fire", 
+    "HD Island",
+    "PUBG",
+    "Genshin Impact",
+    "Valorant",
+    "Ragnarok",
+    "League of Legends"
+  ];
+
+  const contentCategories = [
+    "Tutorials & Guides",
+    "News & Updates", 
+    "E-Sports",
+    "Promo & Discount"
+  ];
+
+  return (
+    <div className="relative z-40">
+      {/* Top Navigation Bar - Game Categories */}
+      <motion.div
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="bg-gradient-to-r from-green-500 to-green-600 py-4 px-6 shadow-lg"
+        style={{
+          clipPath: "polygon(2% 0%, 98% 0%, 100% 100%, 0% 100%)"
+        }}
+      >
+        <div className="container mx-auto">
+          <div className="flex items-center justify-center space-x-8 overflow-x-auto scrollbar-hide">
+            {gameCategories.map((game, index) => (
+              <motion.button
+                key={game}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.4 }}
+                whileHover={{ 
+                  scale: 1.05, 
+                  y: -2,
+                  textShadow: "0 0 8px rgba(255,255,255,0.5)"
+                }}
+                whileTap={{ scale: 0.95 }}
+                className="text-white font-bold text-sm sm:text-base whitespace-nowrap hover:text-green-100 transition-all duration-300 px-3 py-1 rounded-lg hover:bg-white/10"
+              >
+                {game}
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Bottom Navigation Bar - Content Categories */}
+      <motion.div
+        initial={{ y: -30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+        className="bg-gradient-to-r from-gray-900 to-black py-4 px-6 shadow-xl"
+        style={{
+          clipPath: "polygon(2% 0%, 98% 0%, 100% 100%, 0% 100%)"
+        }}
+      >
+        <div className="container mx-auto">
+          <div className="flex items-center justify-center space-x-8 overflow-x-auto scrollbar-hide">
+            {contentCategories.map((category, index) => (
+              <motion.button
+                key={category}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 + index * 0.1, duration: 0.4 }}
+                whileHover={{ 
+                  scale: 1.05, 
+                  y: -2,
+                  textShadow: "0 0 8px rgba(255,255,255,0.3)"
+                }}
+                whileTap={{ scale: 0.95 }}
+                className="text-white font-bold text-sm sm:text-base whitespace-nowrap hover:text-green-400 transition-all duration-300 px-3 py-1 rounded-lg hover:bg-white/10"
+              >
+                {category}
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+    </div>
   );
 };
 
