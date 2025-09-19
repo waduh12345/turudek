@@ -59,7 +59,8 @@ const SideNav = () => {
 
             {/* Navigation Links */}
             <div className="space-y-4 mb-8">
-              <motion.button
+              <motion.a
+                href="/produk"
                 whileHover={{ x: 3 }}
                 className="flex items-center gap-3 w-full text-left py-2 hover:bg-gray-50 transition-colors"
               >
@@ -67,7 +68,7 @@ const SideNav = () => {
                   <Search size={14} className="text-white" />
                 </div>
                 <span className="sidebar-text font-medium text-black text-sm">Cari Game</span>
-              </motion.button>
+              </motion.a>
 
               <motion.button
                 whileHover={{ x: 3 }}
