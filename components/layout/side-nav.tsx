@@ -1,18 +1,18 @@
 "use client";
 
 import * as SheetPrimitive from "@radix-ui/react-dialog";
-import { 
-  TextAlignJustifyIcon, 
-  X, 
-  Search, 
-  Newspaper, 
-  AlertCircle, 
+import {
+  TextAlignJustifyIcon,
+  X,
+  Search,
+  Newspaper,
+  AlertCircle,
   Ticket,
   Mail,
   Instagram,
   Music,
   Twitter,
-  Youtube
+  Youtube,
 } from "lucide-react";
 import clsx from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
@@ -46,12 +46,15 @@ const SideNav = () => {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -320, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="flex flex-col h-full p-6"
+            className="flex flex-col h-full p-6 font-mono tracking-wide italic"
           >
             {/* Close Button */}
-            <div className="flex justify-end mb-6">
+            <div className="flex justify-end mb-1">
               <SheetPrimitive.Close asChild>
-                <button className="p-1 hover:bg-gray-100 rounded transition-colors" aria-label="Close sidebar">
+                <button
+                  className="p-1 hover:bg-gray-100 rounded transition-colors"
+                  aria-label="Close sidebar"
+                >
                   <X size={18} className="text-black" />
                 </button>
               </SheetPrimitive.Close>
@@ -67,7 +70,9 @@ const SideNav = () => {
                 <div className="w-5 h-5 bg-green-500 rounded flex items-center justify-center">
                   <Search size={14} className="text-white" />
                 </div>
-                <span className="sidebar-text font-medium text-black text-sm">Cari Game</span>
+                <span className="sidebar-text font-medium text-black text-sm">
+                  Cari Game
+                </span>
               </motion.a>
 
               <motion.button
@@ -77,7 +82,9 @@ const SideNav = () => {
                 <div className="w-5 h-5 bg-green-500 rounded flex items-center justify-center">
                   <Newspaper size={14} className="text-white" />
                 </div>
-                <span className="sidebar-text font-medium text-black text-sm">Berita dan Promo</span>
+                <span className="sidebar-text font-medium text-black text-sm">
+                  Berita dan Promo
+                </span>
               </motion.button>
 
               <motion.a
@@ -88,7 +95,9 @@ const SideNav = () => {
                 <div className="w-5 h-5 bg-green-500 rounded flex items-center justify-center">
                   <AlertCircle size={14} className="text-white" />
                 </div>
-                <span className="sidebar-text font-medium text-black text-sm">Syarat & Ketentuan</span>
+                <span className="sidebar-text font-medium text-black text-sm">
+                  Syarat & Ketentuan
+                </span>
               </motion.a>
 
               <motion.a
@@ -99,31 +108,43 @@ const SideNav = () => {
                 <div className="w-5 h-5 bg-green-500 rounded flex items-center justify-center">
                   <Ticket size={14} className="text-white" />
                 </div>
-                <span className="sidebar-text font-medium text-black text-sm">Riwayat Order</span>
+                <span className="sidebar-text font-medium text-black text-sm">
+                  Riwayat Order
+                </span>
               </motion.a>
             </div>
 
             {/* Help & Support */}
             <div className="mb-6">
-              <h3 className="sidebar-text text-xs font-bold text-black mb-3 tracking-widest uppercase">HELP & SUPPORT</h3>
+              <h3 className="sidebar-text text-xs font-bold text-black mb-3 tracking-widest uppercase">
+                HELP & SUPPORT
+              </h3>
               <div className="flex items-center gap-2">
                 <Mail size={16} className="text-green-500" />
-                <span className="sidebar-text text-black text-sm">cs@tokogame.com</span>
+                <span className="sidebar-text text-black text-sm">
+                  cs@tokogame.com
+                </span>
               </div>
             </div>
 
             {/* Partnerships */}
             <div className="mb-6">
-              <h3 className="sidebar-text text-xs font-bold text-black mb-3 tracking-widest uppercase">PARTNERSHIPS</h3>
+              <h3 className="sidebar-text text-xs font-bold text-black mb-3 tracking-widest uppercase">
+                PARTNERSHIPS
+              </h3>
               <div className="flex items-center gap-2">
                 <Mail size={16} className="text-green-500" />
-                <span className="sidebar-text text-black text-sm">partnerships@tokogame.com</span>
+                <span className="sidebar-text text-black text-sm">
+                  partnerships@tokogame.com
+                </span>
               </div>
             </div>
 
             {/* Social Media */}
             <div className="mb-6">
-              <h3 className="sidebar-text text-xs font-bold text-black mb-3 tracking-widest uppercase">SOCIAL MEDIA</h3>
+              <h3 className="sidebar-text text-xs font-bold text-black mb-3 tracking-widest uppercase">
+                SOCIAL MEDIA
+              </h3>
               <div className="flex gap-3">
                 <motion.button
                   whileHover={{ scale: 1.1 }}
@@ -165,7 +186,9 @@ const SideNav = () => {
 
             {/* Download Android App */}
             <div className="mb-6">
-              <h3 className="sidebar-text text-xs font-bold text-black mb-3 tracking-widest uppercase">DOWNLOAD ANDROID APP</h3>
+              <h3 className="sidebar-text text-xs font-bold text-black mb-3 tracking-widest uppercase">
+                DOWNLOAD ANDROID APP
+              </h3>
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -175,20 +198,28 @@ const SideNav = () => {
                   <div className="w-0 h-0 border-l-[4px] border-l-green-500 border-t-[3px] border-t-transparent border-b-[3px] border-b-transparent"></div>
                 </div>
                 <div className="flex flex-col items-start">
-                  <span className="sidebar-text text-xs font-medium">GET IT ON</span>
-                  <span className="sidebar-text text-xs font-bold">Google Play</span>
+                  <span className="sidebar-text text-xs font-medium">
+                    GET IT ON
+                  </span>
+                  <span className="sidebar-text text-xs font-bold">
+                    Google Play
+                  </span>
                 </div>
               </motion.button>
             </div>
 
             {/* Region */}
             <div className="mt-auto">
-              <h3 className="sidebar-text text-xs font-bold text-black mb-3 tracking-widest uppercase">REGION</h3>
+              <h3 className="sidebar-text text-xs font-bold text-black mb-3 tracking-widest uppercase">
+                REGION
+              </h3>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-3 bg-red-500 rounded-sm flex items-center justify-center">
                   <div className="w-3 h-1 bg-white rounded-sm"></div>
                 </div>
-                <span className="sidebar-text text-black text-sm">Indonesia (Rp)</span>
+                <span className="sidebar-text text-black text-sm">
+                  Indonesia (Rp)
+                </span>
               </div>
             </div>
           </motion.div>
