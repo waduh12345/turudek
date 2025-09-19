@@ -61,7 +61,7 @@ const SideNav = () => {
             </div>
 
             {/* Navigation Links */}
-            <div className="space-y-4 mb-8">
+            <div className="space-y-3 mb-8">
               <motion.a
                 href="/produk"
                 whileHover={{ x: 3 }}

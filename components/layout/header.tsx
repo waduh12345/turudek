@@ -1,10 +1,28 @@
+"use client";
+
 import clsx from "clsx";
-import { Share2Icon, Search } from "lucide-react";
+import { Share2Icon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import SideNav from "./side-nav";
 
 const DefaultHeader = () => {
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Top Up Game Termurah 🚀",
+          text: "Cek sekarang top up game favoritmu di sini!",
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.error("Gagal share:", err);
+      }
+    } else {
+      alert("Browser kamu tidak mendukung Web Share API.");
+    }
+  };
+
   return (
     <header
       className={clsx(
@@ -17,13 +35,18 @@ const DefaultHeader = () => {
       <div className="h-16 flex items-center">
         <div className="container flex items-center justify-between">
           {/* Left Section - Logo & Tagline */}
-          <section className="flex items-center gap-x-2 sm:gap-x-4">
+          <section className="flex items-center gap-x-2 sm:gap-x-3.5">
             <SideNav />
-            <Link href="/" className="flex items-center gap-1 sm:gap-2">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-green-500 rounded flex items-center justify-center">
-                <span className="text-white font-bold text-xs sm:text-sm">T</span>
+            <Link
+              href="/"
+              className="flex items-center gap-1 sm:gap-2 font-mono"
+            >
+              <div className="w-6 h-6 sm:w-7 sm:h-7 bg-green-500 rounded flex items-center justify-center">
+                <span className="text-white font-bold text-sm">T</span>
               </div>
-              <span className="text-lg sm:text-xl lg:text-2xl font-bold text-green-500">TOKOGAME</span>
+              <span className="text-lg sm:text-xl font-bold text-green-500 tracking-wide underline">
+                TOKOGAME
+              </span>
             </Link>
 
             <p className="font-mono text-xs sm:text-sm italic hidden xl:block text-gray-600">
@@ -54,8 +77,9 @@ const DefaultHeader = () => {
             </button>
 
             {/* Share Button */}
-            <button 
-              aria-label="Share" 
+            <button
+              onClick={handleShare}
+              aria-label="Share"
               className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <Share2Icon size={18} className="sm:w-5 sm:h-5" />

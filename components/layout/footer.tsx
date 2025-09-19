@@ -71,7 +71,7 @@ const Footer = () => {
               <div className="w-8 h-8 bg-gray-700 rounded flex items-center justify-center">
                 <div className="w-4 h-4 bg-green-500 rounded-sm"></div>
               </div>
-              <span className="sidebar-text text-xl font-bold text-green-500">
+              <span className="sidebar-text text-xl font-bold text-green-500 font-mono tracking-wider">
                 TOKOGAME.COM
               </span>
             </div>
