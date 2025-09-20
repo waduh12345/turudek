@@ -204,7 +204,7 @@ const Page = () => {
       <SectionWrapper title="TOP UP GAME" seeAllUrl="/produk/?category=Games">
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
           {games.map((item) => (
-            <div key={item.id}>
+            <Link href={`/produk/${item.id}`} key={item.id}>
               <Image
                 className="w-full aspect-square mb-2 rounded-xl"
                 width={100}
@@ -216,7 +216,7 @@ const Page = () => {
               <p className="text-center font-mono text-sm sm:text-base">
                 {item.name}
               </p>
-            </div>
+            </Link>
           ))}
         </div>
       </SectionWrapper>
@@ -224,7 +224,7 @@ const Page = () => {
       <SectionWrapper title="VOUCHER" seeAllUrl="/produk/?category=Voucher">
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
           {vouchers.map((item) => (
-            <div key={item.id}>
+            <Link href={`/produk/${item.id}`} key={item.id}>
               <Image
                 className="w-full aspect-square mb-2 rounded-xl"
                 width={100}
@@ -236,7 +236,7 @@ const Page = () => {
               <p className="text-center font-mono text-sm sm:text-base">
                 {item.name}
               </p>
-            </div>
+            </Link>
           ))}
         </div>
       </SectionWrapper>
@@ -244,7 +244,7 @@ const Page = () => {
       <SectionWrapper title="PULSA" seeAllUrl="/produk/?category=Phone">
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
           {phonesCredit.map((item) => (
-            <div key={item.id}>
+            <Link href={`/produk/${item.id}`} key={item.id}>
               <Image
                 className="w-full aspect-square mb-2 rounded-xl"
                 width={100}
@@ -256,7 +256,7 @@ const Page = () => {
               <p className="text-center font-mono text-sm sm:text-base">
                 {item.name}
               </p>
-            </div>
+            </Link>
           ))}
         </div>
       </SectionWrapper>
@@ -264,7 +264,7 @@ const Page = () => {
       <SectionWrapper title="E-MONEY" seeAllUrl="/produk/?category=E-Money">
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
           {eMoneys.map((item) => (
-            <div key={item.id}>
+            <Link href={`/produk/${item.id}`} key={item.id}>
               <Image
                 className="w-full aspect-square mb-2 rounded-xl"
                 width={100}
@@ -276,7 +276,7 @@ const Page = () => {
               <p className="text-center font-mono text-sm sm:text-base">
                 {item.name}
               </p>
-            </div>
+            </Link>
           ))}
         </div>
       </SectionWrapper>

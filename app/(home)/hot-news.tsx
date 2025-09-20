@@ -6,16 +6,18 @@ import { Autoplay } from "swiper/modules";
 import Link from "next/link";
 
 const NewsSlide = ({
+  id,
   image,
   title,
   createDate,
 }: {
+  id: number;
   image: string;
   title: string;
   createDate: string;
 }) => {
   return (
-    <Link href="/">
+    <Link href={`/news/${id}`}>
       <div className="grid grid-cols-2 gap-x-3 relative">
         <div className="h-full">
           <img
