@@ -3,7 +3,10 @@
 :root {
   --background: #ffffff;
   --foreground: #11181c;
-  --accent: #05ce78;
+  --accent: #10b981;
+  --primary: #059669;
+  --primary-dark: #047857;
+  --primary-light: #34d399;
 }
 
 @theme inline {
@@ -42,4 +45,167 @@ button {
   @variant md {
     padding-inline: 2rem;
   }
+}
+
+/* Custom animations and utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Loading animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Pulse animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Bounce animation */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+/* Modal backdrop blur effect */
+.modal-backdrop {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Enhanced blur for better visual effect */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.backdrop-blur-md {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.backdrop-blur-lg {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Professional Green Theme */
+.gradient-emerald {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.gradient-emerald-hover:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.text-emerald-primary {
+  color: #059669;
+}
+
+.bg-emerald-primary {
+  background-color: #059669;
+}
+
+.border-emerald-primary {
+  border-color: #059669;
+}
+
+.ring-emerald-primary:focus {
+  --tw-ring-color: #059669;
+}
+
+/* Enhanced modal backdrop */
+.modal-backdrop-enhanced {
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(16px) saturate(180%) brightness(0.9);
+  -webkit-backdrop-filter: blur(16px) saturate(180%) brightness(0.9);
+  transition: all 0.3s ease-in-out;
+}
+
+/* Strong blur for better focus */
+.modal-backdrop-strong {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(20px) saturate(180%) brightness(0.8);
+  -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(0.8);
+  transition: all 0.3s ease-in-out;
+}
+
+/* Extra strong blur for maximum focus */
+.modal-backdrop-extra {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(24px) saturate(180%) brightness(0.7);
+  -webkit-backdrop-filter: blur(24px) saturate(180%) brightness(0.7);
+  transition: all 0.3s ease-in-out;
+}
+
+/* Professional button styles */
+.btn-emerald {
+  @apply bg-gradient-to-r from-emerald-500 to-green-500 text-white font-medium px-4 py-2 rounded-lg transition-all duration-200 hover:from-emerald-600 hover:to-green-600 hover:shadow-lg;
+}
+
+.btn-emerald-outline {
+  @apply border-2 border-emerald-500 text-emerald-600 font-medium px-4 py-2 rounded-lg transition-all duration-200 hover:bg-emerald-500 hover:text-white;
 }

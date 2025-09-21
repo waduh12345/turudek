@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -929,7 +929,7 @@ const gameData = productData.All;
 
 const getAlphabet = (data: ProductData) => Object.keys(data).sort();
 
-const ProdukPage = () => {
+const ProdukPageContent = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -1274,6 +1274,21 @@ const ProdukPage = () => {
 
       <PromotionBanner />
     </div>
+  );
+};
+
+const ProdukPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-green-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <ProdukPageContent />
+    </Suspense>
   );
 };
 

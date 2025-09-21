@@ -4,12 +4,26 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { use } from "react";
-import { Calendar, Clock, Eye, ArrowRight, TrendingUp, Share2, Home, ChevronRight } from "lucide-react";
+import { Calendar, Clock, Eye, TrendingUp, Share2, Home, ChevronRight } from "lucide-react";
 
 interface NewsDetailPageProps {
   params: Promise<{
     slug: string;
   }>;
+}
+
+interface NewsItem {
+  id: number;
+  title: string;
+  slug: string;
+  image: string;
+  date: string;
+  readTime: string;
+  views: number;
+  category: string;
+  trending?: boolean;
+  content?: string;
+  tags?: string[];
 }
 
 const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
@@ -51,22 +65,31 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
     {
       id: 2,
       title: "Event MLBB x Sanrio Kembali Hadir September 2025 Ini",
+      slug: "event-mlbb-x-sanrio-kembali-hadir-september-2025-ini",
       image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-14",
+      readTime: "3 min",
+      views: 8500,
       category: "Mobile Legends"
     },
     {
       id: 3,
       title: "PUBG Mobile Versi 4.0 Hadir dengan Tema Spooky Soiree",
+      slug: "pubg-mobile-versi-4-0-hadir-dengan-tema-spooky-soiree",
       image: "https://images.unsplash.com/photo-1556438064-2d7646166914?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-13",
+      readTime: "4 min",
+      views: 9200,
       category: "PUBG Mobile"
     },
     {
       id: 4,
       title: "PUBG Mobile Umumkan Game Mode Baru Asymmetric PVP UNFAIL",
+      slug: "pubg-mobile-umumkan-game-mode-baru-asymmetric-pvp-unfail",
       image: "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-12",
+      readTime: "5 min",
+      views: 7800,
       category: "PUBG Mobile"
     }
   ];
@@ -75,22 +98,31 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
     {
       id: 5,
       title: "Game MMORPG Legendaris Ragnarok Origin Resmi Dirilis",
+      slug: "game-mmorpg-legendaris-ragnarok-origin-resmi-dirilis",
       image: "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-11",
+      readTime: "6 min",
+      views: 10500,
       category: "Ragnarok"
     },
     {
       id: 6,
       title: "Skin Atomic Pop Miya Telah Hadir, Dapatkan Diskon Hingga 30%",
+      slug: "skin-atomic-pop-miya-telah-hadir-dapatkan-diskon-hingga-30",
       image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-10",
+      readTime: "4 min",
+      views: 12800,
       category: "Mobile Legends"
     },
     {
       id: 7,
       title: "Inilah 18 Tim Peserta DOTA 2 ESL One Berlin Major 2023",
+      slug: "inilah-18-tim-peserta-dota-2-esl-one-berlin-major-2023",
       image: "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-09",
+      readTime: "7 min",
+      views: 15600,
       category: "DOTA 2"
     }
   ];
@@ -99,57 +131,81 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
     {
       id: 8,
       title: "Cara Dapatkan Skin Aldous Fathom Terror Gratis",
+      slug: "cara-dapatkan-skin-aldous-fathom-terror-gratis",
       image: "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-08",
+      readTime: "5 min",
+      views: 9800,
       category: "Mobile Legends"
     },
     {
       id: 9,
       title: "Cara Mendapatkan Skin di Event MLBB x Saint Seiya Phase 2",
+      slug: "cara-mendapatkan-skin-di-event-mlbb-x-saint-seiya-phase-2",
       image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-07",
+      readTime: "6 min",
+      views: 11200,
       category: "Mobile Legends"
     },
     {
       id: 10,
       title: "Bocoran Skin Eksklusif Starlight Agustus 2025 MLBB: Kadita Maiden of the Tide",
+      slug: "bocoran-skin-eksklusif-starlight-agustus-2025-mlbb-kadita-maiden-of-the-tide",
       image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-06",
+      readTime: "4 min",
+      views: 13500,
       category: "Mobile Legends"
     },
     {
       id: 11,
       title: "Bocoran Skin Seri Metro Zero MLBB Terbaru",
+      slug: "bocoran-skin-seri-metro-zero-mlbb-terbaru",
       image: "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-05",
+      readTime: "3 min",
+      views: 8900,
       category: "Mobile Legends"
     },
     {
       id: 12,
       title: "Event MLBB x Sanrio Kembali Hadir September 2025 Ini",
+      slug: "event-mlbb-x-sanrio-kembali-hadir-september-2025-ini-2",
       image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-04",
+      readTime: "5 min",
+      views: 10200,
       category: "Mobile Legends"
     },
     {
       id: 13,
       title: "Cara Dapatkan Skin Khufra Cursed Scroll Mobile Legends Gratis",
+      slug: "cara-dapatkan-skin-khufra-cursed-scroll-mobile-legends-gratis",
       image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-03",
+      readTime: "4 min",
+      views: 11500,
       category: "Mobile Legends"
     },
     {
       id: 14,
       title: "Moonton Rilis Skin Juara M6 ONIC PH untuk Joy dan Skin FMVP Beatrix",
+      slug: "moonton-rilis-skin-juara-m6-onic-ph-untuk-joy-dan-skin-fmvp-beatrix",
       image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-02",
+      readTime: "6 min",
+      views: 14200,
       category: "Mobile Legends"
     },
     {
       id: 15,
       title: "PUBG Mobile Update Terbaru dengan Mode Baru",
+      slug: "pubg-mobile-update-terbaru-dengan-mode-baru",
       image: "https://images.unsplash.com/photo-1556438064-2d7646166914?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-01",
+      readTime: "5 min",
+      views: 9800,
       category: "PUBG Mobile"
     }
   ];
@@ -170,7 +226,7 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
     return views.toString();
   };
 
-  const NewsCard = ({ item, index }: { item: any; index: number }) => (
+  const NewsCard = ({ item, index }: { item: NewsItem; index: number }) => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -203,7 +259,7 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
     </motion.div>
   );
 
-  const SidebarCard = ({ item, index }: { item: any; index: number }) => (
+  const SidebarCard = ({ item, index }: { item: NewsItem; index: number }) => (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}

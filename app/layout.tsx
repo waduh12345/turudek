@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat, Russo_One } from "next/font/google";
 import "./globals.css";
-import DefaultLayout from "@/components/layout/default-layout";
+import { Providers } from "@/components/providers";
 
 const MontserratSans = Montserrat({
   variable: "--font-montserrat",
@@ -29,7 +29,9 @@ export default function RootLayout({
       <body
         className={`${MontserratSans.variable} ${RussoOneMono.variable} antialiased`}
       >
-        <DefaultLayout>{children}</DefaultLayout>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

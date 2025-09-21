@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Calendar, Clock, Eye, ArrowRight, TrendingUp, BookOpen, Trophy, Gift, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface NewsItem {
@@ -256,23 +256,6 @@ const NewsPage = () => {
     }
   ];
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  const formatViews = (views: number) => {
-    if (views >= 1000) {
-      return `${(views / 1000).toFixed(1)}K`;
-    }
-    return views.toString();
-  };
-
-
   return (
     <div className="min-h-screen bg-gradient-to-br relative overflow-hidden">
       {/* Background Pattern */}
@@ -297,7 +280,7 @@ const NewsPage = () => {
 
 // Separate Carousel Component
 const CarouselSection = () => {
-  const [[slideCount, direction], setSlideCount] = useState([0, 0]);
+  const [slideCount, setSlideCount] = useState(0);
 
   const carouselData = [
     {
@@ -358,38 +341,30 @@ const CarouselSection = () => {
 
   const sliderTransition = {
     duration: 0.4,
-    ease: "easeInOut"
+    ease: [0.4, 0, 0.2, 1] as const
   };
 
-  const swipeToSlide = (swipeDirection: number) => {
-    setSlideCount([slideCount + swipeDirection, swipeDirection]);
-  };
+  const swipeToSlide = useCallback((swipeDirection: number) => {
+    setSlideCount(slideCount + swipeDirection);
+  }, [slideCount]);
 
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     swipeToSlide(1);
-  };
+  }, [swipeToSlide]);
 
   const prevSlide = () => {
     swipeToSlide(-1);
   };
 
   const skipToSlide = (slideId: number) => {
-    let changeDirection;
-    if (slideId > activeSlideIndex) {
-      changeDirection = 1;
-    } else if (slideId < activeSlideIndex) {
-      changeDirection = -1;
-    } else {
-      return; // Same slide, no change needed
-    }
-    setSlideCount([slideId, changeDirection]);
+    setSlideCount(slideId);
   };
 
   // Auto-slide functionality
   useEffect(() => {
     const interval = setInterval(nextSlide, 5000);
     return () => clearInterval(interval);
-  }, [slideCount]);
+  }, [nextSlide]);
 
   return (
   <div className="relative h-[600px] overflow-hidden">

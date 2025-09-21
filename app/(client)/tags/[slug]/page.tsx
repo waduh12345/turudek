@@ -471,7 +471,7 @@ const TagsPage = () => {
                     LATEST NEWS
                   </h3>
                   <div className="space-y-4">
-                    {getLatestNews().map((item, index) => (
+                    {getLatestNews().map((item) => (
                       <Link
                         key={item.id}
                         href={`/news/${item.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`}
@@ -508,7 +508,7 @@ const TagsPage = () => {
                     TRENDING
                   </h3>
                   <div className="space-y-4">
-                    {getTrendingNews().map((item, index) => (
+                    {getTrendingNews().map((item) => (
                       <Link
                         key={item.id}
                         href={`/news/${item.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`}
