@@ -1,3 +1,5 @@
+import PromotionBanner from "@/components/section/promotion-banner";
+
 const SyaratKetentuanPage = () => {
   return (
     <div className="min-h-screen bg-white">
@@ -356,6 +358,8 @@ const SyaratKetentuanPage = () => {
           </div>
         </div>
       </div>
+
+      <PromotionBanner />
     </div>
   );
 };

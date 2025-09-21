@@ -1,3 +1,5 @@
+import PromotionBanner from "@/components/section/promotion-banner";
+
 const RiwayatPage = () => {
   return (
     <div className="bg-white">
@@ -53,6 +55,8 @@ const RiwayatPage = () => {
           </div>
         </div>
       </div>
+
+      <PromotionBanner />
     </div>
   );
 };

@@ -9,9 +9,9 @@ const DefaultLayout = ({ children }: { children: React.ReactNode }) => {
     <SessionProvider>
       <DefaultHeader />
       <main className="pt-16 min-h-screen flex flex-col font-sans">
-        <div className="flex-1">{children}</div>
-        <Footer />
+        {children}
       </main>
+      <Footer />
     </SessionProvider>
   );
 };

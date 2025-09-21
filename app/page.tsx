@@ -2,6 +2,8 @@ import SectionWrapper from "@/components/ui/section-wrapper";
 import Image from "next/image";
 import Link from "next/link";
 import HotNews from "./(home)/hot-news";
+import FAQ from "@/components/section/faq";
+import PromotionBanner from "@/components/section/promotion-banner";
 
 const Page = () => {
   type Item = {
@@ -173,114 +175,119 @@ const Page = () => {
   ];
 
   return (
-    <div className="container pt-10">
-      <HotNews />
+    <>
+      <div className="container pt-10">
+        <HotNews />
 
-      <section className="mb-6">
-        <Link className="max-w-xl mx-auto block" href="/produk">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Cari di Tokogame"
-              className="w-full px-4 py-3 pl-12 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
-            />
-            <svg
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+        <section className="mb-6">
+          <Link className="max-w-xl mx-auto block" href="/produk">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Cari di Tokogame"
+                className="w-full px-4 py-3 pl-12 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
               />
-            </svg>
+              <svg
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+          </Link>
+        </section>
+
+        <SectionWrapper title="TOP UP GAME" seeAllUrl="/produk/?category=Games">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
+            {games.map((item) => (
+              <Link href={`/produk/${item.id}`} key={item.id}>
+                <Image
+                  className="w-full aspect-square mb-2 rounded-xl"
+                  width={100}
+                  height={100}
+                  src={item.thumbnail}
+                  alt={item.name}
+                  unoptimized
+                />
+                <p className="text-center font-mono text-sm sm:text-base">
+                  {item.name}
+                </p>
+              </Link>
+            ))}
           </div>
-        </Link>
-      </section>
+        </SectionWrapper>
 
-      <SectionWrapper title="TOP UP GAME" seeAllUrl="/produk/?category=Games">
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
-          {games.map((item) => (
-            <Link href={`/produk/${item.id}`} key={item.id}>
-              <Image
-                className="w-full aspect-square mb-2 rounded-xl"
-                width={100}
-                height={100}
-                src={item.thumbnail}
-                alt={item.name}
-                unoptimized
-              />
-              <p className="text-center font-mono text-sm sm:text-base">
-                {item.name}
-              </p>
-            </Link>
-          ))}
-        </div>
-      </SectionWrapper>
+        <SectionWrapper title="VOUCHER" seeAllUrl="/produk/?category=Voucher">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
+            {vouchers.map((item) => (
+              <Link href={`/produk/${item.id}`} key={item.id}>
+                <Image
+                  className="w-full aspect-square mb-2 rounded-xl"
+                  width={100}
+                  height={100}
+                  src={item.thumbnail}
+                  alt={item.name}
+                  unoptimized
+                />
+                <p className="text-center font-mono text-sm sm:text-base">
+                  {item.name}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </SectionWrapper>
 
-      <SectionWrapper title="VOUCHER" seeAllUrl="/produk/?category=Voucher">
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
-          {vouchers.map((item) => (
-            <Link href={`/produk/${item.id}`} key={item.id}>
-              <Image
-                className="w-full aspect-square mb-2 rounded-xl"
-                width={100}
-                height={100}
-                src={item.thumbnail}
-                alt={item.name}
-                unoptimized
-              />
-              <p className="text-center font-mono text-sm sm:text-base">
-                {item.name}
-              </p>
-            </Link>
-          ))}
-        </div>
-      </SectionWrapper>
+        <SectionWrapper title="PULSA" seeAllUrl="/produk/?category=Phone">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
+            {phonesCredit.map((item) => (
+              <Link href={`/produk/${item.id}`} key={item.id}>
+                <Image
+                  className="w-full aspect-square mb-2 rounded-xl"
+                  width={100}
+                  height={100}
+                  src={item.thumbnail}
+                  alt={item.name}
+                  unoptimized
+                />
+                <p className="text-center font-mono text-sm sm:text-base">
+                  {item.name}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </SectionWrapper>
 
-      <SectionWrapper title="PULSA" seeAllUrl="/produk/?category=Phone">
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
-          {phonesCredit.map((item) => (
-            <Link href={`/produk/${item.id}`} key={item.id}>
-              <Image
-                className="w-full aspect-square mb-2 rounded-xl"
-                width={100}
-                height={100}
-                src={item.thumbnail}
-                alt={item.name}
-                unoptimized
-              />
-              <p className="text-center font-mono text-sm sm:text-base">
-                {item.name}
-              </p>
-            </Link>
-          ))}
-        </div>
-      </SectionWrapper>
+        <SectionWrapper title="E-MONEY" seeAllUrl="/produk/?category=E-Money">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
+            {eMoneys.map((item) => (
+              <Link href={`/produk/${item.id}`} key={item.id}>
+                <Image
+                  className="w-full aspect-square mb-2 rounded-xl"
+                  width={100}
+                  height={100}
+                  src={item.thumbnail}
+                  alt={item.name}
+                  unoptimized
+                />
+                <p className="text-center font-mono text-sm sm:text-base">
+                  {item.name}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </SectionWrapper>
+      </div>
 
-      <SectionWrapper title="E-MONEY" seeAllUrl="/produk/?category=E-Money">
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
-          {eMoneys.map((item) => (
-            <Link href={`/produk/${item.id}`} key={item.id}>
-              <Image
-                className="w-full aspect-square mb-2 rounded-xl"
-                width={100}
-                height={100}
-                src={item.thumbnail}
-                alt={item.name}
-                unoptimized
-              />
-              <p className="text-center font-mono text-sm sm:text-base">
-                {item.name}
-              </p>
-            </Link>
-          ))}
-        </div>
-      </SectionWrapper>
-    </div>
+      <PromotionBanner />
+      <FAQ />
+    </>
   );
 };
 

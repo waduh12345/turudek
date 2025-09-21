@@ -5,6 +5,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import PromotionBanner from "@/components/section/promotion-banner";
 
 interface Product {
   id: number;
@@ -1270,6 +1271,8 @@ const ProdukPage = () => {
           </div>
         </div>
       </div>
+
+      <PromotionBanner />
     </div>
   );
 };
