@@ -126,21 +126,21 @@ const DefaultHeader = ({ showNavigationBars = false }: DefaultHeaderProps) => {
 // Navigation Bars Component
 const NavigationBars = () => {
   const gameCategories = [
-    "Mobile Legends",
-    "Free Fire",
-    "HD Island",
-    "PUBG",
-    "Genshin Impact",
-    "Valorant",
-    "Ragnarok",
-    "League of Legends",
+    { name: "Mobile Legends", slug: "mobile-legends" },
+    { name: "Free Fire", slug: "free-fire" },
+    { name: "HD Island", slug: "hd-island" },
+    { name: "PUBG", slug: "pubg" },
+    { name: "Genshin Impact", slug: "genshin-impact" },
+    { name: "Valorant", slug: "valorant" },
+    { name: "Ragnarok", slug: "ragnarok" },
+    { name: "League of Legends", slug: "league-of-legends" },
   ];
 
   const contentCategories = [
-    "Tutorials & Guides",
-    "News & Updates",
-    "E-Sports",
-    "Promo & Discount",
+    { name: "Tutorials & Guides", slug: "tutorials-guides" },
+    { name: "News & Updates", slug: "news-updates" },
+    { name: "E-Sports", slug: "esports" },
+    { name: "Promo & Discount", slug: "promo-discount" },
   ];
 
   return (
@@ -150,29 +150,27 @@ const NavigationBars = () => {
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="bg-gradient-to-r from-green-500 to-green-600 py-4 px-6 shadow-lg"
-        style={{
-          clipPath: "polygon(2% 0%, 98% 0%, 100% 100%, 0% 100%)",
-        }}
+        className="bg-gradient-to-r from-green-500 to-green-600 py-3 sm:py-4 px-4 sm:px-6 shadow-lg"
       >
         <div className="container mx-auto">
-          <div className="flex items-center justify-center space-x-8 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center justify-start sm:justify-center space-x-2 sm:space-x-4 md:space-x-6 lg:space-x-8 overflow-x-auto scrollbar-hide pb-1">
             {gameCategories.map((game, index) => (
-              <motion.button
-                key={game}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1, duration: 0.4 }}
-                whileHover={{
-                  scale: 1.05,
-                  y: -2,
-                  textShadow: "0 0 8px rgba(255,255,255,0.5)",
-                }}
-                whileTap={{ scale: 0.95 }}
-                className="text-white font-bold text-sm sm:text-base whitespace-nowrap hover:text-green-100 transition-all duration-300 px-3 py-1 rounded-lg hover:bg-white/10"
-              >
-                {game}
-              </motion.button>
+              <Link key={game.slug} href={`/tags/${game.slug}`}>
+                <motion.button
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1, duration: 0.4 }}
+                  whileHover={{
+                    scale: 1.05,
+                    y: -2,
+                    textShadow: "0 0 8px rgba(255,255,255,0.5)",
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  className="text-white font-bold text-xs sm:text-sm md:text-base whitespace-nowrap hover:text-green-100 transition-all duration-300 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-white/10 flex-shrink-0 min-w-fit"
+                >
+                  {game.name}
+                </motion.button>
+              </Link>
             ))}
           </div>
         </div>
@@ -183,29 +181,27 @@ const NavigationBars = () => {
         initial={{ y: -30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-        className="bg-gradient-to-r from-gray-900 to-black py-4 px-6 shadow-xl"
-        style={{
-          clipPath: "polygon(2% 0%, 98% 0%, 100% 100%, 0% 100%)",
-        }}
+        className="bg-gradient-to-r from-gray-900 to-black py-3 sm:py-4 px-4 sm:px-6 shadow-xl"
       >
         <div className="container mx-auto">
-          <div className="flex items-center justify-center space-x-8 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center justify-start sm:justify-center space-x-2 sm:space-x-4 md:space-x-6 lg:space-x-8 overflow-x-auto scrollbar-hide pb-1">
             {contentCategories.map((category, index) => (
-              <motion.button
-                key={category}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + index * 0.1, duration: 0.4 }}
-                whileHover={{
-                  scale: 1.05,
-                  y: -2,
-                  textShadow: "0 0 8px rgba(255,255,255,0.3)",
-                }}
-                whileTap={{ scale: 0.95 }}
-                className="text-white font-bold text-sm sm:text-base whitespace-nowrap hover:text-green-400 transition-all duration-300 px-3 py-1 rounded-lg hover:bg-white/10"
-              >
-                {category}
-              </motion.button>
+              <Link key={category.slug} href={`/tags/${category.slug}`}>
+                <motion.button
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 + index * 0.1, duration: 0.4 }}
+                  whileHover={{
+                    scale: 1.05,
+                    y: -2,
+                    textShadow: "0 0 8px rgba(255,255,255,0.3)",
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  className="text-white font-bold text-xs sm:text-sm md:text-base whitespace-nowrap hover:text-green-400 transition-all duration-300 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-white/10 flex-shrink-0 min-w-fit"
+                >
+                  {category.name}
+                </motion.button>
+              </Link>
             ))}
           </div>
         </div>

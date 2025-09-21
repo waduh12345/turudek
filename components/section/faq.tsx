@@ -1,7 +1,7 @@
 "use client";
 
 import * as Accordion from "@radix-ui/react-accordion";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const faqs = [
   {
@@ -37,7 +37,7 @@ const FAQ = () => {
       <Accordion.Root
         type="single"
         collapsible
-        className="w-full max-w-2xl mx-auto rounded-lg border border-[#05ce78] overflow-hidden font-mono"
+        className="w-full max-w-3xl mx-auto rounded-lg border border-[#05ce78] overflow-hidden font-mono"
       >
         {faqs.map((faq, i) => (
           <Accordion.Item
@@ -48,7 +48,7 @@ const FAQ = () => {
             <Accordion.Header>
               <Accordion.Trigger className="group flex w-full items-center justify-between px-5 py-4 text-left text-gray-800 hover:bg-[#05ce78]/5 transition italic duration-500">
                 <span>{faq.question}</span>
-                <ChevronLeft className="h-5 w-5 text-[#05ce78] transition-transform duration-300 group-data-[state=open]:-rotate-90" />
+                <ChevronRight className="h-5 w-5 text-[#05ce78] transition-transform duration-300 group-data-[state=open]:rotate-90" />
               </Accordion.Trigger>
             </Accordion.Header>
             <Accordion.Content className="px-5 py-4 text-sm text-gray-600 leading-relaxed">

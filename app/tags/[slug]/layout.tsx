@@ -8,7 +8,7 @@ export default function NewsLayout({
   return (
     <>
       <DefaultHeader showNavigationBars={true} />
-      <main className="pt-26 md:pt-36 min-h-screen flex flex-col font-sans">
+      <main className="md:pt-36 pt-26 min-h-screen flex flex-col font-sans">
         <div className="flex-1">{children}</div>
       </main>
     </>
