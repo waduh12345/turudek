@@ -12,11 +12,126 @@ import {
   Gamepad2,
   Play,
   X,
+  Phone,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+
+interface FooterData {
+  footer: {
+    companyInfo: {
+      name: string;
+      tagline: string;
+      logo: {
+        text: string;
+        color: string;
+      };
+      copyright: string;
+    };
+    socialMedia: Array<{
+      name: string;
+      icon: string;
+      url: string;
+      color: string;
+      description: string;
+    }>;
+    siteMap: {
+      title: string;
+      links: Array<{
+        name: string;
+        href: string;
+        description: string;
+      }>;
+    };
+    contactInfo: {
+      title: string;
+      contacts: Array<{
+        type: string;
+        icon: string;
+        label: string;
+        value: string;
+        description: string;
+      }>;
+    };
+    region: {
+      title: string;
+      current: {
+        country: string;
+        currency: string;
+        flag: string;
+        code: string;
+      };
+    };
+    downloadApp: {
+      title: string;
+      apps: Array<{
+        name: string;
+        icon: string;
+        url: string;
+        description: string;
+        buttonText: string;
+        storeName: string;
+        color: string;
+      }>;
+    };
+    chatSupport: {
+      title: string;
+      botName: string;
+      status: string;
+      channels: Array<{
+        name: string;
+        icon: string;
+        url: string;
+        color: string;
+        description: string;
+      }>;
+    };
+  };
+}
 
 const Footer = () => {
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const [footerData, setFooterData] = useState<FooterData | null>(null);
+
+  useEffect(() => {
+    const fetchFooterData = async () => {
+      try {
+        const response = await fetch('/dummy/navigation-data.json');
+        const data = await response.json();
+        setFooterData(data);
+      } catch (error) {
+        console.error('Error fetching footer data:', error);
+      }
+    };
+
+    fetchFooterData();
+  }, []);
+
+  const getIcon = (iconName: string) => {
+    const icons: { [key: string]: React.ComponentType<{ size?: number; className?: string }> } = {
+      Mail,
+      Facebook,
+      Instagram,
+      Music,
+      Twitter,
+      Youtube,
+      MessageSquare,
+      Play,
+      Phone,
+    };
+    return icons[iconName] || Mail;
+  };
+
+  if (!footerData) {
+    return (
+      <footer>
+        <div className="container bg-gray-50 py-12">
+          <div className="text-center text-gray-500">Loading...</div>
+        </div>
+      </footer>
+    );
+  }
+
   return (
     <footer>
       <div className="container bg-gray-50 py-12">
@@ -28,57 +143,39 @@ const Footer = () => {
             </h4>
 
             {/* Social Media Icons */}
-            <div className="flex gap-3">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-8 h-8 bg-green-500 rounded flex items-center justify-center"
-              >
-                <Facebook size={16} className="text-white" />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-8 h-8 bg-green-500 rounded flex items-center justify-center"
-              >
-                <Instagram size={16} className="text-white" />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-8 h-8 bg-green-500 rounded flex items-center justify-center"
-              >
-                <Music size={16} className="text-white" />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-8 h-8 bg-green-500 rounded flex items-center justify-center"
-              >
-                <Youtube size={16} className="text-white" />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-8 h-8 bg-green-500 rounded flex items-center justify-center"
-              >
-                <Twitter size={16} className="text-white" />
-              </motion.button>
+            <div className="flex gap-3 flex-wrap">
+              {footerData.footer.socialMedia.map((social, index) => {
+                const IconComponent = getIcon(social.icon);
+                return (
+                  <motion.a
+                    key={index}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`w-8 h-8 ${social.color} rounded flex items-center justify-center`}
+                    title={social.description}
+                  >
+                    <IconComponent size={16} className="text-white" />
+                  </motion.a>
+                );
+              })}
             </div>
 
             {/* Logo Tokogame */}
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gray-700 rounded flex items-center justify-center">
-                <div className="w-4 h-4 bg-green-500 rounded-sm"></div>
+                <div className={`w-4 h-4 ${footerData.footer.companyInfo.logo.color} rounded-sm`}></div>
               </div>
               <span className="sidebar-text text-xl font-bold text-green-500">
-                TOKOGAME.COM
+                {footerData.footer.companyInfo.name}
               </span>
             </div>
 
             {/* Copyright */}
             <p className="sidebar-text text-sm text-gray-500">
-              Copyright © 2025 Tokogame All Rights Reserved
+              {footerData.footer.companyInfo.copyright}
             </p>
           </div>
 
@@ -86,39 +183,31 @@ const Footer = () => {
           <div className="space-y-6">
             {/* Region */}
             <div>
-              <h4 className="font-mono tracking-wider italic mb-3">Region</h4>
+              <h4 className="font-mono tracking-wider italic mb-3">{footerData.footer.region.title}</h4>
               <div className="flex items-center gap-2">
                 <div className="w-5 h-4 bg-red-500 rounded-sm flex items-center justify-center">
                   <div className="w-4 h-1 bg-white rounded-sm"></div>
                 </div>
                 <span className="sidebar-text text-gray-600">
-                  Indonesia (Rp)
+                  {footerData.footer.region.current.country} ({footerData.footer.region.current.currency})
                 </span>
               </div>
             </div>
 
             {/* Site Map */}
             <div>
-              <h4 className="font-mono tracking-wider italic mb-3">Site Map</h4>
+              <h4 className="font-mono tracking-wider italic mb-3">{footerData.footer.siteMap.title}</h4>
               <div className="space-y-2">
-                <a
-                  href="#"
-                  className="sidebar-text block text-gray-600 hover:text-green-500 transition-colors"
-                >
-                  News & Promos
-                </a>
-                <a
-                  href="#"
-                  className="sidebar-text block text-gray-600 hover:text-green-500 transition-colors"
-                >
-                  Search Games
-                </a>
-                <a
-                  href="#"
-                  className="sidebar-text block text-gray-600 hover:text-green-500 transition-colors"
-                >
-                  Terms
-                </a>
+                {footerData.footer.siteMap.links.map((link, index) => (
+                  <Link
+                    key={index}
+                    href={link.href}
+                    className="sidebar-text block text-gray-600 hover:text-green-500 transition-colors"
+                    title={link.description}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
               </div>
             </div>
           </div>
@@ -126,43 +215,58 @@ const Footer = () => {
           {/* Kolom 3: Kontak Kami */}
           <div className="space-y-6">
             <h4 className="sidebar-text text-lg font-bold text-black">
-              Kontak Kami
+              {footerData.footer.contactInfo.title}
             </h4>
 
             {/* Contact Info */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Mail size={16} className="text-green-500" />
-                <span className="sidebar-text text-gray-600">
-                  cs@tokogame.com
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Mail size={16} className="text-green-500" />
-                <span className="sidebar-text text-gray-600">
-                  partnerships@tokogame.com
-                </span>
-              </div>
+              {footerData.footer.contactInfo.contacts.map((contact, index) => {
+                const IconComponent = getIcon(contact.icon);
+                return (
+                  <motion.a
+                    key={index}
+                    href={contact.type === 'email' ? `mailto:${contact.value}` : contact.type === 'phone' ? `tel:${contact.value}` : '#'}
+                    whileHover={{ x: 3, scale: 1.02 }}
+                    className="flex items-center gap-2 group cursor-pointer"
+                    title={contact.description}
+                  >
+                    <IconComponent size={16} className="text-green-500" />
+                    <span className="sidebar-text text-gray-600 group-hover:text-green-500 transition-colors">
+                      {contact.value}
+                    </span>
+                  </motion.a>
+                );
+              })}
             </div>
 
-            {/* Google Play Button */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="bg-black text-white px-4 py-3 rounded-lg flex items-center gap-3 hover:bg-gray-800 transition-colors"
-            >
-              <div className="w-6 h-6 bg-white rounded flex items-center justify-center">
-                <div className="w-0 h-0 border-l-[6px] border-l-green-500 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent"></div>
-              </div>
-              <div className="flex flex-col items-start">
-                <span className="sidebar-text text-xs font-medium">
-                  GET IT ON
-                </span>
-                <span className="sidebar-text text-sm font-bold">
-                  Google Play
-                </span>
-              </div>
-            </motion.button>
+            {/* Download App Button */}
+            {footerData.footer.downloadApp.apps.map((app, index) => {
+              const IconComponent = getIcon(app.icon);
+              return (
+                <motion.a
+                  key={index}
+                  href={app.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`${app.color} text-white px-4 py-3 rounded-lg flex items-center gap-3 hover:bg-gray-800 transition-colors`}
+                  title={app.description}
+                >
+                  <div className="w-6 h-6 bg-white rounded flex items-center justify-center">
+                    <IconComponent size={12} className="text-black" />
+                  </div>
+                  <div className="flex flex-col items-start">
+                    <span className="sidebar-text text-xs font-medium">
+                      {app.buttonText}
+                    </span>
+                    <span className="sidebar-text text-sm font-bold">
+                      {app.storeName}
+                    </span>
+                  </div>
+                </motion.a>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -207,9 +311,9 @@ const Footer = () => {
                 </div>
                 <div>
                   <h3 className="text-white font-semibold text-sm">
-                    Tokogame Customer Care
+                    {footerData.footer.chatSupport.botName}
                   </h3>
-                  <p className="text-gray-300 text-xs">Bot</p>
+                  <p className="text-gray-300 text-xs">{footerData.footer.chatSupport.status}</p>
                 </div>
                 <button
                   onClick={() => setIsChatModalOpen(false)}
@@ -246,43 +350,28 @@ const Footer = () => {
                     Chat on your favorite channel
                   </h4>
                   <div className="space-y-2">
-                    {/* WhatsApp */}
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                        <span className="text-white font-bold text-xs">W</span>
-                      </div>
-                      <span className="text-gray-700 text-sm">WhatsApp</span>
-                    </motion.button>
-
-                    {/* Instagram */}
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                        <Instagram size={16} className="text-white" />
-                      </div>
-                      <span className="text-gray-700 text-sm">Instagram</span>
-                    </motion.button>
-
-                    {/* Facebook Messenger */}
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                        <MessageSquare size={16} className="text-white" />
-                      </div>
-                      <span className="text-gray-700 text-sm">
-                        Facebook Messenger
-                      </span>
-                    </motion.button>
+                    {footerData.footer.chatSupport.channels.map((channel, index) => {
+                      const IconComponent = getIcon(channel.icon);
+                      return (
+                        <motion.a
+                          key={index}
+                          href={channel.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="w-full flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors group"
+                          title={channel.description}
+                        >
+                          <div className={`w-8 h-8 ${channel.color} rounded-full flex items-center justify-center`}>
+                            <IconComponent size={16} className="text-white" />
+                          </div>
+                          <span className="text-gray-700 text-sm group-hover:text-green-600 transition-colors">
+                            {channel.name}
+                          </span>
+                        </motion.a>
+                      );
+                    })}
                   </div>
                 </div>
               </div>

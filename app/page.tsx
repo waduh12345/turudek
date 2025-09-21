@@ -126,7 +126,7 @@ const Page = () => {
     },
     {
       id: 2,
-      name: "Indosat",
+      name: "Tri",
       thumbnail: "https://placehold.co/650?text=Tri",
     },
     {
@@ -168,7 +168,7 @@ const Page = () => {
       thumbnail: "https://placehold.co/650?text=Ovo",
     },
     {
-      id: 3,
+      id: 4,
       name: "Shopee Pay",
       thumbnail: "https://placehold.co/650?text=Shoope+Pay",
     },
