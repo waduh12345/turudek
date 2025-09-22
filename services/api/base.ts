@@ -1,6 +1,6 @@
 import { env } from '@/lib/env';
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   code: number;
   message: string;
   data: T;
@@ -38,22 +38,12 @@ class BaseApiService {
     const token = this.getToken();
     if (token) {
       headers.Authorization = `Bearer ${token}`;
-      console.log('API Request with token:', { url, hasToken: true, tokenLength: token.length });
-    } else {
-      console.log('API Request without token:', { url, hasToken: false });
     }
 
     const config: RequestInit = {
       ...options,
       headers,
     };
-
-    console.log('API Request config:', {
-      url,
-      method: config.method,
-      headers,
-      body: config.body instanceof FormData ? 'FormData' : config.body
-    });
 
     try {
       const response = await fetch(url, config);
@@ -93,25 +83,25 @@ class BaseApiService {
   }
 
   // HTTP Methods
-  protected async get<T>(endpoint: string): Promise<T> {
+  public async get<T>(endpoint: string): Promise<T> {
     return this.request<T>(endpoint, { method: 'GET' });
   }
 
-  protected async post<T>(endpoint: string, data?: any): Promise<T> {
+  public async post<T>(endpoint: string, data?: unknown): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
     });
   }
 
-  protected async put<T>(endpoint: string, data?: any): Promise<T> {
+  public async put<T>(endpoint: string, data?: unknown): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PUT',
       body: data ? JSON.stringify(data) : undefined,
     });
   }
 
-  protected async delete<T>(endpoint: string): Promise<T> {
+  public async delete<T>(endpoint: string): Promise<T> {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
 }

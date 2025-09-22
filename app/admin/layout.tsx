@@ -26,7 +26,16 @@ const navigation = [
   { name: "Produk", href: "/admin/produk", icon: Package },
   { name: "Transaksi", href: "/admin/transaksi", icon: ShoppingCart },
   { name: "Deposit", href: "/admin/deposit", icon: Coins },
-  { name: "News", href: "/admin/news", icon: Newspaper },
+  { 
+    name: "News", 
+    href: "/admin/news", 
+    icon: Newspaper,
+    submenu: [
+      { name: "Kategori", href: "/admin/news/kategori", icon: Tag },
+      { name: "Tags", href: "/admin/news/tags", icon: Tag },
+      { name: "News", href: "/admin/news", icon: Newspaper },
+    ]
+  },
 ];
 
 export default function AdminLayout({
@@ -37,6 +46,7 @@ export default function AdminLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
   const { data: session, status } = useSession();
   const pathname = usePathname();
 
@@ -146,34 +156,104 @@ export default function AdminLayout({
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-3 py-6">
             {navigation.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive = pathname === item.href || (item.submenu && item.submenu.some(sub => pathname === sub.href));
+              const hasSubmenu = item.submenu && item.submenu.length > 0;
+              const isSubmenuOpen = openSubmenu === item.name;
+              
               return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`group relative flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                    isActive
-                      ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg"
-                      : "text-gray-300 hover:bg-emerald-700 hover:text-white"
-                  }`}
-                  title={sidebarCollapsed ? item.name : undefined}
-                >
-                  <item.icon
-                    className={`h-5 w-5 ${
-                      isActive ? "text-white" : "text-gray-400 group-hover:text-white"
-                    } ${sidebarCollapsed ? "mx-auto" : "mr-3"}`}
-                  />
-                  {!sidebarCollapsed && (
-                    <span className="truncate">{item.name}</span>
-                  )}
-                  
-                  {/* Tooltip for collapsed sidebar */}
-                  {sidebarCollapsed && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                      {item.name}
+                <div key={item.name}>
+                  {hasSubmenu ? (
+                    <div>
+                      <button
+                        onClick={() => setOpenSubmenu(isSubmenuOpen ? null : item.name)}
+                        className={`group relative flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                          isActive
+                            ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg"
+                            : "text-gray-300 hover:bg-emerald-700 hover:text-white"
+                        }`}
+                        title={sidebarCollapsed ? item.name : undefined}
+                      >
+                        <div className="flex items-center">
+                          <item.icon
+                            className={`h-5 w-5 ${
+                              isActive ? "text-white" : "text-gray-400 group-hover:text-white"
+                            } ${sidebarCollapsed ? "mx-auto" : "mr-3"}`}
+                          />
+                          {!sidebarCollapsed && (
+                            <span className="truncate">{item.name}</span>
+                          )}
+                        </div>
+                        {!sidebarCollapsed && (
+                          <ChevronDown
+                            className={`h-4 w-4 transition-transform duration-200 ${
+                              isSubmenuOpen ? "rotate-180" : ""
+                            }`}
+                          />
+                        )}
+                        
+                        {/* Tooltip for collapsed sidebar */}
+                        {sidebarCollapsed && (
+                          <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                            {item.name}
+                          </div>
+                        )}
+                      </button>
+                      
+                      {/* Submenu */}
+                      {!sidebarCollapsed && isSubmenuOpen && (
+                        <div className="ml-4 mt-1 space-y-1">
+                          {item.submenu.map((subItem) => {
+                            const isSubActive = pathname === subItem.href;
+                            return (
+                              <Link
+                                key={subItem.name}
+                                href={subItem.href}
+                                className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                                  isSubActive
+                                    ? "bg-emerald-600 text-white"
+                                    : "text-gray-300 hover:bg-emerald-700 hover:text-white"
+                                }`}
+                              >
+                                <subItem.icon
+                                  className={`h-4 w-4 mr-3 ${
+                                    isSubActive ? "text-white" : "text-gray-400"
+                                  }`}
+                                />
+                                <span className="truncate">{subItem.name}</span>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className={`group relative flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                        isActive
+                          ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg"
+                          : "text-gray-300 hover:bg-emerald-700 hover:text-white"
+                      }`}
+                      title={sidebarCollapsed ? item.name : undefined}
+                    >
+                      <item.icon
+                        className={`h-5 w-5 ${
+                          isActive ? "text-white" : "text-gray-400 group-hover:text-white"
+                        } ${sidebarCollapsed ? "mx-auto" : "mr-3"}`}
+                      />
+                      {!sidebarCollapsed && (
+                        <span className="truncate">{item.name}</span>
+                      )}
+                      
+                      {/* Tooltip for collapsed sidebar */}
+                      {sidebarCollapsed && (
+                        <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                          {item.name}
+                        </div>
+                      )}
+                    </Link>
                   )}
-                </Link>
+                </div>
               );
             })}
           </nav>
@@ -231,24 +311,82 @@ export default function AdminLayout({
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-4 py-6">
             {navigation.map((item) => {
-              const isActive = pathname === item.href;
+              const isActive = pathname === item.href || (item.submenu && item.submenu.some(sub => pathname === sub.href));
+              const hasSubmenu = item.submenu && item.submenu.length > 0;
+              const isSubmenuOpen = openSubmenu === item.name;
+              
               return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                    isActive
-                      ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg"
-                      : "text-gray-300 hover:bg-emerald-700 hover:text-white"
-                  }`}
-                >
-                  <item.icon
-                    className={`mr-3 h-5 w-5 ${
-                      isActive ? "text-white" : "text-gray-400 group-hover:text-white"
-                    }`}
-                  />
-                  {item.name}
-                </Link>
+                <div key={item.name}>
+                  {hasSubmenu ? (
+                    <div>
+                      <button
+                        onClick={() => setOpenSubmenu(isSubmenuOpen ? null : item.name)}
+                        className={`group flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                          isActive
+                            ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg"
+                            : "text-gray-300 hover:bg-emerald-700 hover:text-white"
+                        }`}
+                      >
+                        <div className="flex items-center">
+                          <item.icon
+                            className={`mr-3 h-5 w-5 ${
+                              isActive ? "text-white" : "text-gray-400 group-hover:text-white"
+                            }`}
+                          />
+                          {item.name}
+                        </div>
+                        <ChevronDown
+                          className={`h-4 w-4 transition-transform duration-200 ${
+                            isSubmenuOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+                      
+                      {/* Submenu */}
+                      {isSubmenuOpen && (
+                        <div className="ml-6 mt-1 space-y-1">
+                          {item.submenu.map((subItem) => {
+                            const isSubActive = pathname === subItem.href;
+                            return (
+                              <Link
+                                key={subItem.name}
+                                href={subItem.href}
+                                className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                                  isSubActive
+                                    ? "bg-emerald-600 text-white"
+                                    : "text-gray-300 hover:bg-emerald-700 hover:text-white"
+                                }`}
+                              >
+                                <subItem.icon
+                                  className={`mr-3 h-4 w-4 ${
+                                    isSubActive ? "text-white" : "text-gray-400"
+                                  }`}
+                                />
+                                {subItem.name}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                        isActive
+                          ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg"
+                          : "text-gray-300 hover:bg-emerald-700 hover:text-white"
+                      }`}
+                    >
+                      <item.icon
+                        className={`mr-3 h-5 w-5 ${
+                          isActive ? "text-white" : "text-gray-400 group-hover:text-white"
+                        }`}
+                      />
+                      {item.name}
+                    </Link>
+                  )}
+                </div>
               );
             })}
           </nav>
