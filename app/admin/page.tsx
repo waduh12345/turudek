@@ -12,6 +12,7 @@ import {
   Star,
   Eye,
 } from "lucide-react";
+// Clean admin dashboard
 
 // Dummy data
 const stats = [
@@ -302,6 +303,8 @@ export default function AdminDashboard() {
           </button>
         </div>
       </motion.div>
+
+      {/* Clean admin dashboard */}
     </div>
   );
 }

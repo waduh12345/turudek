@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -15,97 +15,162 @@ import {
   Smartphone,
   X,
   Save,
+  Loader2,
 } from "lucide-react";
+import { useApiCall, useDebounce } from "@/hooks";
+import { useTokenSync } from "@/hooks/use-token-sync";
+import { api } from "@/services/api";
+import { ProductCategory, CreateProductCategoryRequest, UpdateProductCategoryRequest } from "@/lib/types";
+import { ErrorHandler } from "@/lib/utils";
 
-// Dummy data
-const categories = [
-  {
-    id: 1,
-    name: "Gaming Consoles",
-    description: "PlayStation, Xbox, Nintendo Switch",
-    productCount: 15,
-    icon: Gamepad2,
-    color: "from-blue-500 to-cyan-500",
-    status: "active",
-    createdAt: "2024-01-01",
-  },
-  {
-    id: 2,
-    name: "Gaming PCs",
-    description: "High-performance gaming computers",
-    productCount: 8,
-    icon: Monitor,
-    color: "from-emerald-500 to-green-500",
-    status: "active",
-    createdAt: "2024-01-02",
-  },
-  {
-    id: 3,
-    name: "Gaming Accessories",
-    description: "Controllers, keyboards, mice, headsets",
-    productCount: 25,
-    icon: Headphones,
-    color: "from-green-500 to-emerald-500",
-    status: "active",
-    createdAt: "2024-01-03",
-  },
-  {
-    id: 4,
-    name: "Mobile Gaming",
-    description: "Gaming phones and mobile accessories",
-    productCount: 12,
-    icon: Smartphone,
-    color: "from-orange-500 to-red-500",
-    status: "inactive",
-    createdAt: "2024-01-04",
-  },
-];
+// Icon mapping for categories
+const getCategoryIcon = (title: string) => {
+  const lowerTitle = title.toLowerCase();
+  if (lowerTitle.includes('game') || lowerTitle.includes('topup')) return Gamepad2;
+  if (lowerTitle.includes('voucher')) return Tag;
+  if (lowerTitle.includes('accessory')) return Headphones;
+  if (lowerTitle.includes('mobile')) return Smartphone;
+  return Monitor;
+};
+
+const getCategoryColor = (index: number) => {
+  const colors = [
+    "from-blue-500 to-cyan-500",
+    "from-emerald-500 to-green-500", 
+    "from-green-500 to-emerald-500",
+    "from-orange-500 to-red-500",
+    "from-purple-500 to-pink-500",
+    "from-indigo-500 to-blue-500"
+  ];
+  return colors[index % colors.length];
+};
 
 export default function KategoriProdukPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<typeof categories[0] | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
+  const [editingCategory, setEditingCategory] = useState<ProductCategory | null>(null);
+  
+  // Debounce search term untuk UX yang lebih baik
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const [formData, setFormData] = useState<CreateProductCategoryRequest>({
+    title: "",
     description: "",
-    status: "active",
+    status: 1,
+    sub_title: "",
+    parent_id: null,
+    image: null,
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage] = useState(10);
+
+  // Token synchronization
+  const { isAuthenticated, hasToken } = useTokenSync();
+
+  // API calls
+  const { 
+    data: categoriesData, 
+    loading: categoriesLoading, 
+    error: categoriesError, 
+    execute: fetchCategories 
+  } = useApiCall(() => api.productCategories.getProductCategories({
+    page: currentPage,
+    paginate: perPage,
+    search: debouncedSearchTerm || undefined
+  }));
+
+  const { 
+    loading: submitLoading, 
+    execute: submitCategory 
+  } = useApiCall(async (data: CreateProductCategoryRequest | UpdateProductCategoryRequest) => {
+    if (editingCategory) {
+      return api.productCategories.updateProductCategory({
+        ...data,
+        slug: editingCategory.slug
+      } as UpdateProductCategoryRequest);
+    } else {
+      return api.productCategories.createProductCategory(data as CreateProductCategoryRequest);
+    }
   });
 
-  const filteredCategories = categories.filter((category) =>
-    category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    category.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const { 
+    loading: deleteLoading, 
+    execute: deleteCategory 
+  } = useApiCall((slug: string) => api.productCategories.deleteProductCategory(slug));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Load categories on component mount and when search/page changes
+  useEffect(() => {
+    if (isAuthenticated && hasToken) {
+      fetchCategories();
+    }
+  }, [currentPage, debouncedSearchTerm, isAuthenticated, hasToken]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log("Form submitted:", formData);
-    setShowForm(false);
-    setEditingCategory(null);
-    setFormData({ name: "", description: "", status: "active" });
+    console.log('Form data being submitted:', formData);
+    
+    // Validate required fields
+    if (!formData.title || !formData.title.trim()) {
+      alert('Title is required');
+      return;
+    }
+    
+    if (formData.status === undefined || formData.status === null) {
+      alert('Status is required');
+      return;
+    }
+    
+    try {
+      await submitCategory(formData);
+      setShowForm(false);
+      setEditingCategory(null);
+      resetForm();
+      fetchCategories(); // Refresh the list
+    } catch (error) {
+      console.error('Form submission error:', error);
+      // Error is handled by useApiCall hook
+    }
   };
 
-  const handleEdit = (category: typeof categories[0]) => {
+  const handleEdit = (category: ProductCategory) => {
     setEditingCategory(category);
     setFormData({
-      name: category.name,
-      description: category.description,
+      title: category.title,
+      description: category.description || "",
       status: category.status,
+      sub_title: category.sub_title || "",
+      parent_id: category.parent_id,
+      image: null,
     });
     setShowForm(true);
   };
 
-  const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this category?")) {
-      // Handle delete here
-      console.log("Delete category:", id);
+  const handleDelete = async (category: ProductCategory) => {
+    if (confirm(`Are you sure you want to delete "${category.title}"?`)) {
+      try {
+        await deleteCategory(category.slug);
+        fetchCategories(); // Refresh the list
+      } catch (error) {
+        // Error is handled by useApiCall hook
+      }
     }
   };
 
   const resetForm = () => {
-    setFormData({ name: "", description: "", status: "active" });
+    setFormData({
+      title: "",
+      description: "",
+      status: 1,
+      sub_title: "",
+      parent_id: null,
+      image: null,
+    });
     setEditingCategory(null);
     setShowForm(false);
+  };
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1); // Reset to first page when searching
   };
 
   return (
@@ -127,6 +192,24 @@ export default function KategoriProdukPage() {
         </motion.button>
       </div>
 
+
+      {/* Authentication Check */}
+      {!isAuthenticated && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-yellow-800">
+            <strong>Authentication Required:</strong> Please login to access this page.
+          </p>
+        </div>
+      )}
+
+      {isAuthenticated && !hasToken && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800">
+            <strong>Token Missing:</strong> Authentication token not found. Please refresh the page or login again.
+          </p>
+        </div>
+      )}
+
       {/* Search and Filter */}
       <div className="flex items-center space-x-4">
         <div className="relative flex-1 max-w-md">
@@ -135,69 +218,121 @@ export default function KategoriProdukPage() {
             type="text"
             placeholder="Cari kategori..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
           />
         </div>
-        <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-          <Filter className="h-5 w-5" />
-          <span>Filter</span>
-        </button>
       </div>
 
-      {/* Categories Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {filteredCategories.map((category, index) => (
-          <motion.div
-            key={category.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-6 hover:shadow-md transition-shadow duration-200"
+      {/* Loading State */}
+      {categoriesLoading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+          <span className="ml-2 text-gray-600">Loading categories...</span>
+        </div>
+      )}
+
+      {/* Error State */}
+      {categoriesError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-600">Error loading categories: {categoriesError}</p>
+          <button 
+            onClick={() => fetchCategories()}
+            className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
           >
-            <div className="flex items-start justify-between mb-4">
-              <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r ${category.color}`}>
-                <category.icon className="h-6 w-6 text-white" />
-              </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => handleEdit(category)}
-                  className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
-                >
-                  <Edit className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => handleDelete(category.id)}
-                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
+            Try again
+          </button>
+        </div>
+      )}
+
+      {/* Categories Grid */}
+      {!categoriesLoading && !categoriesError && categoriesData?.data.data && (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {categoriesData.data.data.map((category, index) => {
+            const IconComponent = getCategoryIcon(category.title);
+            const colorClass = getCategoryColor(index);
             
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">{category.name}</h3>
-            <p className="text-gray-600 text-sm mb-4">{category.description}</p>
-            
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-1">
-                  <Tag className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">{category.productCount} produk</span>
+            return (
+              <motion.div
+                key={category.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-6 hover:shadow-md transition-shadow duration-200"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r ${colorClass}`}>
+                    <IconComponent className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handleEdit(category)}
+                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(category)}
+                      disabled={deleteLoading}
+                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 disabled:opacity-50"
+                    >
+                      {deleteLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
                 </div>
-                <span
-                  className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                    category.status === "active"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {category.status}
-                </span>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+                
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{category.title}</h3>
+                {category.sub_title && (
+                  <p className="text-sm text-gray-500 mb-2">{category.sub_title}</p>
+                )}
+                <p className="text-gray-600 text-sm mb-4">{category.description}</p>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-1">
+                      <Tag className="h-4 w-4 text-gray-400" />
+                      <span className="text-sm text-gray-600">Slug: {category.slug}</span>
+                    </div>
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        category.status === 1
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {category.status === 1 ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!categoriesLoading && !categoriesError && categoriesData?.data.data.length === 0 && (
+        <div className="text-center py-12">
+          <Tag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No categories found</h3>
+          <p className="text-gray-600 mb-4">
+            {searchTerm ? "Try adjusting your search terms." : "Get started by creating your first category."}
+          </p>
+          {!searchTerm && (
+            <button
+              onClick={() => setShowForm(true)}
+              className="inline-flex items-center px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create Category
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Add/Edit Form Modal */}
       <AnimatePresence>
@@ -229,44 +364,72 @@ export default function KategoriProdukPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nama Kategori
+                    Title *
                   </label>
                   <input
                     type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                    placeholder="Masukkan nama kategori"
+                    placeholder="Masukkan title kategori"
                     required
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Deskripsi
+                    Sub Title
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.sub_title || ""}
+                    onChange={(e) => setFormData({ ...formData, sub_title: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="Masukkan sub title (opsional)"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description
                   </label>
                   <textarea
-                    value={formData.description}
+                    value={formData.description || ""}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     placeholder="Masukkan deskripsi kategori"
                     rows={3}
-                    required
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Status
+                    Status *
                   </label>
                   <select
                     value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, status: parseInt(e.target.value) })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    required
                   >
-                    <option value="active">Aktif</option>
-                    <option value="inactive">Tidak Aktif</option>
+                    <option value={1}>Active</option>
+                    <option value={0}>Inactive</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Image
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setFormData({ ...formData, image: e.target.files?.[0] || null })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Supported formats: JPEG, PNG, JPG, WebP, SVG (max 5MB)
+                  </p>
                 </div>
 
                 <div className="flex items-center justify-end space-x-3 pt-4">
@@ -281,9 +444,14 @@ export default function KategoriProdukPage() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     type="submit"
-                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200"
+                    disabled={submitLoading}
+                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200 disabled:opacity-50"
                   >
-                    <Save className="h-4 w-4" />
+                    {submitLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4" />
+                    )}
                     <span>{editingCategory ? "Update" : "Simpan"}</span>
                   </motion.button>
                 </div>
@@ -292,6 +460,34 @@ export default function KategoriProdukPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Pagination */}
+      {!categoriesLoading && !categoriesError && categoriesData?.data.data && categoriesData.data.data.length > 0 && (
+        <div className="flex items-center justify-between mt-8">
+          <div className="text-sm text-gray-700">
+            Showing {categoriesData.data.from} to {categoriesData.data.to} of {categoriesData.data.total} results
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={!categoriesData.data.prev_page_url}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <span className="px-3 py-2 text-sm bg-emerald-500 text-white rounded-lg">
+              {categoriesData.data.current_page}
+            </span>
+            <button
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={!categoriesData.data.next_page_url}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

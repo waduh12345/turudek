@@ -5,6 +5,7 @@ import { signIn, getSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Shield, Zap } from "lucide-react";
+import { ErrorHandler } from "@/lib/utils";
 
 const AdminLoginPageContent = () => {
   const [email, setEmail] = useState("");
@@ -34,14 +35,15 @@ const AdminLoginPageContent = () => {
       } else {
         // Check if user is admin
         const session = await getSession();
+        
         if (session?.user?.role === "admin") {
           router.push(callbackUrl);
         } else {
           setError("Access denied. Admin privileges required.");
         }
       }
-    } catch {
-      setError("An error occurred. Please try again.");
+    } catch (error) {
+      setError(ErrorHandler.getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -97,7 +99,7 @@ const AdminLoginPageContent = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                  placeholder="admin@gamingstore.com"
+                  placeholder="superadmin@superadmin.com"
                   required
                 />
               </div>
@@ -166,10 +168,12 @@ const AdminLoginPageContent = () => {
           >
             <p className="text-blue-200 text-sm text-center mb-2">Demo Credentials:</p>
             <div className="text-center text-blue-100 text-xs space-y-1">
-              <p>Email: admin@gamingstore.com</p>
-              <p>Password: admin123</p>
+              <p>Email: superadmin@superadmin.com</p>
+              <p>Password: password</p>
             </div>
           </motion.div>
+
+          {/* Clean login form */}
         </div>
 
         {/* Footer */}

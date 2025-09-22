@@ -1,14 +1,7 @@
 import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-
-// Dummy admin data
-const ADMIN_CREDENTIALS = {
-  email: "admin@gamingstore.com",
-  password: "admin123",
-  name: "Admin Gaming Store",
-  id: 1,
-  role: "admin"
-};
+import { env } from "./env";
+import { ApiResponse, LoginResponse } from "@/lib/types";
 
 export const authOptions: AuthOptions = {
   session: {
@@ -30,20 +23,39 @@ export const authOptions: AuthOptions = {
           return null;
         }
 
-        // Check dummy credentials
-        if (
-          credentials.email === ADMIN_CREDENTIALS.email &&
-          credentials.password === ADMIN_CREDENTIALS.password
-        ) {
-          return {
-            id: ADMIN_CREDENTIALS.id.toString(),
-            email: ADMIN_CREDENTIALS.email,
-            name: ADMIN_CREDENTIALS.name,
-            role: ADMIN_CREDENTIALS.role,
-          };
-        }
+        try {
+          // Direct API call without using apiClient (server-side)
+          const response = await fetch(`${env.API_BASE_URL}login`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+            }),
+          });
 
-        return null;
+          if (!response.ok) {
+            return null;
+          }
+
+          const data: ApiResponse<LoginResponse> = await response.json();
+
+          if (data.code === 200 && data.data.token) {
+            return {
+              id: "1", // You might want to get this from the API response
+              email: credentials.email,
+              name: "Admin",
+              role: "admin",
+              token: data.data.token,
+            };
+          }
+
+          return null;
+        } catch (error) {
+          return null;
+        }
       },
     }),
   ],
@@ -52,6 +64,7 @@ export const authOptions: AuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.accessToken = (user as any).token;
       }
       return token;
     },
@@ -59,6 +72,7 @@ export const authOptions: AuthOptions = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        (session as any).accessToken = token.accessToken;
       }
       return session;
     },
