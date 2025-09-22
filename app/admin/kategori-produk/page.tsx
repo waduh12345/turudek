@@ -7,7 +7,6 @@ import {
   Edit,
   Trash2,
   Search,
-  Filter,
   Tag,
   Gamepad2,
   Monitor,
@@ -21,7 +20,7 @@ import { useApiCall, useDebounce } from "@/hooks";
 import { useTokenSync } from "@/hooks/use-token-sync";
 import { api } from "@/services/api";
 import { ProductCategory, CreateProductCategoryRequest, UpdateProductCategoryRequest } from "@/lib/types";
-import { ErrorHandler } from "@/lib/utils";
+// import { ErrorHandler } from "@/lib/utils/error-handler";
 
 // Icon mapping for categories
 const getCategoryIcon = (title: string) => {
@@ -149,9 +148,9 @@ export default function KategoriProdukPage() {
       try {
         await deleteCategory(category.slug);
         fetchCategories(); // Refresh the list
-      } catch (error) {
-        // Error is handled by useApiCall hook
-      }
+    } catch {
+      // Error is handled by useApiCall hook
+    }
     }
   };
 

@@ -25,8 +25,8 @@ class BaseApiService {
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
     
-    const headers: HeadersInit = {
-      ...options.headers,
+    const headers: Record<string, string> = {
+      ...(options.headers as Record<string, string>),
     };
 
     // Only set Content-Type for JSON requests, not for FormData
@@ -82,7 +82,7 @@ class BaseApiService {
     return null;
   }
 
-  protected setToken(token: string | null): void {
+  public setToken(token: string | null): void {
     if (typeof window !== 'undefined') {
       if (token) {
         localStorage.setItem('admin_token', token);

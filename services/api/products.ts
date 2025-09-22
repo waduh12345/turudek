@@ -1,64 +1,97 @@
 import BaseApiService from './base';
-import { ApiResponse, PaginatedResponse } from '@/lib/types';
+import { ApiResponse } from '@/lib/types';
+import { 
+  Product, 
+  CreateProductRequest, 
+  UpdateProductRequest,
+  ProductPaginationParams,
+  ProductPaginatedResponse
+} from '@/lib/types';
 
-export interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  stock: number;
-  image?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateProductRequest {
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  stock: number;
-  image?: string;
-}
-
-export interface UpdateProductRequest extends Partial<CreateProductRequest> {
-  id: string;
-}
+// Re-export types
+export type { 
+  Product, 
+  CreateProductRequest, 
+  UpdateProductRequest,
+  ProductPaginationParams,
+  ProductPaginatedResponse
+};
 
 class ProductsService extends BaseApiService {
-  async getProducts(params?: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    category?: string;
-  }): Promise<ApiResponse<PaginatedResponse<Product>>> {
-    const queryParams = new URLSearchParams();
-    
-    if (params?.page) queryParams.append('page', params.page.toString());
-    if (params?.limit) queryParams.append('limit', params.limit.toString());
-    if (params?.search) queryParams.append('search', params.search);
-    if (params?.category) queryParams.append('category', params.category);
-    
-    const endpoint = `products${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-    return this.get<ApiResponse<PaginatedResponse<Product>>>(endpoint);
+  async getProducts(params?: ProductPaginationParams): Promise<ApiResponse<ProductPaginatedResponse>> {
+    const query = new URLSearchParams();
+    if (params?.page) query.append('page', params.page.toString());
+    if (params?.paginate) query.append('paginate', params.paginate.toString());
+    if (params?.search) query.append('search', params.search);
+    return this.get<ApiResponse<ProductPaginatedResponse>>(`master/products?${query.toString()}`);
   }
 
-  async getProduct(id: string): Promise<ApiResponse<Product>> {
-    return this.get<ApiResponse<Product>>(`products/${id}`);
+  async getProduct(slug: string): Promise<ApiResponse<Product>> {
+    return this.get<ApiResponse<Product>>(`master/products/${slug}`);
   }
 
   async createProduct(data: CreateProductRequest): Promise<ApiResponse<Product>> {
-    return this.post<ApiResponse<Product>>('products', data);
+    const formData = new FormData();
+    
+    console.log('Creating FormData with:', data); // Debug log
+    
+    formData.append('product_category_id', data.product_category_id.toString());
+    formData.append('name', data.name);
+    formData.append('sku', data.sku);
+    if (data.description) formData.append('description', data.description);
+    formData.append('buy_price', data.buy_price.toString());
+    formData.append('sell_price', data.sell_price.toString());
+    formData.append('status', data.status.toString());
+    
+    if (data.image) {
+      formData.append('image', data.image);
+    }
+
+    console.log('FormData entries:'); // Debug log
+    for (const [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+
+    return this.request<ApiResponse<Product>>('master/products', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        // Don't set Content-Type for FormData, let browser set it with boundary
+      },
+    });
   }
 
   async updateProduct(data: UpdateProductRequest): Promise<ApiResponse<Product>> {
-    const { id, ...updateData } = data;
-    return this.put<ApiResponse<Product>>(`products/${id}`, updateData);
+    const formData = new FormData();
+    
+    // Add _method=PUT for Laravel
+    formData.append('_method', 'PUT');
+
+    if (data.product_category_id !== undefined) formData.append('product_category_id', data.product_category_id.toString());
+    if (data.name) formData.append('name', data.name);
+    if (data.sku) formData.append('sku', data.sku);
+    if (data.description !== undefined) formData.append('description', data.description || '');
+    if (data.buy_price !== undefined) formData.append('buy_price', data.buy_price.toString());
+    if (data.sell_price !== undefined) formData.append('sell_price', data.sell_price.toString());
+    if (data.status !== undefined) formData.append('status', data.status.toString());
+    
+    if (data.image) {
+      formData.append('image', data.image);
+    }
+
+    return this.request<ApiResponse<Product>>(`master/products/${data.slug}`, {
+      method: 'POST', // Use POST with _method=PUT for Laravel
+      body: formData,
+      headers: {
+        // Don't set Content-Type for FormData
+      },
+    });
   }
 
-  async deleteProduct(id: string): Promise<ApiResponse<void>> {
-    return this.delete<ApiResponse<void>>(`products/${id}`);
+  async deleteProduct(slug: string): Promise<ApiResponse<null>> {
+    return this.request<ApiResponse<null>>(`master/products/${slug}`, {
+      method: 'DELETE',
+    });
   }
 }
 

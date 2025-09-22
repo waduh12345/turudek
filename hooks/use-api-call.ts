@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { ErrorHandler } from "@/lib/utils/error-handler";
 
 interface UseApiCallState<T> {
@@ -23,12 +23,18 @@ export function useApiCall<T>(
     error: null,
   });
 
+  // Use ref to store the latest apiFunction to avoid dependency issues
+  const apiFunctionRef = useRef(apiFunction);
+  useEffect(() => {
+    apiFunctionRef.current = apiFunction;
+  }, [apiFunction]);
+
   const execute = useCallback(
     async (...args: any[]): Promise<T | null> => {
       setState(prev => ({ ...prev, loading: true, error: null }));
 
       try {
-        const result = await apiFunction(...args);
+        const result = await apiFunctionRef.current(...args);
         setState(prev => ({ ...prev, data: result, loading: false }));
         return result;
       } catch (error) {
@@ -37,7 +43,7 @@ export function useApiCall<T>(
         return null;
       }
     },
-    [apiFunction]
+    [] // Empty dependency array since we use ref
   );
 
   const reset = useCallback(() => {

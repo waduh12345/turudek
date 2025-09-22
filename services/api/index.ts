@@ -6,7 +6,6 @@ export { productCategoriesService } from './product-categories';
 export { default as BaseApiService } from './base';
 export type { ApiResponse, ApiError } from './base';
 export type { LoginRequest, LoginResponse, User } from './auth';
-export type { Product, CreateProductRequest, UpdateProductRequest } from './products';
 export type { Order, CreateOrderRequest, UpdateOrderStatusRequest } from './orders';
 export type { 
   ProductCategory, 
@@ -15,6 +14,13 @@ export type {
   ProductCategoryPaginationParams,
   ProductCategoryPaginatedResponse
 } from './product-categories';
+export type { 
+  Product, 
+  CreateProductRequest, 
+  UpdateProductRequest,
+  ProductPaginationParams,
+  ProductPaginatedResponse
+} from './products';
 
 // Main API service instance
 import { authService } from './auth';

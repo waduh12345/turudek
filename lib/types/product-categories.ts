@@ -14,7 +14,7 @@ export interface ProductCategory {
   parent_title: string | null;
   parent_sub_title: string | null;
   image: string;
-  media: any[];
+  media: unknown[];
 }
 
 export interface CreateProductCategoryRequest {

@@ -8,9 +8,9 @@ export const useApiClient = () => {
   const { data: session, status } = useSession();
 
   useEffect(() => {
-    if (status === "authenticated" && session?.accessToken) {
+    if (status === "authenticated" && (session as any)?.accessToken) {
       // Set token from session
-      authService.setToken(session.accessToken as string);
+      authService.setToken((session as any).accessToken as string);
     } else if (status === "unauthenticated") {
       // Clear token when logged out
       authService.setToken(null);

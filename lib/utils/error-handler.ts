@@ -33,4 +33,14 @@ export class ErrorHandler {
     
     return this.handle(error);
   }
+
+  static showSuccess(message: string): void {
+    // Simple alert for now - can be replaced with toast notification later
+    alert(`✅ ${message}`);
+  }
+
+  static showError(message: string): void {
+    // Simple alert for now - can be replaced with toast notification later
+    alert(`❌ ${message}`);
+  }
 }

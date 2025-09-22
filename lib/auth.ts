@@ -53,7 +53,7 @@ export const authOptions: AuthOptions = {
           }
 
           return null;
-        } catch (error) {
+        } catch {
           return null;
         }
       },
@@ -64,7 +64,7 @@ export const authOptions: AuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
-        token.accessToken = (user as any).token;
+        token.accessToken = (user as unknown as { token: string }).token;
       }
       return token;
     },
@@ -72,7 +72,7 @@ export const authOptions: AuthOptions = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
-        (session as any).accessToken = token.accessToken;
+        (session as unknown as { accessToken: string }).accessToken = token.accessToken as string;
       }
       return session;
     },
