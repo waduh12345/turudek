@@ -1,208 +1,320 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
   Edit,
   Trash2,
   Search,
-  Filter,
   Newspaper,
   Eye,
   X,
   Save,
   Upload,
   Calendar,
-  User,
   Tag,
   Globe,
   Lock,
   Image as ImageIcon,
+  Loader2,
 } from "lucide-react";
-
-// Dummy data
-const news = [
-  {
-    id: 1,
-    title: "PlayStation 5 Pro Akan Dirilis Tahun 2024",
-    slug: "playstation-5-pro-akan-dirilis-tahun-2024",
-    excerpt: "Sony mengumumkan PlayStation 5 Pro dengan performa yang lebih powerful dan fitur ray tracing yang ditingkatkan.",
-    content: "Sony Interactive Entertainment telah mengumumkan bahwa PlayStation 5 Pro akan dirilis pada akhir tahun 2024. Konsol gaming terbaru ini akan menawarkan performa yang lebih powerful dibandingkan dengan PS5 standar, dengan peningkatan signifikan dalam hal ray tracing dan frame rate yang lebih tinggi.",
-    category: "Gaming News",
-    author: "Admin",
-    status: "published",
-    featured: true,
-    image: "/images/ps5-pro.jpg",
-    tags: ["PlayStation", "Gaming", "Console"],
-    publishedAt: "2024-01-15",
-    createdAt: "2024-01-15",
-    views: 1250,
-  },
-  {
-    id: 2,
-    title: "Xbox Game Pass Menambah 10 Game Baru Bulan Ini",
-    slug: "xbox-game-pass-menambah-10-game-baru-bulan-ini",
-    excerpt: "Microsoft menambahkan 10 game baru ke Xbox Game Pass termasuk beberapa game eksklusif yang sangat dinantikan.",
-    content: "Microsoft telah mengumumkan penambahan 10 game baru ke Xbox Game Pass untuk bulan ini. Game-game tersebut termasuk beberapa judul eksklusif yang sangat dinantikan oleh para gamer, serta beberapa indie game yang menarik.",
-    category: "Gaming News",
-    author: "Admin",
-    status: "published",
-    featured: false,
-    image: "/images/xbox-game-pass.jpg",
-    tags: ["Xbox", "Game Pass", "Gaming"],
-    publishedAt: "2024-01-14",
-    createdAt: "2024-01-14",
-    views: 890,
-  },
-  {
-    id: 3,
-    title: "Nintendo Switch 2 Dikonfirmasi Akan Rilis 2025",
-    slug: "nintendo-switch-2-dikonfirmasi-akan-rilis-2025",
-    excerpt: "Nintendo secara resmi mengkonfirmasi bahwa Switch 2 akan dirilis pada tahun 2025 dengan spesifikasi yang lebih canggih.",
-    content: "Nintendo telah secara resmi mengkonfirmasi bahwa konsol gaming terbaru mereka, yang sementara ini disebut Switch 2, akan dirilis pada tahun 2025. Konsol ini akan menawarkan spesifikasi yang lebih canggih dibandingkan dengan Switch generasi pertama.",
-    category: "Gaming News",
-    author: "Admin",
-    status: "draft",
-    featured: false,
-    image: "/images/switch-2.jpg",
-    tags: ["Nintendo", "Switch", "Console"],
-    publishedAt: null,
-    createdAt: "2024-01-13",
-    views: 0,
-  },
-  {
-    id: 4,
-    title: "Review: Cyberpunk 2077 Phantom Liberty",
-    slug: "review-cyberpunk-2077-phantom-liberty",
-    excerpt: "Review lengkap DLC Phantom Liberty untuk Cyberpunk 2077 yang membawa pengalaman gaming yang lebih baik.",
-    content: "Phantom Liberty adalah DLC terbaru untuk Cyberpunk 2077 yang membawa banyak perbaikan dan konten baru. DLC ini menceritakan kisah baru dengan karakter yang menarik dan gameplay yang lebih polished.",
-    category: "Game Review",
-    author: "Admin",
-    status: "published",
-    featured: true,
-    image: "/images/cyberpunk-dlc.jpg",
-    tags: ["Cyberpunk 2077", "Review", "DLC"],
-    publishedAt: "2024-01-12",
-    createdAt: "2024-01-12",
-    views: 2100,
-  },
-  {
-    id: 5,
-    title: "Tips dan Trik Gaming untuk Pemula",
-    slug: "tips-dan-trik-gaming-untuk-pemula",
-    excerpt: "Panduan lengkap untuk pemula yang baru memulai perjalanan gaming mereka.",
-    content: "Gaming adalah hobi yang menyenangkan dan bisa menjadi cara yang bagus untuk menghabiskan waktu luang. Bagi pemula, ada beberapa tips dan trik yang bisa membantu meningkatkan pengalaman gaming mereka.",
-    category: "Tips & Tricks",
-    author: "Admin",
-    status: "published",
-    featured: false,
-    image: "/images/gaming-tips.jpg",
-    tags: ["Tips", "Gaming", "Pemula"],
-    publishedAt: "2024-01-11",
-    createdAt: "2024-01-11",
-    views: 1560,
-  },
-];
-
-const categories = [
-  "Gaming News",
-  "Game Review",
-  "Tips & Tricks",
-  "Hardware",
-  "Software",
-];
+import { useApiCall, useDebounce } from "@/hooks";
+import { useTokenSync } from "@/hooks/use-token-sync";
+import { api } from "@/services/api";
+import { NewsArticle, CreateNewsArticleRequest, UpdateNewsArticleRequest } from "@/lib/types";
 
 export default function NewsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showForm, setShowForm] = useState(false);
-  const [editingNews, setEditingNews] = useState<typeof news[0] | null>(null);
-  const [selectedArticle, setSelectedArticle] = useState<typeof news[0] | null>(null);
+  const [editingNews, setEditingNews] = useState<NewsArticle | null>(null);
+  const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage] = useState(10);
+  const [retryTrigger, setRetryTrigger] = useState(0);
   const [formData, setFormData] = useState({
+    news_category_id: 0,
     title: "",
-    excerpt: "",
+    sub_title: "",
     content: "",
-    category: "",
-    status: "draft",
-    featured: false,
-    tags: "",
+    published_at: "",
+    status: 1 as 0 | 1,
+    tag_ids: [] as number[],
+    image: null as File | null,
   });
+  
+  // Debounce search term untuk UX yang lebih baik
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  
+  // Token sync untuk authentication
+  const { isAuthenticated, hasToken } = useTokenSync();
 
-  const filteredNews = news.filter((article) => {
-    const matchesSearch = 
-      article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      article.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      article.content.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesCategory = categoryFilter === "all" || article.category === categoryFilter;
-    const matchesStatus = statusFilter === "all" || article.status === statusFilter;
-    
-    return matchesSearch && matchesCategory && matchesStatus;
-  });
+  // API calls
+  const { 
+    data: articlesData, 
+    loading: articlesLoading, 
+    error: articlesError, 
+    execute: fetchArticles 
+  } = useApiCall(api.newsArticles.getNewsArticles);
 
-  const getStatusColor = (status: string) => {
+  const { 
+    loading: submitLoading, 
+    execute: submitArticle 
+  } = useApiCall(api.newsArticles.createNewsArticle);
+
+  const { 
+    loading: updateLoading, 
+    execute: updateArticle 
+  } = useApiCall(api.newsArticles.updateNewsArticle);
+
+  const { 
+    execute: deleteArticle 
+  } = useApiCall(api.newsArticles.deleteNewsArticle);
+
+  // Fetch categories and tags for dropdowns
+  const { 
+    data: categoriesData, 
+    execute: fetchCategories 
+  } = useApiCall(api.newsCategories.getNewsCategories);
+
+  const { 
+    data: tagsData, 
+    execute: fetchTags 
+  } = useApiCall(api.newsTags.getNewsTags);
+
+  // Load data on component mount and when search/page changes
+  useEffect(() => {
+    if (isAuthenticated && hasToken) {
+      const params: {
+        page: number;
+        paginate: number;
+        search?: string;
+        status?: number;
+        news_category_id?: number;
+      } = {
+        page: currentPage,
+        paginate: perPage,
+      };
+      
+      // Only add optional parameters if they have values
+      if (debouncedSearchTerm) {
+        params.search = debouncedSearchTerm;
+      }
+      
+      if (statusFilter !== "all") {
+        params.status = statusFilter === "published" ? 1 : 0;
+      }
+      
+      if (categoryFilter !== "all") {
+        params.news_category_id = parseInt(categoryFilter);
+      }
+      
+      // console.log('Fetching articles with params:', params);
+      
+      fetchArticles(params).catch((error) => {
+        console.error('Error in fetchArticles:', error);
+      });
+
+      fetchCategories({ page: 1, paginate: 100 }).catch((error) => {
+        console.error('Error in fetchCategories:', error);
+      });
+
+      fetchTags({ page: 1, paginate: 100 }).catch((error) => {
+        console.error('Error in fetchTags:', error);
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, debouncedSearchTerm, categoryFilter, statusFilter, isAuthenticated, hasToken, retryTrigger]);
+
+  // Get data from API responses
+  const articles = articlesData?.data?.data || [];
+  const pagination = articlesData?.data;
+  const categories = categoriesData?.data?.data || [];
+  const tags = tagsData?.data?.data || [];
+  
+  // Debug logging
+  // console.log('Categories loaded:', categories);
+  // console.log('Current categoryFilter:', categoryFilter);
+  // console.log('Articles loaded:', articles.length);
+
+  const getStatusColor = (status: number) => {
     switch (status) {
-      case "published":
+      case 1:
         return "bg-green-100 text-green-800";
-      case "draft":
-        return "bg-yellow-100 text-yellow-800";
-      case "archived":
+      case 0:
         return "bg-gray-100 text-gray-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
   };
 
+  const getStatusText = (status: number) => {
+    switch (status) {
+      case 1:
+        return "Published";
+      case 0:
+        return "Draft";
+      default:
+        return "Draft";
+    }
+  };
+
   const getTotalViews = () => {
-    return news.reduce((sum, article) => sum + article.views, 0);
+    return articles.reduce((sum, article) => sum + article.view_count, 0);
   };
 
   const getPublishedCount = () => {
-    return news.filter(article => article.status === "published").length;
+    return articles.filter(article => article.status === 1).length;
   };
 
   const getDraftCount = () => {
-    return news.filter(article => article.status === "draft").length;
+    return articles.filter(article => article.status === 0).length;
   };
 
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log("Form submitted:", formData);
-    setShowForm(false);
-    setEditingNews(null);
-    setFormData({ title: "", excerpt: "", content: "", category: "", status: "draft", featured: false, tags: "" });
+    
+    // Client-side validation
+    if (!formData.title.trim()) {
+      console.error("Judul artikel harus diisi");
+      return;
+    }
+    
+    if (!formData.content.trim()) {
+      console.error("Konten artikel harus diisi");
+      return;
+    }
+
+    if (!formData.news_category_id) {
+      console.error("Kategori harus dipilih");
+      return;
+    }
+
+    if (!formData.published_at) {
+      console.error("Tanggal publikasi harus diisi");
+      return;
+    }
+
+    try {
+      const submitData: CreateNewsArticleRequest | UpdateNewsArticleRequest = {
+        news_category_id: formData.news_category_id,
+        title: formData.title.trim(),
+        sub_title: formData.sub_title.trim() || null,
+        content: formData.content.trim(),
+        published_at: formData.published_at,
+        status: formData.status,
+        tag_ids: formData.tag_ids,
+        image: formData.image,
+      };
+
+      if (editingNews) {
+        await updateArticle(editingNews.slug, submitData as UpdateNewsArticleRequest);
+      } else {
+        await submitArticle(submitData as CreateNewsArticleRequest);
+      }
+      
+      // Refresh data
+      setRetryTrigger(prev => prev + 1);
+      
+      resetForm();
+    } catch (error) {
+      console.error('Error submitting news article:', error);
+    }
   };
 
-  const handleEdit = (article: typeof news[0]) => {
+  const handleEdit = (article: NewsArticle) => {
     setEditingNews(article);
+    
+    // Format published_at for datetime-local input
+    const publishedAtFormatted = new Date(article.published_at).toISOString().slice(0, 16);
+    
     setFormData({
+      news_category_id: article.news_category_id,
       title: article.title,
-      excerpt: article.excerpt,
+      sub_title: article.sub_title || "",
       content: article.content,
-      category: article.category,
+      published_at: publishedAtFormatted,
       status: article.status,
-      featured: article.featured,
-      tags: article.tags.join(", "),
+      tag_ids: article.tags.map(tag => tag.id),
+      image: null,
     });
     setShowForm(true);
   };
 
-  const handleDelete = (id: number) => {
-    if (confirm("Are you sure you want to delete this article?")) {
-      // Handle delete here
-      console.log("Delete article:", id);
+  const handleDelete = async (article: NewsArticle) => {
+    if (confirm(`Are you sure you want to delete "${article.title}"?`)) {
+      try {
+        await deleteArticle(article.slug);
+        
+        // Refresh data
+        setRetryTrigger(prev => prev + 1);
+      } catch (error) {
+        console.error('Error deleting news article:', error);
+      }
     }
   };
 
   const resetForm = () => {
-    setFormData({ title: "", excerpt: "", content: "", category: "", status: "draft", featured: false, tags: "" });
+    setFormData({
+      news_category_id: 0,
+      title: "",
+      sub_title: "",
+      content: "",
+      published_at: "",
+      status: 1,
+      tag_ids: [],
+      image: null,
+    });
     setEditingNews(null);
     setShowForm(false);
   };
+
+  // Show loading state
+  if (articlesLoading && !articlesData && !articlesError) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-emerald-500" />
+          <p className="text-gray-600">Loading articles...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (articlesError && !articlesData && !articlesLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">
+            Error loading articles: {typeof articlesError === 'string' ? articlesError : 'Unknown error'}
+          </p>
+          <button
+            onClick={() => {
+              setRetryTrigger(prev => prev + 1);
+            }}
+            className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show authentication required
+  if (!isAuthenticated || !hasToken) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">Authentication required to access this page.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -210,7 +322,14 @@ export default function NewsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">News & Articles</h1>
-          <p className="text-gray-600">Kelola artikel dan berita gaming store Anda</p>
+          <p className="text-gray-600">
+            Kelola artikel dan berita gaming store Anda
+            {pagination && (
+              <span className="ml-2 text-sm text-gray-500">
+                ({pagination.total} total)
+              </span>
+            )}
+          </p>
         </div>
         <motion.button
           whileHover={{ scale: 1.05 }}
@@ -236,7 +355,7 @@ export default function NewsPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Artikel</p>
-              <p className="text-2xl font-semibold text-gray-900">{news.length}</p>
+              <p className="text-2xl font-semibold text-gray-900">{articles.length}</p>
             </div>
           </div>
         </motion.div>
@@ -305,37 +424,65 @@ export default function NewsPage() {
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
           />
         </div>
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-        >
-          <option value="all">Semua Kategori</option>
-          {categories.map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            value={categoryFilter}
+            onChange={(e) => {
+              // console.log('Category filter changed to:', e.target.value);
+              setCategoryFilter(e.target.value);
+              setCurrentPage(1); // Reset to first page when filter changes
+            }}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          >
+            <option value="all">Semua Kategori</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id.toString()}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+          {categoryFilter !== "all" && (
+            <div className="absolute -top-2 -right-2 bg-emerald-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              ✓
+            </div>
+          )}
+        </div>
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setCurrentPage(1); // Reset to first page when filter changes
+          }}
           className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
         >
           <option value="all">Semua Status</option>
           <option value="published">Dipublikasi</option>
           <option value="draft">Draft</option>
-          <option value="archived">Diarsipkan</option>
         </select>
-        <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-          <Filter className="h-5 w-5" />
-          <span>Filter</span>
-        </button>
+        {(categoryFilter !== "all" || statusFilter !== "all" || searchTerm) && (
+          <button
+            onClick={() => {
+              setCategoryFilter("all");
+              setStatusFilter("all");
+              setSearchTerm("");
+              setCurrentPage(1);
+            }}
+            className="px-3 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+          >
+            Clear Filters
+          </button>
+        )}
+        {articlesLoading && (
+          <div className="flex items-center text-sm text-gray-500">
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            Searching...
+          </div>
+        )}
       </div>
 
       {/* News Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
-        {filteredNews.map((article, index) => (
+        {articles.map((article, index) => (
           <motion.div
             key={article.id}
             initial={{ opacity: 0, y: 20 }}
@@ -348,20 +495,13 @@ export default function NewsPage() {
               <div className="absolute inset-0 flex items-center justify-center">
                 <ImageIcon className="h-16 w-16 text-white opacity-50" />
               </div>
-              {article.featured && (
-                <div className="absolute top-4 left-4">
-                  <span className="bg-yellow-500 text-white text-xs font-medium px-2 py-1 rounded-full">
-                    Featured
-                  </span>
-                </div>
-              )}
               <div className="absolute top-4 right-4">
                 <span
                   className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
                     article.status
                   )}`}
                 >
-                  {article.status}
+                  {getStatusText(article.status)}
                 </span>
               </div>
             </div>
@@ -369,10 +509,10 @@ export default function NewsPage() {
             {/* Article Content */}
             <div className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-emerald-600">{article.category}</span>
+                <span className="text-sm font-medium text-emerald-600">{article.category_name}</span>
                 <div className="flex items-center text-sm text-gray-500">
                   <Eye className="h-4 w-4 mr-1" />
-                  {article.views}
+                  {article.view_count}
                 </div>
               </div>
 
@@ -380,8 +520,14 @@ export default function NewsPage() {
                 {article.title}
               </h3>
 
+              {article.sub_title && (
+                <p className="text-gray-500 text-sm mb-2 line-clamp-1">
+                  {article.sub_title}
+                </p>
+              )}
+
               <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                {article.excerpt}
+                {article.content.substring(0, 150)}...
               </p>
 
               {/* Tags */}
@@ -392,7 +538,7 @@ export default function NewsPage() {
                     className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
                   >
                     <Tag className="h-3 w-3 mr-1" />
-                    {tag}
+                    {tag.name}
                   </span>
                 ))}
               </div>
@@ -400,12 +546,13 @@ export default function NewsPage() {
               {/* Article Meta */}
               <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
                 <div className="flex items-center">
-                  <User className="h-4 w-4 mr-1" />
-                  {article.author}
+                  <Calendar className="h-4 w-4 mr-1" />
+                  {new Date(article.published_at).toLocaleDateString('id-ID')}
                 </div>
                 <div className="flex items-center">
-                  <Calendar className="h-4 w-4 mr-1" />
-                  {article.publishedAt || article.createdAt}
+                  <span className="text-xs text-gray-400">
+                    {article.read_time} min read
+                  </span>
                 </div>
               </div>
 
@@ -425,7 +572,7 @@ export default function NewsPage() {
                     <Edit className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => handleDelete(article.id)}
+                    onClick={() => handleDelete(article)}
                     className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded-lg transition-colors duration-200"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -488,15 +635,15 @@ export default function NewsPage() {
                       Kategori
                     </label>
                     <select
-                      value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      value={formData.news_category_id}
+                      onChange={(e) => setFormData({ ...formData, news_category_id: parseInt(e.target.value) })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                       required
                     >
-                      <option value="">Pilih kategori</option>
+                      <option value={0}>Pilih kategori</option>
                       {categories.map((category) => (
-                        <option key={category} value={category}>
-                          {category}
+                        <option key={category.id} value={category.id}>
+                          {category.name}
                         </option>
                       ))}
                     </select>
@@ -505,17 +652,17 @@ export default function NewsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Ringkasan
+                    Sub Judul (Opsional)
                   </label>
-                  <textarea
-                    value={formData.excerpt}
-                    onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+                  <input
+                    type="text"
+                    value={formData.sub_title}
+                    onChange={(e) => setFormData({ ...formData, sub_title: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                    placeholder="Masukkan ringkasan artikel"
-                    rows={3}
-                    required
+                    placeholder="Masukkan sub judul artikel"
                   />
                 </div>
+
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -538,40 +685,51 @@ export default function NewsPage() {
                     </label>
                     <select
                       value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, status: parseInt(e.target.value) as 0 | 1 })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     >
-                      <option value="draft">Draft</option>
-                      <option value="published">Dipublikasi</option>
-                      <option value="archived">Diarsipkan</option>
+                      <option value={0}>Draft</option>
+                      <option value={1}>Dipublikasi</option>
                     </select>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tags (pisahkan dengan koma)
+                      Tanggal Publikasi
                     </label>
                     <input
-                      type="text"
-                      value={formData.tags}
-                      onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                      type="datetime-local"
+                      value={formData.published_at}
+                      onChange={(e) => setFormData({ ...formData, published_at: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                      placeholder="gaming, console, review"
+                      required
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="featured"
-                    checked={formData.featured}
-                    onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                    className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="featured" className="ml-2 block text-sm text-gray-900">
-                    Jadikan artikel featured
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Tags
                   </label>
+                  <div className="space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-3">
+                    {tags.map((tag) => (
+                      <label key={tag.id} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.tag_ids.includes(tag.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setFormData({ ...formData, tag_ids: [...formData.tag_ids, tag.id] });
+                            } else {
+                              setFormData({ ...formData, tag_ids: formData.tag_ids.filter(id => id !== tag.id) });
+                            }
+                          }}
+                          className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                        />
+                        <span className="ml-2 text-sm text-gray-900">{tag.name}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
                 <div>
@@ -599,10 +757,20 @@ export default function NewsPage() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     type="submit"
-                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200"
+                    disabled={submitLoading || updateLoading}
+                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Save className="h-4 w-4" />
-                    <span>{editingNews ? "Update" : "Simpan"}</span>
+                    {(submitLoading || updateLoading) ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4" />
+                    )}
+                    <span>
+                      {submitLoading || updateLoading 
+                        ? (editingNews ? "Updating..." : "Saving...") 
+                        : (editingNews ? "Update" : "Simpan")
+                      }
+                    </span>
                   </motion.button>
                 </div>
               </form>
@@ -642,31 +810,27 @@ export default function NewsPage() {
                   <h1 className="text-2xl font-bold text-gray-900 mb-4">{selectedArticle.title}</h1>
                   <div className="flex items-center justify-center space-x-4 text-sm text-gray-500 mb-4">
                     <span className="flex items-center">
-                      <User className="h-4 w-4 mr-1" />
-                      {selectedArticle.author}
-                    </span>
-                    <span className="flex items-center">
                       <Calendar className="h-4 w-4 mr-1" />
-                      {selectedArticle.publishedAt || selectedArticle.createdAt}
+                      {new Date(selectedArticle.published_at).toLocaleDateString('id-ID')}
                     </span>
                     <span className="flex items-center">
                       <Eye className="h-4 w-4 mr-1" />
-                      {selectedArticle.views} views
+                      {selectedArticle.view_count} views
+                    </span>
+                    <span className="flex items-center">
+                      <span className="text-xs text-gray-400">
+                        {selectedArticle.read_time} min read
+                      </span>
                     </span>
                   </div>
                   <div className="flex items-center justify-center space-x-2">
-                    <span className="text-sm font-medium text-emerald-600">{selectedArticle.category}</span>
-                    {selectedArticle.featured && (
-                      <span className="bg-yellow-500 text-white text-xs font-medium px-2 py-1 rounded-full">
-                        Featured
-                      </span>
-                    )}
+                    <span className="text-sm font-medium text-emerald-600">{selectedArticle.category_name}</span>
                     <span
                       className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
                         selectedArticle.status
                       )}`}
                     >
-                      {selectedArticle.status}
+                      {getStatusText(selectedArticle.status)}
                     </span>
                   </div>
                 </div>
@@ -680,10 +844,12 @@ export default function NewsPage() {
 
                 {/* Article Content */}
                 <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Ringkasan</h3>
-                    <p className="text-gray-600 leading-relaxed">{selectedArticle.excerpt}</p>
-                  </div>
+                  {selectedArticle.sub_title && (
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">Sub Judul</h3>
+                      <p className="text-gray-600 leading-relaxed">{selectedArticle.sub_title}</p>
+                    </div>
+                  )}
 
                   <div>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">Konten</h3>
@@ -702,7 +868,7 @@ export default function NewsPage() {
                           className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
                         >
                           <Tag className="h-3 w-3 mr-1" />
-                          {tag}
+                          {tag.name}
                         </span>
                       ))}
                     </div>
@@ -718,17 +884,17 @@ export default function NewsPage() {
                       </div>
                       <div>
                         <span className="text-gray-600">Dibuat:</span>
-                        <span className="ml-2 font-medium text-gray-900">{selectedArticle.createdAt}</span>
+                        <span className="ml-2 font-medium text-gray-900">{new Date(selectedArticle.created_at).toLocaleDateString('id-ID')}</span>
                       </div>
                       <div>
                         <span className="text-gray-600">Dipublikasi:</span>
                         <span className="ml-2 font-medium text-gray-900">
-                          {selectedArticle.publishedAt || "Belum dipublikasi"}
+                          {new Date(selectedArticle.published_at).toLocaleDateString('id-ID')}
                         </span>
                       </div>
                       <div>
                         <span className="text-gray-600">Status:</span>
-                        <span className="ml-2 font-medium text-gray-900">{selectedArticle.status}</span>
+                        <span className="ml-2 font-medium text-gray-900">{getStatusText(selectedArticle.status)}</span>
                       </div>
                     </div>
                   </div>
@@ -738,6 +904,34 @@ export default function NewsPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Pagination */}
+      {pagination && pagination.last_page > 1 && (
+        <div className="flex items-center justify-between mt-8">
+          <div className="text-sm text-gray-700">
+            Menampilkan {pagination.from} sampai {pagination.to} dari {pagination.total} artikel
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <span className="px-3 py-2 text-sm">
+              Halaman {currentPage} dari {pagination.last_page}
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, pagination.last_page))}
+              disabled={currentPage === pagination.last_page}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

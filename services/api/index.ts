@@ -5,6 +5,7 @@ export { ordersService } from './orders';
 export { productCategoriesService } from './product-categories';
 export { newsCategoriesService } from './news-categories';
 export { newsTagsService } from './news-tags';
+export { newsArticlesService } from './news-articles';
 export { default as BaseApiService } from './base';
 export type { ApiResponse, ApiError } from './base';
 export type { LoginRequest, LoginResponse, User } from './auth';
@@ -37,6 +38,13 @@ export type {
   NewsTagPaginationParams,
   NewsTagPaginatedResponse
 } from './news-tags';
+export type {
+  NewsArticle,
+  CreateNewsArticleRequest,
+  UpdateNewsArticleRequest,
+  NewsArticlePaginationParams,
+  NewsArticlePaginatedResponse
+} from './news-articles';
 
 // Main API service instance
 import { authService } from './auth';
@@ -45,6 +53,7 @@ import { ordersService } from './orders';
 import { productCategoriesService } from './product-categories';
 import { newsCategoriesService } from './news-categories';
 import { newsTagsService } from './news-tags';
+import { newsArticlesService } from './news-articles';
 
 export const api = {
   auth: authService,
@@ -53,4 +62,5 @@ export const api = {
   productCategories: productCategoriesService,
   newsCategories: newsCategoriesService,
   newsTags: newsTagsService,
+  newsArticles: newsArticlesService,
 };
