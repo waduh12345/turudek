@@ -19,27 +19,33 @@ import {
 import { useApiCall, useDebounce } from "@/hooks";
 import { useTokenSync } from "@/hooks/use-token-sync";
 import { api } from "@/services/api";
-import { ProductCategory, CreateProductCategoryRequest, UpdateProductCategoryRequest } from "@/lib/types";
+import {
+  ProductCategory,
+  CreateProductCategoryRequest,
+  UpdateProductCategoryRequest,
+} from "@/lib/types";
+import { useToast } from "@/components/providers/toast-provider";
 // import { ErrorHandler } from "@/lib/utils/error-handler";
 
 // Icon mapping for categories
 const getCategoryIcon = (title: string) => {
   const lowerTitle = title.toLowerCase();
-  if (lowerTitle.includes('game') || lowerTitle.includes('topup')) return Gamepad2;
-  if (lowerTitle.includes('voucher')) return Tag;
-  if (lowerTitle.includes('accessory')) return Headphones;
-  if (lowerTitle.includes('mobile')) return Smartphone;
+  if (lowerTitle.includes("game") || lowerTitle.includes("topup"))
+    return Gamepad2;
+  if (lowerTitle.includes("voucher")) return Tag;
+  if (lowerTitle.includes("accessory")) return Headphones;
+  if (lowerTitle.includes("mobile")) return Smartphone;
   return Monitor;
 };
 
 const getCategoryColor = (index: number) => {
   const colors = [
     "from-blue-500 to-cyan-500",
-    "from-emerald-500 to-green-500", 
+    "from-emerald-500 to-green-500",
     "from-green-500 to-emerald-500",
     "from-orange-500 to-red-500",
     "from-purple-500 to-pink-500",
-    "from-indigo-500 to-blue-500"
+    "from-indigo-500 to-blue-500",
   ];
   return colors[index % colors.length];
 };
@@ -47,8 +53,12 @@ const getCategoryColor = (index: number) => {
 export default function KategoriProdukPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<ProductCategory | null>(null);
-  
+  const [editingCategory, setEditingCategory] =
+    useState<ProductCategory | null>(null);
+
+  // Toast hook
+  const { success, error, warning } = useToast();
+
   // Debounce search term untuk UX yang lebih baik
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [formData, setFormData] = useState<CreateProductCategoryRequest>({
@@ -66,67 +76,90 @@ export default function KategoriProdukPage() {
   const { isAuthenticated, hasToken } = useTokenSync();
 
   // API calls
-  const { 
-    data: categoriesData, 
-    loading: categoriesLoading, 
-    error: categoriesError, 
-    execute: fetchCategories 
-  } = useApiCall(() => api.productCategories.getProductCategories({
-    page: currentPage,
-    paginate: perPage,
-    search: debouncedSearchTerm || undefined
-  }));
+  const {
+    data: categoriesData,
+    loading: categoriesLoading,
+    error: categoriesError,
+    execute: fetchCategories,
+  } = useApiCall(() =>
+    api.productCategories.getProductCategories({
+      page: currentPage,
+      paginate: perPage,
+      search: debouncedSearchTerm || undefined,
+    })
+  );
 
-  const { 
-    loading: submitLoading, 
-    execute: submitCategory 
-  } = useApiCall(async (data: CreateProductCategoryRequest | UpdateProductCategoryRequest) => {
-    if (editingCategory) {
-      return api.productCategories.updateProductCategory({
-        ...data,
-        slug: editingCategory.slug
-      } as UpdateProductCategoryRequest);
-    } else {
-      return api.productCategories.createProductCategory(data as CreateProductCategoryRequest);
+  const { loading: submitLoading, execute: submitCategory } = useApiCall(
+    async (
+      data: CreateProductCategoryRequest | UpdateProductCategoryRequest
+    ) => {
+      if (editingCategory) {
+        return api.productCategories.updateProductCategory({
+          ...data,
+          slug: editingCategory.slug,
+        } as UpdateProductCategoryRequest);
+      } else {
+        return api.productCategories.createProductCategory(
+          data as CreateProductCategoryRequest
+        );
+      }
     }
-  });
+  );
 
-  const { 
-    loading: deleteLoading, 
-    execute: deleteCategory 
-  } = useApiCall((slug: string) => api.productCategories.deleteProductCategory(slug));
+  const { loading: deleteLoading, execute: deleteCategory } = useApiCall(
+    (slug: string) => api.productCategories.deleteProductCategory(slug)
+  );
 
   // Load categories on component mount and when search/page changes
   useEffect(() => {
     if (isAuthenticated && hasToken) {
       fetchCategories();
     }
-  }, [currentPage, debouncedSearchTerm, isAuthenticated, hasToken]);
+  }, [
+    currentPage,
+    debouncedSearchTerm,
+    isAuthenticated,
+    hasToken,
+    fetchCategories,
+  ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form data being submitted:', formData);
-    
+    console.log("Form data being submitted:", formData);
+
     // Validate required fields
     if (!formData.title || !formData.title.trim()) {
-      alert('Title is required');
+      warning("Validasi Gagal", "Title kategori harus diisi");
       return;
     }
-    
+
     if (formData.status === undefined || formData.status === null) {
-      alert('Status is required');
+      warning("Validasi Gagal", "Status kategori harus dipilih");
       return;
     }
-    
+
     try {
       await submitCategory(formData);
       setShowForm(false);
       setEditingCategory(null);
       resetForm();
       fetchCategories(); // Refresh the list
-    } catch (error) {
-      console.error('Form submission error:', error);
-      // Error is handled by useApiCall hook
+
+      // Show success toast
+      success(
+        editingCategory
+          ? "Kategori Berhasil Diupdate"
+          : "Kategori Berhasil Ditambahkan",
+        editingCategory
+          ? `Kategori "${formData.title}" berhasil diperbarui`
+          : `Kategori "${formData.title}" berhasil ditambahkan ke sistem`
+      );
+    } catch (err) {
+      console.error("Form submission error:", err);
+      error(
+        "Gagal Menyimpan Kategori",
+        "Terjadi kesalahan saat menyimpan kategori. Silakan coba lagi."
+      );
     }
   };
 
@@ -148,9 +181,19 @@ export default function KategoriProdukPage() {
       try {
         await deleteCategory(category.slug);
         fetchCategories(); // Refresh the list
-    } catch {
-      // Error is handled by useApiCall hook
-    }
+
+        // Show success toast
+        success(
+          "Kategori Berhasil Dihapus",
+          `Kategori "${category.title}" berhasil dihapus dari sistem`
+        );
+      } catch (err) {
+        console.error("Delete error:", err);
+        error(
+          "Gagal Menghapus Kategori",
+          "Terjadi kesalahan saat menghapus kategori. Silakan coba lagi."
+        );
+      }
     }
   };
 
@@ -178,7 +221,9 @@ export default function KategoriProdukPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Kategori Produk</h1>
-          <p className="text-gray-600">Kelola kategori produk gaming store Anda</p>
+          <p className="text-gray-600">
+            Kelola kategori produk gaming store Anda
+          </p>
         </div>
         <motion.button
           whileHover={{ scale: 1.05 }}
@@ -191,12 +236,12 @@ export default function KategoriProdukPage() {
         </motion.button>
       </div>
 
-
       {/* Authentication Check */}
       {!isAuthenticated && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <p className="text-yellow-800">
-            <strong>Authentication Required:</strong> Please login to access this page.
+            <strong>Authentication Required:</strong> Please login to access
+            this page.
           </p>
         </div>
       )}
@@ -204,7 +249,8 @@ export default function KategoriProdukPage() {
       {isAuthenticated && !hasToken && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-red-800">
-            <strong>Token Missing:</strong> Authentication token not found. Please refresh the page or login again.
+            <strong>Token Missing:</strong> Authentication token not found.
+            Please refresh the page or login again.
           </p>
         </div>
       )}
@@ -234,9 +280,17 @@ export default function KategoriProdukPage() {
       {/* Error State */}
       {categoriesError && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-600">Error loading categories: {categoriesError}</p>
-          <button 
-            onClick={() => fetchCategories()}
+          <p className="text-red-600">
+            Error loading categories: {categoriesError}
+          </p>
+          <button
+            onClick={() => {
+              fetchCategories();
+              error(
+                "Gagal Memuat Data",
+                "Terjadi kesalahan saat memuat data kategori"
+              );
+            }}
             className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
           >
             Try again
@@ -250,7 +304,7 @@ export default function KategoriProdukPage() {
           {categoriesData.data.data.map((category, index) => {
             const IconComponent = getCategoryIcon(category.title);
             const colorClass = getCategoryColor(index);
-            
+
             return (
               <motion.div
                 key={category.id}
@@ -260,7 +314,9 @@ export default function KategoriProdukPage() {
                 className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-6 hover:shadow-md transition-shadow duration-200"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r ${colorClass}`}>
+                  <div
+                    className={`flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r ${colorClass}`}
+                  >
                     <IconComponent className="h-6 w-6 text-white" />
                   </div>
                   <div className="flex items-center space-x-2">
@@ -283,18 +339,26 @@ export default function KategoriProdukPage() {
                     </button>
                   </div>
                 </div>
-                
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{category.title}</h3>
+
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {category.title}
+                </h3>
                 {category.sub_title && (
-                  <p className="text-sm text-gray-500 mb-2">{category.sub_title}</p>
+                  <p className="text-sm text-gray-500 mb-2">
+                    {category.sub_title}
+                  </p>
                 )}
-                <p className="text-gray-600 text-sm mb-4">{category.description}</p>
-                
+                <p className="text-gray-600 text-sm mb-4">
+                  {category.description}
+                </p>
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center space-x-1">
                       <Tag className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm text-gray-600">Slug: {category.slug}</span>
+                      <span className="text-sm text-gray-600">
+                        Slug: {category.slug}
+                      </span>
                     </div>
                     <span
                       className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
@@ -314,24 +378,30 @@ export default function KategoriProdukPage() {
       )}
 
       {/* Empty State */}
-      {!categoriesLoading && !categoriesError && categoriesData?.data.data.length === 0 && (
-        <div className="text-center py-12">
-          <Tag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No categories found</h3>
-          <p className="text-gray-600 mb-4">
-            {searchTerm ? "Try adjusting your search terms." : "Get started by creating your first category."}
-          </p>
-          {!searchTerm && (
-            <button
-              onClick={() => setShowForm(true)}
-              className="inline-flex items-center px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Create Category
-            </button>
-          )}
-        </div>
-      )}
+      {!categoriesLoading &&
+        !categoriesError &&
+        categoriesData?.data.data.length === 0 && (
+          <div className="text-center py-12">
+            <Tag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No categories found
+            </h3>
+            <p className="text-gray-600 mb-4">
+              {searchTerm
+                ? "Try adjusting your search terms."
+                : "Get started by creating your first category."}
+            </p>
+            {!searchTerm && (
+              <button
+                onClick={() => setShowForm(true)}
+                className="inline-flex items-center px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create Category
+              </button>
+            )}
+          </div>
+        )}
 
       {/* Add/Edit Form Modal */}
       <AnimatePresence>
@@ -368,7 +438,9 @@ export default function KategoriProdukPage() {
                   <input
                     type="text"
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     placeholder="Masukkan title kategori"
                     required
@@ -382,7 +454,9 @@ export default function KategoriProdukPage() {
                   <input
                     type="text"
                     value={formData.sub_title || ""}
-                    onChange={(e) => setFormData({ ...formData, sub_title: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, sub_title: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     placeholder="Masukkan sub title (opsional)"
                   />
@@ -394,7 +468,9 @@ export default function KategoriProdukPage() {
                   </label>
                   <textarea
                     value={formData.description || ""}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     placeholder="Masukkan deskripsi kategori"
                     rows={3}
@@ -407,7 +483,12 @@ export default function KategoriProdukPage() {
                   </label>
                   <select
                     value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: parseInt(e.target.value) })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        status: parseInt(e.target.value),
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     required
                   >
@@ -423,7 +504,12 @@ export default function KategoriProdukPage() {
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => setFormData({ ...formData, image: e.target.files?.[0] || null })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        image: e.target.files?.[0] || null,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   />
                   <p className="text-xs text-gray-500 mt-1">
@@ -461,32 +547,36 @@ export default function KategoriProdukPage() {
       </AnimatePresence>
 
       {/* Pagination */}
-      {!categoriesLoading && !categoriesError && categoriesData?.data.data && categoriesData.data.data.length > 0 && (
-        <div className="flex items-center justify-between mt-8">
-          <div className="text-sm text-gray-700">
-            Showing {categoriesData.data.from} to {categoriesData.data.to} of {categoriesData.data.total} results
+      {!categoriesLoading &&
+        !categoriesError &&
+        categoriesData?.data.data &&
+        categoriesData.data.data.length > 0 && (
+          <div className="flex items-center justify-between mt-8">
+            <div className="text-sm text-gray-700">
+              Showing {categoriesData.data.from} to {categoriesData.data.to} of{" "}
+              {categoriesData.data.total} results
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setCurrentPage(currentPage - 1)}
+                disabled={!categoriesData.data.prev_page_url}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <span className="px-3 py-2 text-sm bg-emerald-500 text-white rounded-lg">
+                {categoriesData.data.current_page}
+              </span>
+              <button
+                onClick={() => setCurrentPage(currentPage + 1)}
+                disabled={!categoriesData.data.next_page_url}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={!categoriesData.data.prev_page_url}
-              className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-            <span className="px-3 py-2 text-sm bg-emerald-500 text-white rounded-lg">
-              {categoriesData.data.current_page}
-            </span>
-            <button
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={!categoriesData.data.next_page_url}
-              className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+        )}
     </div>
   );
 }

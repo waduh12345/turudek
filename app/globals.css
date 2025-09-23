@@ -31,11 +31,11 @@ button {
 
 /* Hide scrollbar for navigation bars */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* Internet Explorer 10+ */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
 }
-.scrollbar-hide::-webkit-scrollbar { 
-  display: none;  /* Safari and Chrome */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
 }
 
 @utility container {
@@ -64,7 +64,9 @@ button {
 
 /* Smooth transitions for all interactive elements */
 * {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-property: color, background-color, border-color,
+    text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter,
+    backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
@@ -102,7 +104,8 @@ button {
 
 /* Pulse animation */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -116,7 +119,8 @@ button {
 
 /* Bounce animation */
 @keyframes bounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(-25%);
     animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
   }
@@ -208,4 +212,24 @@ button {
 
 .btn-emerald-outline {
   @apply border-2 border-emerald-500 text-emerald-600 font-medium px-4 py-2 rounded-lg transition-all duration-200 hover:bg-emerald-500 hover:text-white;
+}
+
+/* Toast Animation Optimizations */
+.toast-container {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.toast-item {
+  transform: translateZ(0);
+  will-change: transform, opacity, scale;
+  backface-visibility: hidden;
+}
+
+.toast-progress {
+  transform: translateZ(0);
+  will-change: width;
+  backface-visibility: hidden;
 }
