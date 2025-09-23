@@ -98,7 +98,8 @@ export const ToastComponent: React.FC<ToastProps> = ({ toast, onClose }) => {
             const newProgress = Math.max(0, prev - progressDecrement);
 
             if (newProgress <= 0) {
-              onClose(toast.id);
+              // Defer the onClose call to avoid updating state during render
+              setTimeout(() => onClose(toast.id), 0);
             }
 
             return newProgress;
