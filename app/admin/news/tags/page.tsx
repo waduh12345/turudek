@@ -273,6 +273,112 @@ export default function NewsTagsPage() {
             )}
           </div>
         </div>
+
+        {/* Add/Edit Form Modal */}
+        <AnimatePresence>
+          {showForm && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop-strong"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-white rounded-xl shadow-xl max-w-md w-full p-6"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    {editingTag ? "Edit Tag" : "Tambah Tag"}
+                  </h2>
+                  <button
+                    onClick={resetForm}
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                    title="Close form"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Nama Tag
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      placeholder="Masukkan nama tag"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Deskripsi
+                    </label>
+                    <textarea
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      placeholder="Masukkan deskripsi tag"
+                      rows={3}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Status
+                    </label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData({ ...formData, status: parseInt(e.target.value) as 0 | 1 })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      aria-label="Select status"
+                    >
+                      <option value={1}>Aktif</option>
+                      <option value={0}>Tidak Aktif</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center justify-end space-x-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={resetForm}
+                      className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                    >
+                      Batal
+                    </button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      type="submit"
+                      disabled={submitLoading || updateLoading}
+                      className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {(submitLoading || updateLoading) ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Save className="h-4 w-4" />
+                      )}
+                      <span>
+                        {submitLoading || updateLoading 
+                          ? (editingTag ? "Updating..." : "Saving...") 
+                          : (editingTag ? "Update" : "Simpan")
+                        }
+                      </span>
+                    </motion.button>
+                  </div>
+                </form>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }
@@ -401,6 +507,7 @@ export default function NewsTagsPage() {
                 <button
                   onClick={resetForm}
                   className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                  title="Close form"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -439,11 +546,12 @@ export default function NewsTagsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Status
                   </label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: parseInt(e.target.value) as 0 | 1 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                  >
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData({ ...formData, status: parseInt(e.target.value) as 0 | 1 })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      aria-label="Select status"
+                    >
                     <option value={1}>Aktif</option>
                     <option value={0}>Tidak Aktif</option>
                   </select>
