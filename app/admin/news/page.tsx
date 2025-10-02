@@ -23,6 +23,7 @@ import { useApiCall, useDebounce } from "@/hooks";
 import { useTokenSync } from "@/hooks/use-token-sync";
 import { api } from "@/services/api";
 import { NewsArticle, CreateNewsArticleRequest, UpdateNewsArticleRequest } from "@/lib/types";
+import { getImageUrl } from "@/lib/image-url";
 
 export default function NewsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -44,6 +45,7 @@ export default function NewsPage() {
     tag_ids: [] as number[],
     image: null as File | null,
   });
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   
   // Debounce search term untuk UX yang lebih baik
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -173,6 +175,20 @@ export default function NewsPage() {
     return articles.filter(article => article.status === 0).length;
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData({ ...formData, image: file });
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -241,6 +257,14 @@ export default function NewsPage() {
       tag_ids: article.tags.map(tag => tag.id),
       image: null,
     });
+    
+    // Set image preview if article has an image
+    if (article.image) {
+      setImagePreview(getImageUrl(article.image));
+    } else {
+      setImagePreview(null);
+    }
+    
     setShowForm(true);
   };
 
@@ -268,6 +292,7 @@ export default function NewsPage() {
       tag_ids: [],
       image: null,
     });
+    setImagePreview(null);
     setEditingNews(null);
     setShowForm(false);
   };
@@ -433,6 +458,7 @@ export default function NewsPage() {
               setCurrentPage(1); // Reset to first page when filter changes
             }}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            aria-label="Filter by category"
           >
             <option value="all">Semua Kategori</option>
             {categories.map((category) => (
@@ -454,6 +480,7 @@ export default function NewsPage() {
             setCurrentPage(1); // Reset to first page when filter changes
           }}
           className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          aria-label="Filter by status"
         >
           <option value="all">Semua Status</option>
           <option value="published">Dipublikasi</option>
@@ -492,9 +519,17 @@ export default function NewsPage() {
           >
             {/* Article Image */}
             <div className="relative h-48 bg-gradient-to-r from-emerald-500 to-green-500">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <ImageIcon className="h-16 w-16 text-white opacity-50" />
-              </div>
+              {article.image ? (
+                <img
+                  src={getImageUrl(article.image)}
+                  alt={article.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <ImageIcon className="h-16 w-16 text-white opacity-50" />
+                </div>
+              )}
               <div className="absolute top-4 right-4">
                 <span
                   className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
@@ -562,18 +597,21 @@ export default function NewsPage() {
                   <button 
                     onClick={() => setSelectedArticle(article)}
                     className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                    title="View article details"
                   >
                     <Eye className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleEdit(article)}
                     className="text-indigo-600 hover:text-indigo-900 p-2 hover:bg-indigo-50 rounded-lg transition-colors duration-200"
+                    title="Edit article"
                   >
                     <Edit className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(article)}
                     className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                    title="Delete article"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -609,6 +647,7 @@ export default function NewsPage() {
                 <button
                   onClick={resetForm}
                   className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                  title="Close form"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -639,6 +678,7 @@ export default function NewsPage() {
                       onChange={(e) => setFormData({ ...formData, news_category_id: parseInt(e.target.value) })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                       required
+                      aria-label="Select category"
                     >
                       <option value={0}>Pilih kategori</option>
                       {categories.map((category) => (
@@ -675,6 +715,7 @@ export default function NewsPage() {
                     placeholder="Masukkan konten artikel lengkap"
                     rows={8}
                     required
+                    aria-label="Article content"
                   />
                 </div>
 
@@ -687,6 +728,7 @@ export default function NewsPage() {
                       value={formData.status}
                       onChange={(e) => setFormData({ ...formData, status: parseInt(e.target.value) as 0 | 1 })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      aria-label="Select status"
                     >
                       <option value={0}>Draft</option>
                       <option value={1}>Dipublikasi</option>
@@ -736,12 +778,50 @@ export default function NewsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Gambar Artikel
                   </label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-600">
-                      Klik untuk upload atau drag and drop
-                    </p>
-                    <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                  <div className="space-y-4">
+                    {/* Image Preview */}
+                    {imagePreview && (
+                      <div className="relative">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="w-full h-48 object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setImagePreview(null);
+                            setFormData({ ...formData, image: null });
+                          }}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                          title="Remove image"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                    
+                    {/* File Input */}
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-emerald-500 transition-colors">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                        id="image-upload"
+                        aria-label="Upload article image"
+                      />
+                      <label
+                        htmlFor="image-upload"
+                        className="cursor-pointer flex flex-col items-center"
+                      >
+                        <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                        <p className="mt-2 text-sm text-gray-600">
+                          Klik untuk upload atau drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                      </label>
+                    </div>
                   </div>
                 </div>
 
@@ -799,6 +879,7 @@ export default function NewsPage() {
                 <button
                   onClick={() => setSelectedArticle(null)}
                   className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                  title="Close article details"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -837,9 +918,17 @@ export default function NewsPage() {
 
                 {/* Article Image */}
                 <div className="flex justify-center">
-                  <div className="w-full max-w-md h-48 bg-gradient-to-r from-emerald-500 to-green-500 rounded-lg flex items-center justify-center">
-                    <ImageIcon className="h-16 w-16 text-white" />
-                  </div>
+                  {selectedArticle.image ? (
+                    <img
+                      src={getImageUrl(selectedArticle.image)}
+                      alt={selectedArticle.title}
+                      className="w-full max-w-md h-48 object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="w-full max-w-md h-48 bg-gradient-to-r from-emerald-500 to-green-500 rounded-lg flex items-center justify-center">
+                      <ImageIcon className="h-16 w-16 text-white" />
+                    </div>
+                  )}
                 </div>
 
                 {/* Article Content */}
