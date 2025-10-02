@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -20,133 +20,90 @@ import {
   Download,
   Eye,
   DollarSign,
+  RefreshCw,
 } from "lucide-react";
+import { api } from "@/services/api";
+import { Deposit, CreateDepositRequest, UpdateDepositRequest } from "@/lib/types/deposits";
+import { useToast } from "@/components/providers/toast-provider";
 
-// Dummy data
-const deposits = [
-  {
-    id: "DEP-001",
-    customer: {
-      name: "John Doe",
-      email: "john@example.com",
-      phone: "+62 812-3456-7890",
-    },
-    amount: 1000000,
-    method: "Bank Transfer",
-    status: "completed",
-    transactionId: "TXN-123456789",
-    depositDate: "2024-01-15",
-    processedDate: "2024-01-15",
-    notes: "Deposit untuk pembelian PS5",
-  },
-  {
-    id: "DEP-002",
-    customer: {
-      name: "Jane Smith",
-      email: "jane@example.com",
-      phone: "+62 813-4567-8901",
-    },
-    amount: 500000,
-    method: "E-Wallet",
-    status: "pending",
-    transactionId: "TXN-987654321",
-    depositDate: "2024-01-15",
-    processedDate: null,
-    notes: "Deposit via OVO",
-  },
-  {
-    id: "DEP-003",
-    customer: {
-      name: "Mike Johnson",
-      email: "mike@example.com",
-      phone: "+62 814-5678-9012",
-    },
-    amount: 2000000,
-    method: "Credit Card",
-    status: "processing",
-    transactionId: "TXN-456789123",
-    depositDate: "2024-01-14",
-    processedDate: null,
-    notes: "Deposit untuk pembelian gaming PC",
-  },
-  {
-    id: "DEP-004",
-    customer: {
-      name: "Sarah Wilson",
-      email: "sarah@example.com",
-      phone: "+62 815-6789-0123",
-    },
-    amount: 750000,
-    method: "Bank Transfer",
-    status: "completed",
-    transactionId: "TXN-789123456",
-    depositDate: "2024-01-14",
-    processedDate: "2024-01-14",
-    notes: "Deposit untuk pembelian Nintendo Switch",
-  },
-  {
-    id: "DEP-005",
-    customer: {
-      name: "David Brown",
-      email: "david@example.com",
-      phone: "+62 816-7890-1234",
-    },
-    amount: 1500000,
-    method: "E-Wallet",
-    status: "cancelled",
-    transactionId: "TXN-321654987",
-    depositDate: "2024-01-13",
-    processedDate: null,
-    notes: "Deposit dibatalkan oleh customer",
-  },
-];
-
+// Status configuration mapping
 const statusConfig = {
-  completed: {
+  APPROVED: {
     icon: CheckCircle,
     color: "text-green-600",
     bgColor: "bg-green-100",
-    label: "Selesai",
+    label: "Disetujui",
   },
-  pending: {
+  PENDING: {
     icon: Clock,
     color: "text-yellow-600",
     bgColor: "bg-yellow-100",
     label: "Menunggu",
   },
-  processing: {
-    icon: AlertCircle,
-    color: "text-blue-600",
-    bgColor: "bg-blue-100",
-    label: "Diproses",
-  },
-  cancelled: {
+  REJECTED: {
     icon: XCircle,
     color: "text-red-600",
     bgColor: "bg-red-100",
-    label: "Dibatalkan",
+    label: "Ditolak",
   },
 };
 
 export default function DepositPage() {
+  const [deposits, setDeposits] = useState<Deposit[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showForm, setShowForm] = useState(false);
-  const [editingDeposit, setEditingDeposit] = useState<typeof deposits[0] | null>(null);
-  const [selectedDeposit, setSelectedDeposit] = useState<typeof deposits[0] | null>(null);
+  const [editingDeposit, setEditingDeposit] = useState<Deposit | null>(null);
+  const [selectedDeposit, setSelectedDeposit] = useState<Deposit | null>(null);
   const [formData, setFormData] = useState({
-    customerEmail: "",
+    bank: "BCA" as "BCA" | "MANDIRI" | "BRI" | "BNI",
+    owner_name: "",
     amount: "",
-    method: "",
     notes: "",
   });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
+  const { toast } = useToast();
+
+  // Fetch deposits on component mount
+  useEffect(() => {
+    fetchDeposits();
+  }, [pagination.page, pagination.limit, statusFilter, searchTerm]);
+
+  const fetchDeposits = async () => {
+    try {
+      setLoading(true);
+      const response = await api.deposits.getDeposits({
+        page: pagination.page,
+        limit: pagination.limit,
+        search: searchTerm || undefined,
+        status: statusFilter !== "all" ? statusFilter as any : undefined,
+      });
+      
+      setDeposits(response.data.data);
+      setPagination(response.data.pagination);
+    } catch (error) {
+      console.error("Error fetching deposits:", error);
+      toast({
+        title: "Error",
+        description: "Gagal memuat data deposit",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredDeposits = deposits.filter((deposit) => {
     const matchesSearch = 
       deposit.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      deposit.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      deposit.customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      deposit.transactionId.toLowerCase().includes(searchTerm.toLowerCase());
+      deposit.owner_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      deposit.account_number.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === "all" || deposit.status === statusFilter;
     
@@ -163,53 +120,105 @@ export default function DepositPage() {
 
   const getTotalDeposits = () => {
     return deposits
-      .filter(d => d.status === "completed")
+      .filter(d => d.status === "APPROVED")
       .reduce((sum, d) => sum + d.amount, 0);
   };
 
   const getPendingDeposits = () => {
     return deposits
-      .filter(d => d.status === "pending")
+      .filter(d => d.status === "PENDING")
       .reduce((sum, d) => sum + d.amount, 0);
   };
 
   const getTotalCount = () => {
-    return deposits.length;
+    return pagination.total;
   };
 
   const getCompletedCount = () => {
-    return deposits.filter(d => d.status === "completed").length;
+    return deposits.filter(d => d.status === "APPROVED").length;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log("Form submitted:", formData);
-    setShowForm(false);
-    setEditingDeposit(null);
-    setFormData({ customerEmail: "", amount: "", method: "", notes: "" });
+    try {
+      if (editingDeposit) {
+        // Update existing deposit
+        const updateData: UpdateDepositRequest = {
+          bank: formData.bank,
+          owner_name: formData.owner_name,
+          amount: Number(formData.amount),
+          notes: formData.notes,
+        };
+        await api.deposits.updateDeposit(editingDeposit.id, updateData);
+        toast({
+          title: "Success",
+          description: "Deposit berhasil diperbarui",
+        });
+      } else {
+        // Create new deposit
+        const createData: CreateDepositRequest = {
+          bank: formData.bank,
+          owner_name: formData.owner_name,
+          amount: Number(formData.amount),
+          notes: formData.notes,
+        };
+        await api.deposits.createDeposit(createData);
+        toast({
+          title: "Success",
+          description: "Deposit berhasil dibuat",
+        });
+      }
+      
+      await fetchDeposits();
+      resetForm();
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast({
+        title: "Error",
+        description: "Gagal menyimpan deposit",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleEdit = (deposit: typeof deposits[0]) => {
+  const handleEdit = (deposit: Deposit) => {
     setEditingDeposit(deposit);
     setFormData({
-      customerEmail: deposit.customer.email,
+      bank: deposit.bank,
+      owner_name: deposit.owner_name,
       amount: deposit.amount.toString(),
-      method: deposit.method,
       notes: deposit.notes,
     });
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this deposit?")) {
-      // Handle delete here
-      console.log("Delete deposit:", id);
+      try {
+        await api.deposits.deleteDeposit(id);
+        toast({
+          title: "Success",
+          description: "Deposit berhasil dihapus",
+        });
+        await fetchDeposits();
+      } catch (error) {
+        console.error("Error deleting deposit:", error);
+        toast({
+          title: "Error",
+          description: "Gagal menghapus deposit",
+          variant: "destructive",
+        });
+      }
     }
   };
 
   const resetForm = () => {
-    setFormData({ customerEmail: "", amount: "", method: "", notes: "" });
+    setFormData({ 
+      bank: "BCA", 
+      owner_name: "", 
+      amount: "", 
+      notes: "" 
+    });
     setEditingDeposit(null);
     setShowForm(false);
   };
@@ -319,12 +328,12 @@ export default function DepositPage() {
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          title="Filter berdasarkan status"
         >
           <option value="all">Semua Status</option>
-          <option value="pending">Menunggu</option>
-          <option value="processing">Diproses</option>
-          <option value="completed">Selesai</option>
-          <option value="cancelled">Dibatalkan</option>
+          <option value="PENDING">Menunggu</option>
+          <option value="APPROVED">Disetujui</option>
+          <option value="REJECTED">Ditolak</option>
         </select>
         <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200">
           <Filter className="h-5 w-5" />
@@ -366,83 +375,105 @@ export default function DepositPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredDeposits.map((deposit, index) => {
-                const status = statusConfig[deposit.status as keyof typeof statusConfig];
-                const StatusIcon = status.icon;
-                
-                return (
-                  <motion.tr
-                    key={deposit.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="hover:bg-gray-50 transition-colors duration-200"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{deposit.id}</div>
-                      <div className="text-sm text-gray-500">{deposit.transactionId}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 flex items-center justify-center">
-                            <User className="h-5 w-5 text-white" />
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center">
+                    <div className="flex items-center justify-center">
+                      <RefreshCw className="h-6 w-6 animate-spin text-gray-400 mr-2" />
+                      <span className="text-gray-500">Memuat data...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredDeposits.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center">
+                    <div className="text-gray-500">Tidak ada data deposit</div>
+                  </td>
+                </tr>
+              ) : (
+                filteredDeposits.map((deposit, index) => {
+                  const status = statusConfig[deposit.status as keyof typeof statusConfig];
+                  const StatusIcon = status.icon;
+                  
+                  return (
+                    <motion.tr
+                      key={deposit.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="hover:bg-gray-50 transition-colors duration-200"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{deposit.id}</div>
+                        <div className="text-sm text-gray-500">{deposit.account_number}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <div className="h-10 w-10 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 flex items-center justify-center">
+                              <User className="h-5 w-5 text-white" />
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">{deposit.owner_name}</div>
+                            <div className="text-sm text-gray-500">{deposit.bank}</div>
                           </div>
                         </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{deposit.customer.name}</div>
-                          <div className="text-sm text-gray-500">{deposit.customer.email}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{formatPrice(deposit.amount)}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <CreditCard className="h-4 w-4 text-gray-400 mr-2" />
+                          <span className="text-sm text-gray-900">{deposit.payment_method}</span>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{formatPrice(deposit.amount)}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <CreditCard className="h-4 w-4 text-gray-400 mr-2" />
-                        <span className="text-sm text-gray-900">{deposit.method}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${status.bgColor} ${status.color}`}
-                      >
-                        <StatusIcon className="h-3 w-3 mr-1" />
-                        {status.label}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{deposit.depositDate}</div>
-                      {deposit.processedDate && (
-                        <div className="text-sm text-gray-500">Diproses: {deposit.processedDate}</div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
-                      <button 
-                        onClick={() => setSelectedDeposit(deposit)}
-                        className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors duration-200"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </button>
-                        <button
-                          onClick={() => handleEdit(deposit)}
-                          className="text-indigo-600 hover:text-indigo-900 p-2 hover:bg-indigo-50 rounded-lg transition-colors duration-200"
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${status.bgColor} ${status.color}`}
                         >
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(deposit.id)}
-                          className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                          <StatusIcon className="h-3 w-3 mr-1" />
+                          {status.label}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {new Date(deposit.created_at).toLocaleDateString('id-ID')}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {new Date(deposit.updated_at).toLocaleDateString('id-ID')}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end space-x-2">
+                        <button 
+                          onClick={() => setSelectedDeposit(deposit)}
+                          className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                          title="Lihat detail"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Eye className="h-4 w-4" />
                         </button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                );
-              })}
+                          <button
+                            onClick={() => handleEdit(deposit)}
+                            className="text-indigo-600 hover:text-indigo-900 p-2 hover:bg-indigo-50 rounded-lg transition-colors duration-200"
+                            title="Edit deposit"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(deposit.id)}
+                            className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                            title="Hapus deposit"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -470,6 +501,7 @@ export default function DepositPage() {
                 <button
                   onClick={resetForm}
                   className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                  title="Tutup form"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -478,16 +510,34 @@ export default function DepositPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Pelanggan
+                    Nama Pemilik Rekening
                   </label>
                   <input
-                    type="email"
-                    value={formData.customerEmail}
-                    onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
+                    type="text"
+                    value={formData.owner_name}
+                    onChange={(e) => setFormData({ ...formData, owner_name: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                    placeholder="Masukkan email pelanggan"
+                    placeholder="Masukkan nama pemilik rekening"
                     required
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Bank
+                  </label>
+                  <select
+                    value={formData.bank}
+                    onChange={(e) => setFormData({ ...formData, bank: e.target.value as "BCA" | "MANDIRI" | "BRI" | "BNI" })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    title="Pilih bank"
+                    required
+                  >
+                    <option value="BCA">BCA</option>
+                    <option value="MANDIRI">MANDIRI</option>
+                    <option value="BRI">BRI</option>
+                    <option value="BNI">BNI</option>
+                  </select>
                 </div>
 
                 <div>
@@ -499,27 +549,10 @@ export default function DepositPage() {
                     value={formData.amount}
                     onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                    placeholder="Masukkan jumlah deposit"
+                    placeholder="Masukkan jumlah deposit (min. 200,000)"
+                    min="200000"
                     required
                   />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Metode Pembayaran
-                  </label>
-                  <select
-                    value={formData.method}
-                    onChange={(e) => setFormData({ ...formData, method: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                    required
-                  >
-                    <option value="">Pilih metode</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="E-Wallet">E-Wallet</option>
-                    <option value="Credit Card">Credit Card</option>
-                    <option value="Cash">Cash</option>
-                  </select>
                 </div>
 
                 <div>
@@ -579,6 +612,7 @@ export default function DepositPage() {
                 <button
                   onClick={() => setSelectedDeposit(null)}
                   className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                  title="Tutup detail"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -599,54 +633,53 @@ export default function DepositPage() {
                         <span className="text-sm font-bold text-gray-900">{formatPrice(selectedDeposit.amount)}</span>
                       </div>
                       <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Bank:</span>
+                        <span className="text-sm font-medium text-gray-900">{selectedDeposit.bank}</span>
+                      </div>
+                      <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Metode:</span>
-                        <span className="text-sm font-medium text-gray-900">{selectedDeposit.method}</span>
+                        <span className="text-sm font-medium text-gray-900">{selectedDeposit.payment_method}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Status:</span>
                         <span
                           className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            selectedDeposit.status === "completed"
+                            selectedDeposit.status === "APPROVED"
                               ? "bg-green-100 text-green-800"
-                              : selectedDeposit.status === "pending"
+                              : selectedDeposit.status === "PENDING"
                               ? "bg-yellow-100 text-yellow-800"
-                              : selectedDeposit.status === "processing"
-                              ? "bg-blue-100 text-blue-800"
                               : "bg-red-100 text-red-800"
                           }`}
                         >
-                          {selectedDeposit.status === "completed" ? "Selesai" : 
-                           selectedDeposit.status === "pending" ? "Menunggu" :
-                           selectedDeposit.status === "processing" ? "Diproses" : "Dibatalkan"}
+                          {selectedDeposit.status === "APPROVED" ? "Disetujui" : 
+                           selectedDeposit.status === "PENDING" ? "Menunggu" : "Ditolak"}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Tanggal Deposit:</span>
-                        <span className="text-sm font-medium text-gray-900">{selectedDeposit.depositDate}</span>
+                        <span className="text-sm text-gray-600">Tanggal Dibuat:</span>
+                        <span className="text-sm font-medium text-gray-900">
+                          {new Date(selectedDeposit.created_at).toLocaleDateString('id-ID')}
+                        </span>
                       </div>
-                      {selectedDeposit.processedDate && (
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Tanggal Diproses:</span>
-                          <span className="text-sm font-medium text-gray-900">{selectedDeposit.processedDate}</span>
-                        </div>
-                      )}
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Tanggal Diperbarui:</span>
+                        <span className="text-sm font-medium text-gray-900">
+                          {new Date(selectedDeposit.updated_at).toLocaleDateString('id-ID')}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Informasi Pelanggan</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Informasi Pemilik</h3>
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Nama:</span>
-                        <span className="text-sm font-medium text-gray-900">{selectedDeposit.customer.name}</span>
+                        <span className="text-sm font-medium text-gray-900">{selectedDeposit.owner_name}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Email:</span>
-                        <span className="text-sm font-medium text-gray-900">{selectedDeposit.customer.email}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Telepon:</span>
-                        <span className="text-sm font-medium text-gray-900">{selectedDeposit.customer.phone}</span>
+                        <span className="text-sm text-gray-600">Nomor Rekening:</span>
+                        <span className="text-sm font-medium text-gray-900">{selectedDeposit.account_number}</span>
                       </div>
                     </div>
                   </div>
