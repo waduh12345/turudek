@@ -18,12 +18,21 @@ import {
   ChevronDown,
   Tag,
   Coins,
+  Icon,
 } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { name: "Kategori Produk", href: "/admin/kategori-produk", icon: Tag },
-  { name: "Produk", href: "/admin/produk", icon: Package },
+  {
+    name: "Produk",
+    icon: Tag,
+    submenu: [
+      { name: "Produk", href: "/admin/produk", icon: Package },
+      { name: "Kategori Produk", href: "/admin/kategori-produk", icon: Tag },
+    ]
+  },
+  // { name: "Kategori Produk", href: "/admin/kategori-produk", icon: Tag },
+  // { name: "Produk", href: "/admin/produk", icon: Package },
   { name: "Transaksi", href: "/admin/transaksi", icon: ShoppingCart },
   { name: "Deposit", href: "/admin/deposit", icon: Coins },
   { 

@@ -25,6 +25,8 @@ class ProductCategoriesService extends BaseApiService {
     if (params?.paginate) queryParams.append('paginate', params.paginate.toString());
     if (params?.search) queryParams.append('search', params.search);
     if (params?.status !== undefined) queryParams.append('status', params.status.toString());
+    if (params?.is_parent !== undefined) queryParams.append('is_parent', params.is_parent.toString());
+    if (params?.parent_id !== undefined) queryParams.append('parent_id', params.parent_id.toString());
     
     const endpoint = `master/product-categories${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
     return this.get<ApiResponse<ProductCategoryPaginatedResponse>>(endpoint);

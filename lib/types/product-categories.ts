@@ -38,6 +38,8 @@ export interface ProductCategoryPaginationParams {
   paginate?: number;
   search?: string;
   status?: number;
+  is_parent?: number;
+  parent_id?: number;
 }
 
 export interface ProductCategoryPaginatedResponse {
