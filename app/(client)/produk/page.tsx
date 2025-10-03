@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import PromotionBanner from "@/components/section/promotion-banner";
+import { publicProductCategoriesService, PublicProductCategory } from "@/services/api/public-product-categories";
+import { useApiCall, useDebounce } from "@/hooks";
 
 interface Product {
   id: number;
@@ -15,8 +17,8 @@ interface Product {
 
 type ProductData = Record<string, Product[]>;
 
-// Sample data organized by category and alphabet
-const productData = {
+// Sample data organized by category and alphabet (fallback)
+const fallbackProductData = {
   All: {
     A: [
       {
@@ -925,8 +927,6 @@ const productData = {
   },
 };
 
-const gameData = productData.All;
-
 const getAlphabet = (data: ProductData) => Object.keys(data).sort();
 
 const ProdukPageContent = () => {
@@ -934,17 +934,67 @@ const ProdukPageContent = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const allcategory = Object.keys(productData);
-
-  const selectedCategory =
-    allcategory.find((category) => category === searchParams.get("category")) ||
-    "All";
-
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLetter, setSelectedLetter] = useState("");
-  const [filteredGames, setFilteredGames] = useState<ProductData>(gameData);
+  const [filteredGames, setFilteredGames] = useState<ProductData>({});
   const [isAlphabetOpen, setIsAlphabetOpen] = useState(false);
+  const [categories, setCategories] = useState<PublicProductCategory[]>([]);
+  const [parentCategories, setParentCategories] = useState<PublicProductCategory[]>([]);
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  // Debounce search term
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  const selectedCategory = searchParams.get("category") || "All";
+
+  // API calls - only fetch subcategories (categories with parent_id)
+  const {
+    data: categoriesData,
+    loading: categoriesLoading,
+    error: categoriesError,
+    execute: fetchCategories,
+  } = useApiCall(() =>
+    publicProductCategoriesService.getProductCategories({
+      page: 1,
+      paginate: 100,
+      status: 1,
+      // Only get subcategories by filtering out parent categories
+    })
+  );
+
+  // Fetch parent categories
+  const {
+    data: parentCategoriesData,
+    loading: parentCategoriesLoading,
+    execute: fetchParentCategories,
+  } = useApiCall(() =>
+    publicProductCategoriesService.getProductCategories({
+      page: 1,
+      paginate: 100,
+      is_parent: 1,
+      status: 1,
+    })
+  );
+
+  // Load data on component mount
+  useEffect(() => {
+    fetchCategories();
+    fetchParentCategories();
+  }, [fetchCategories, fetchParentCategories]);
+
+  // Update categories when data changes
+  useEffect(() => {
+    if (categoriesData?.data?.data) {
+      setCategories(categoriesData.data.data);
+    }
+  }, [categoriesData]);
+
+  // Update parent categories when data changes
+  useEffect(() => {
+    if (parentCategoriesData?.data?.data) {
+      setParentCategories(parentCategoriesData.data.data);
+    }
+  }, [parentCategoriesData]);
 
   const setSelectedCategory = (category: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -955,23 +1005,41 @@ const ProdukPageContent = () => {
 
   // Filter products based on search term and category
   useEffect(() => {
-    const currentData =
-      productData[selectedCategory as keyof typeof productData];
-    if (searchTerm.trim() === "") {
-      setFilteredGames(currentData);
-    } else {
-      const filtered: ProductData = {};
-      Object.entries(currentData).forEach(([letter, products]) => {
-        const matchingProducts = products.filter((product) =>
-          product.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        if (matchingProducts.length > 0) {
-          filtered[letter] = matchingProducts;
-        }
-      });
-      setFilteredGames(filtered as ProductData);
+    // Only show subcategories (categories with parent_id)
+    let currentCategories = categories.filter(cat => cat.parent_id !== null);
+    
+    // Filter by parent category if not "All"
+    if (selectedCategory !== "All") {
+      const parentCategory = parentCategories.find(cat => cat.title === selectedCategory);
+      if (parentCategory) {
+        currentCategories = currentCategories.filter(cat => cat.parent_id === parentCategory.id);
+      }
     }
-  }, [searchTerm, selectedCategory]);
+
+    // Filter by search term
+    if (debouncedSearchTerm.trim() !== "") {
+      currentCategories = currentCategories.filter(cat =>
+        cat.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        (cat.sub_title && cat.sub_title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()))
+      );
+    }
+
+    // Group by first letter
+    const grouped: ProductData = {};
+    currentCategories.forEach(category => {
+      const firstLetter = category.title.charAt(0).toUpperCase();
+      if (!grouped[firstLetter]) {
+        grouped[firstLetter] = [];
+      }
+      grouped[firstLetter].push({
+        id: category.id,
+        name: category.title,
+        image: category.image || '/images/placeholder-game.png'
+      });
+    });
+
+    setFilteredGames(grouped);
+  }, [categories, parentCategories, selectedCategory, debouncedSearchTerm]);
 
   // Intersection Observer to update selected letter
   useEffect(() => {
@@ -994,9 +1062,7 @@ const ProdukPageContent = () => {
     const currentRefs = sectionRefs.current;
 
     // Observe all sections
-    const currentData =
-      productData[selectedCategory as keyof typeof productData];
-    Object.keys(currentData).forEach((letter) => {
+    Object.keys(filteredGames).forEach((letter) => {
       const element = currentRefs[letter];
       if (element) {
         observer.observe(element);
@@ -1004,7 +1070,7 @@ const ProdukPageContent = () => {
     });
 
     return () => {
-      Object.keys(currentData).forEach((letter) => {
+      Object.keys(filteredGames).forEach((letter) => {
         const element = currentRefs[letter];
         if (element) {
           observer.unobserve(element);
@@ -1074,19 +1140,49 @@ const ProdukPageContent = () => {
         <div className="container">
           <div className="flex justify-center">
             <div className="bg-white rounded-2xl p-2 shadow-lg border border-gray-100 inline-flex gap-1 max-w-full overflow-x-auto">
-              {Object.keys(productData).map((category) => (
+              {/* All Categories Button */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setSelectedCategory("All")}
+                className={`px-4 sm:px-6 py-3 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-300 relative overflow-hidden ${
+                  selectedCategory === "All"
+                    ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-200"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-800"
+                }`}
+              >
+                {selectedCategory === "All" && (
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-green-400 to-green-500"
+                    layoutId="activeCategory"
+                    transition={{
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 30,
+                    }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center gap-2">
+                  <span className="text-lg">🔍</span>
+                  <span className="hidden sm:inline">All</span>
+                  <span className="sm:hidden text-xs">All</span>
+                </span>
+              </motion.button>
+
+              {/* Dynamic Categories from API - These are parent categories used for filtering */}
+              {parentCategories.map((category) => (
                 <motion.button
-                  key={category}
+                  key={category.id}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => setSelectedCategory(category.title)}
                   className={`px-4 sm:px-6 py-3 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-300 relative overflow-hidden ${
-                    selectedCategory === category
+                    selectedCategory === category.title
                       ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-200"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-800"
                   }`}
                 >
-                  {selectedCategory === category && (
+                  {selectedCategory === category.title && (
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-r from-green-400 to-green-500"
                       layoutId="activeCategory"
@@ -1099,20 +1195,14 @@ const ProdukPageContent = () => {
                   )}
                   <span className="relative z-10 flex items-center gap-2">
                     <span className="text-lg">
-                      {category === "All" && "🔍"}
-                      {category === "Games" && "🎮"}
-                      {category === "Voucher" && "🎫"}
-                      {category === "Phone" && "📱"}
-                      {category === "E-Money" && "💳"}
+                      {category.title === "Games" && "🎮"}
+                      {category.title === "Voucher" && "🎫"}
+                      {category.title === "Phone" && "📱"}
+                      {category.title === "E-Money" && "💳"}
+                      {!["Games", "Voucher", "Phone", "E-Money"].includes(category.title) && "🎯"}
                     </span>
-                    <span className="hidden sm:inline">{category}</span>
-                    <span className="sm:hidden text-xs">
-                      {category === "All" && "All"}
-                      {category === "Games" && "Game"}
-                      {category === "Voucher" && "Voucher"}
-                      {category === "Phone" && "Phone"}
-                      {category === "E-Money" && "E-Money"}
-                    </span>
+                    <span className="hidden sm:inline">{category.title}</span>
+                    <span className="sm:hidden text-xs">{category.title}</span>
                   </span>
                 </motion.button>
               ))}
@@ -1121,11 +1211,42 @@ const ProdukPageContent = () => {
         </div>
       </div>
 
+      {/* Loading State */}
+      {(categoriesLoading || parentCategoriesLoading) && (
+        <div className="container py-12">
+          <div className="flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading products...</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error State */}
+      {categoriesError && (
+        <div className="container py-8">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+            <p className="text-red-600 mb-2">Error loading products</p>
+            <button
+              onClick={() => {
+                fetchCategories();
+                fetchParentCategories();
+              }}
+              className="text-red-600 hover:text-red-800 underline text-sm"
+            >
+              Try again
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
-      <div className="container py-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Games Grid by Category */}
-          {Object.entries(filteredGames).map(([letter, games]) => (
+      {!categoriesLoading && !parentCategoriesLoading && !categoriesError && (
+        <div className="container py-8">
+          <div className="max-w-7xl mx-auto">
+            {/* Games Grid by Category */}
+            {Object.entries(filteredGames).map(([letter, games]) => (
             <div
               key={letter}
               ref={(el) => {
@@ -1187,15 +1308,19 @@ const ProdukPageContent = () => {
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🔍</div>
               <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Game tidak ditemukan
+                {debouncedSearchTerm ? 'Produk tidak ditemukan' : 'Belum ada produk tersedia'}
               </h3>
               <p className="text-gray-600">
-                Coba cari dengan kata kunci yang berbeda
+                {debouncedSearchTerm 
+                  ? 'Coba cari dengan kata kunci yang berbeda' 
+                  : 'Produk akan segera ditambahkan'
+                }
               </p>
             </div>
           )}
         </div>
       </div>
+      )}
 
       {/* Mobile Alphabet Toggle Button */}
       <div className="fixed bottom-20 right-6 z-40 md:hidden">

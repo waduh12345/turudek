@@ -10,20 +10,14 @@ import {
   Shield, 
   Clock, 
   AlertCircle,
-  Youtube
+  Youtube,
+  Loader2
 } from "lucide-react";
+import { publicProductCategoriesService, PublicProductCategory } from "@/services/api/public-product-categories";
+import { publicProductsService, PublicProduct } from "@/services/api/public-products";
+import { checkoutService, CheckoutRequest } from "@/services/api/checkout";
+import { useApiCall } from "@/hooks";
 
-interface Product {
-  id: number;
-  name: string;
-  image: string;
-  description: string;
-  category: string;
-  developer: string;
-  process: string;
-  availability: string;
-  packages?: Package[];
-}
 
 interface Package {
   id: number;
@@ -35,56 +29,6 @@ interface Package {
   popular?: boolean;
 }
 
-// Sample product data
-const productData: Record<string, Product> = {
-  "8-ball-pool-coins": {
-    id: 1,
-    name: "8 Ball Pool Coins",
-    image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&h=300&fit=crop&crop=center",
-    description: "Top up 8 Ball Pool Koin paling murah, aman, cepat, dan terpercaya di Tokogame.com. Nikmati pengalaman bermain 8 Ball Pool dengan koin yang cukup untuk membeli aksesori dan item premium dalam game.",
-    category: "Games",
-    developer: "Miniclip.com",
-    process: "Proses Instan",
-    availability: "Buka 24 Jam Setiap Hari",
-    packages: [
-      { id: 1, name: "Stack of Coins", price: 11000, originalPrice: 15000, discount: 27, popular: true },
-      { id: 2, name: "Pile of Cash", price: 58000, originalPrice: 75000, discount: 23 },
-      { id: 3, name: "Premium Pool Pass", price: 66000, originalPrice: 85000, discount: 22 },
-      { id: 4, name: "Mega Coins Pack", price: 120000, originalPrice: 150000, discount: 20 },
-      { id: 5, name: "Ultimate Bundle", price: 250000, originalPrice: 320000, discount: 22 },
-      { id: 6, name: "Starter Pack", price: 25000, originalPrice: 35000, discount: 29 },
-    ]
-  },
-  "mobile-legends-diamonds": {
-    id: 2,
-    name: "Mobile Legends Diamonds",
-    image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=400&h=300&fit=crop&crop=center",
-    description: "Top up Mobile Legends Diamond dengan harga termurah dan proses tercepat. Beli diamond MLBB untuk membeli skin, hero, dan item premium lainnya.",
-    category: "Games",
-    developer: "Moonton",
-    process: "Proses Instan",
-    availability: "Buka 24 Jam Setiap Hari",
-    packages: [
-      { id: 7, name: "5 Diamonds", price: 2000, originalPrice: 2500, discount: 20 },
-      { id: 8, name: "12 Diamonds", price: 5000, originalPrice: 6000, discount: 17 },
-      { id: 9, name: "28 Diamonds", price: 10000, originalPrice: 12000, discount: 17 },
-      { id: 10, name: "50 Diamonds", price: 18000, originalPrice: 22000, discount: 18 },
-      { id: 11, name: "86 Diamonds", price: 30000, originalPrice: 36000, discount: 17 },
-      { id: 12, name: "170 Diamonds", price: 55000, originalPrice: 68000, discount: 19 },
-    ]
-  },
-  "netflix-voucher": {
-    id: 3,
-    name: "Netflix Voucher",
-    image: "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=400&h=300&fit=crop&crop=center",
-    description: "Beli voucher Netflix dengan harga terbaik untuk menikmati konten streaming premium. Voucher berlaku untuk semua paket Netflix di Indonesia.",
-    category: "Voucher",
-    developer: "Netflix",
-    process: "Proses Instan",
-    availability: "Buka 24 Jam Setiap Hari",
-    packages: [] // Empty packages to test the "not available" state
-  }
-};
 
 const testimonials = [
   {
@@ -128,48 +72,175 @@ const paymentMethods = [
 ];
 
 const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) => {
-  const [product, setProduct] = useState<Product | null>(null);
-  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
+  const [category, setCategory] = useState<PublicProductCategory | null>(null);
+  const [products, setProducts] = useState<PublicProduct[]>([]);
+  const [selectedPackage, setSelectedPackage] = useState<PublicProduct | null>(null);
   const [userID, setUserID] = useState("");
   const [discountCode, setDiscountCode] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [emailReceipt, setEmailReceipt] = useState<boolean>(false);
   const [selectedPayment, setSelectedPayment] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
+  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   // Unwrap params using React.use()
   const resolvedParams = use(params);
 
+  // API call to fetch category details
+  const {
+    data: categoryData,
+    loading: categoryLoading,
+    error: categoryError,
+    execute: fetchCategory,
+  } = useApiCall(() =>
+    publicProductCategoriesService.getProductCategory(resolvedParams.slug)
+  );
+
+  // API call to fetch products for this category
+  const {
+    data: productsData,
+    loading: productsLoading,
+    error: productsError,
+    execute: fetchProducts,
+  } = useApiCall(() => {
+    if (categoryData?.data?.id) {
+      return publicProductsService.getProducts({
+        page: 1,
+        paginate: 100,
+        status: 1,
+        product_category_id: categoryData.data.id
+      });
+    }
+    return Promise.resolve(null);
+  });
+
   useEffect(() => {
-    const productSlug = resolvedParams.slug;
-    const foundProduct = productData[productSlug];
-    setProduct(foundProduct ?? null);
-  }, [resolvedParams.slug]);
+    fetchCategory();
+  }, [resolvedParams.slug, fetchCategory]);
+
+  useEffect(() => {
+    if (categoryData?.data) {
+      setCategory(categoryData.data);
+      // Fetch products for this category
+      fetchProducts();
+    }
+  }, [categoryData, fetchProducts]);
+
+  useEffect(() => {
+    if (productsData?.data?.data) {
+      setProducts(productsData.data.data);
+    }
+  }, [productsData]);
 
   useEffect(() => {
     const valid = userID.trim() !== "" && selectedPackage !== null && selectedPayment !== "" && phoneNumber.trim() !== "";
     setIsFormValid(valid);
   }, [userID, selectedPackage, selectedPayment, phoneNumber]);
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
-    }).format(price);
-  };
 
   const handleYouTubeRedirect = (youtubeId: string) => {
     window.open(`https://www.youtube.com/watch?v=${youtubeId}`, '_blank');
   };
 
-  if (!product) {
+  const handleCheckout = async () => {
+    if (!selectedPackage || !isFormValid) return;
+
+    setIsCheckoutLoading(true);
+    setCheckoutError(null);
+    setCheckoutSuccess(false);
+
+    try {
+      const checkoutData: CheckoutRequest = {
+        product_id: selectedPackage.id,
+        user_id: userID,
+        phone_number: phoneNumber,
+        email_receipt: emailReceipt,
+        discount_code: discountCode || undefined,
+        payment_method: selectedPayment,
+      };
+
+      const response = await checkoutService.checkout(checkoutData);
+      
+      if (response.data) {
+        setCheckoutSuccess(true);
+        // Reset form
+        setUserID("");
+        setPhoneNumber("");
+        setDiscountCode("");
+        setEmailReceipt(false);
+        setSelectedPayment("");
+        setSelectedPackage(null);
+        
+        // Show success message or redirect to payment
+        if (response.data.payment_url) {
+          window.open(response.data.payment_url, '_blank');
+        }
+      }
+    } catch (error: unknown) {
+      console.error('Checkout error:', error);
+      setCheckoutError(
+        error instanceof Error 
+          ? error.message 
+          : 'Terjadi kesalahan saat memproses checkout'
+      );
+    } finally {
+      setIsCheckoutLoading(false);
+    }
+  };
+
+  // Loading state
+  if (categoryLoading || productsLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-green-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Loading Product...</h1>
+          <p className="text-gray-600">Please wait while we fetch the product details.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (categoryError || productsError) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Error Loading Product</h1>
+          <p className="text-gray-600 mb-6">There was an error loading the product details.</p>
+          <div className="space-x-4">
+            <button
+              onClick={() => {
+                fetchCategory();
+                fetchProducts();
+              }}
+              className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors"
+            >
+              Try Again
+            </button>
+            <Link 
+              href="/produk"
+              className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              Back to Catalog
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Category not found
+  if (!category) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">😵</div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Produk Tidak Ditemukan</h1>
-          <p className="text-gray-600 mb-6">Maaf, produk yang Anda cari tidak tersedia.</p>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Kategori Tidak Ditemukan</h1>
+          <p className="text-gray-600 mb-6">Maaf, kategori yang Anda cari tidak tersedia.</p>
           <Link 
             href="/produk"
             className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors"
@@ -191,7 +262,7 @@ const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) =>
             <ChevronRight size={16} className="text-gray-400" />
             <Link href="/produk" className="text-gray-500 hover:text-green-600 transition-colors">Search</Link>
             <ChevronRight size={16} className="text-gray-400" />
-            <span className="text-gray-800 font-medium">{product.name}</span>
+            <span className="text-gray-800 font-medium">{category.title}</span>
           </nav>
         </div>
       </div>
@@ -202,34 +273,40 @@ const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) =>
           <div className="lg:col-span-2 space-y-8">
             {/* Product Header */}
             <div>
-              <h1 className="text-4xl font-bold text-gray-800 mb-4">{product.name}</h1>
+              <h1 className="text-4xl font-bold text-gray-800 mb-4">{category.title}</h1>
+              {category.sub_title && (
+                <p className="text-xl text-gray-600 mb-4">{category.sub_title}</p>
+              )}
               
               {/* Product Info */}
               <div className="flex items-center gap-6 mb-6">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center">
-                    <span className="text-xs font-bold">8</span>
+                    <span className="text-xs font-bold">🎮</span>
                   </div>
-                  <span>{product.developer}</span>
+                  <span>{category.parent_title || 'Game'}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-green-600">
                   <Clock size={16} />
-                  <span>{product.process}</span>
+                  <span>Proses Instan</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-blue-600">
                   <Shield size={16} />
-                  <span>{product.availability}</span>
+                  <span>Buka 24 Jam Setiap Hari</span>
                 </div>
               </div>
 
               {/* Main Description */}
               <div className="prose prose-gray max-w-none">
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                  Top Up {product.name} Paling Murah, Aman, Cepat, dan Terpercaya
+                  Top Up {category.title} Paling Murah, Aman, Cepat, dan Terpercaya
                 </h2>
-                <p className="text-gray-700 leading-relaxed mb-6">
-                  {product.description}
-                </p>
+                {category.description && (
+                  <div 
+                    className="text-gray-700 leading-relaxed mb-6"
+                    dangerouslySetInnerHTML={{ __html: category.description }}
+                  />
+                )}
                 <p className="text-gray-700 leading-relaxed mb-6">
                   Nikmati kemudahan top up dengan berbagai metode pembayaran yang aman dan terpercaya. 
                   Proses instan dan customer service 24/7 siap membantu Anda kapan saja.
@@ -252,7 +329,7 @@ const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) =>
               {/* How to Top Up */}
               <div className="bg-white border border-gray-200 rounded-xl p-6">
                 <h3 className="text-xl font-bold text-gray-800 mb-4">
-                  Cara Melakukan Top Up {product.name} di Tokogame.com
+                  Cara Melakukan Top Up {category.title} di Tokogame.com
                 </h3>
                 <ol className="space-y-3 text-gray-700">
                   <li className="flex items-start gap-3">
@@ -265,7 +342,7 @@ const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) =>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">3</span>
-                    <span>Pilih paket {product.name} yang diinginkan</span>
+                    <span>Pilih paket {category.title} yang diinginkan</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">4</span>
@@ -285,7 +362,7 @@ const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) =>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0 mt-0.5">8</span>
-                    <span>{product.name} akan dikirim ke akun setelah pembelian</span>
+                    <span>{category.title} akan dikirim ke akun setelah pembelian</span>
                   </li>
                 </ol>
               </div>
@@ -293,20 +370,20 @@ const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) =>
               {/* Game Description */}
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-800 mb-3">{product.name} (Deskripsi Game)</h3>
+                  <h3 className="text-xl font-bold text-gray-800 mb-3">{category.title} (Deskripsi Game)</h3>
                   <p className="text-gray-700 leading-relaxed">
-                    {product.name} adalah game online yang dikembangkan oleh {product.developer}. 
-                    Game ini dirilis pada tahun 2010 dan tersedia di web, Facebook, Android, dan iOS. 
+                    {category.title} adalah game online yang dikembangkan oleh {category.parent_title || 'Developer'}. 
+                    Game ini tersedia di berbagai platform dan dapat dimainkan secara gratis. 
                     Nikmati pengalaman bermain yang seru dengan grafik yang memukau dan gameplay yang menantang.
                   </p>
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-bold text-gray-800 mb-3">{product.name} (Mata Uang Dalam Game)</h3>
+                  <h3 className="text-xl font-bold text-gray-800 mb-3">{category.title} (Mata Uang Dalam Game)</h3>
                   <p className="text-gray-700 leading-relaxed">
-                    {product.name} adalah mata uang dalam game yang digunakan untuk berbagai keperluan seperti 
+                    {category.title} adalah mata uang dalam game yang digunakan untuk berbagai keperluan seperti 
                     bermain match, menyelesaikan misi, membeli aksesori, dan item premium lainnya. 
-                    Dapatkan {product.name} dengan harga termurah di Tokogame.com.
+                    Dapatkan {category.title} dengan harga termurah di Tokogame.com.
                   </p>
                 </div>
               </div>
@@ -354,55 +431,53 @@ const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) =>
                     <h3 className="text-lg font-semibold text-gray-800 mb-3">2. Pilih Paket</h3>
                     <div className="space-y-2">
                       <h4 className="text-sm font-medium text-gray-600">Top Up</h4>
-                      {product.packages && product.packages.length > 0 ? (
+                      {products.length > 0 ? (
                         <div className="grid grid-cols-1 gap-2">
-                          {product.packages.map((pkg) => (
+                          {products.map((product) => (
                             <motion.button
-                              key={pkg.id}
+                              key={product.id}
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
-                              onClick={() => setSelectedPackage(pkg)}
+                              onClick={() => setSelectedPackage(product)}
                               className={`p-4 rounded-lg border-2 transition-all duration-200 text-left ${
-                                selectedPackage?.id === pkg.id
+                                selectedPackage?.id === product.id
                                   ? "border-green-500 bg-green-50"
                                   : "border-gray-200 hover:border-green-300 hover:bg-gray-50"
                               }`}
                             >
                               <div className="flex items-center justify-between">
                                 <div>
-                                  <div className="font-medium text-gray-800">{pkg.name}</div>
-                                  {pkg.description && (
-                                    <div className="text-sm text-gray-600">{pkg.description}</div>
+                                  <div className="font-medium text-gray-800">{product.name}</div>
+                                  {product.description && (
+                                    <div className="text-sm text-gray-600">{product.description}</div>
                                   )}
                                 </div>
                                 <div className="text-right">
-                                  <div className="font-bold text-green-600">{formatPrice(pkg.price)}</div>
-                                  {pkg.originalPrice && (
-                                    <div className="text-sm text-gray-500 line-through">
-                                      {formatPrice(pkg.originalPrice)}
-                                    </div>
-                                  )}
-                                  {pkg.discount && (
-                                    <div className="text-xs text-green-600 font-medium">
-                                      Hemat {pkg.discount}%
+                                  <div className="font-bold text-green-600">
+                                    {new Intl.NumberFormat('id-ID', {
+                                      style: 'currency',
+                                      currency: 'IDR',
+                                      minimumFractionDigits: 0
+                                    }).format(parseFloat(product.sell_price))}
+                                  </div>
+                                  {product.buy_price !== product.sell_price && (
+                                    <div className="text-sm text-gray-500">
+                                      Harga: {new Intl.NumberFormat('id-ID', {
+                                        style: 'currency',
+                                        currency: 'IDR',
+                                        minimumFractionDigits: 0
+                                      }).format(parseFloat(product.buy_price))}
                                     </div>
                                   )}
                                 </div>
                               </div>
-                              {pkg.popular && (
-                                <div className="mt-2">
-                                  <span className="inline-block bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
-                                    ⭐ Paling Populer
-                                  </span>
-                                </div>
-                              )}
                             </motion.button>
                           ))}
                         </div>
                       ) : (
                         <div className="text-center py-8 bg-gray-50 rounded-lg">
                           <AlertCircle size={48} className="mx-auto text-gray-400 mb-3" />
-                          <p className="text-gray-600 font-medium mb-1">Maaf produk tidak tersedia sekarang.</p>
+                          <p className="text-gray-600 font-medium mb-1">Paket tidak tersedia sekarang.</p>
                           <p className="text-gray-500 text-sm">Mohon di cek lagi nanti ya ka 😅🙏</p>
                         </div>
                       )}
@@ -473,18 +548,54 @@ const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) =>
                     </div>
                   </div>
 
+                  {/* Success Message */}
+                  {checkoutSuccess && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-2 text-green-800">
+                        <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs">✓</span>
+                        </div>
+                        <span className="font-medium">Checkout berhasil!</span>
+                      </div>
+                      <p className="text-green-700 text-sm mt-1">
+                        Pesanan Anda sedang diproses. Silakan cek WhatsApp untuk instruksi pembayaran.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Error Message */}
+                  {checkoutError && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-2 text-red-800">
+                        <AlertCircle size={16} />
+                        <span className="font-medium">Error</span>
+                      </div>
+                      <p className="text-red-700 text-sm mt-1">{checkoutError}</p>
+                    </div>
+                  )}
+
                   {/* Order Button */}
                   <motion.button
-                    whileHover={{ scale: isFormValid ? 1.02 : 1 }}
-                    whileTap={{ scale: isFormValid ? 0.98 : 1 }}
-                    disabled={!isFormValid}
+                    whileHover={{ scale: isFormValid && !isCheckoutLoading ? 1.02 : 1 }}
+                    whileTap={{ scale: isFormValid && !isCheckoutLoading ? 0.98 : 1 }}
+                    onClick={handleCheckout}
+                    disabled={!isFormValid || isCheckoutLoading}
                     className={`w-full py-4 rounded-lg font-semibold text-lg transition-all duration-200 ${
-                      isFormValid
+                      isFormValid && !isCheckoutLoading
                         ? "bg-green-500 text-white hover:bg-green-600 shadow-lg"
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
                     }`}
                   >
-                    {isFormValid ? "Lanjut ke Pembayaran" : "Mohon Lengkapi Form"}
+                    {isCheckoutLoading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 size={20} className="animate-spin" />
+                        <span>Memproses...</span>
+                      </div>
+                    ) : isFormValid ? (
+                      "Lanjut ke Pembayaran"
+                    ) : (
+                      "Mohon Lengkapi Form"
+                    )}
                   </motion.button>
 
                   <p className="text-xs text-gray-500 text-center">

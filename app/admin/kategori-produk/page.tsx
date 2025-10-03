@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import dynamic from "next/dynamic";
 import {
   Plus,
   Edit,
@@ -32,6 +33,22 @@ import {
 import { getImageUrl } from "@/lib/image-url";
 import { useToast } from "@/components/providers/toast-provider";
 // import { ErrorHandler } from "@/lib/utils/error-handler";
+
+// Dynamic import for MDEditor to avoid SSR issues
+const MDEditor = dynamic(
+  () => import("@uiw/react-md-editor"),
+  { 
+    ssr: false,
+    loading: () => <div className="h-32 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center text-gray-500">Loading editor...</div>
+  }
+);
+
+// MDEditor configuration
+const editorConfig = {
+  height: 200,
+  preview: 'edit' as const,
+  hideToolbar: false,
+};
 
 // Icon mapping for categories
 const getCategoryIcon = (title: string) => {
@@ -703,15 +720,29 @@ export default function KategoriProdukPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Description
                   </label>
-                  <textarea
-                    value={formData.description || ""}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                    placeholder="Masukkan deskripsi kategori"
-                    rows={3}
-                  />
+                  {/* Show rich text editor only for subcategories */}
+                  {(editingCategory?.parent_id || selectedParent) ? (
+                    <div className="border border-gray-300 rounded-lg overflow-hidden">
+                      <MDEditor
+                        value={formData.description || ""}
+                        onChange={(value) =>
+                          setFormData({ ...formData, description: value || "" })
+                        }
+                        {...editorConfig}
+                        data-color-mode="light"
+                      />
+                    </div>
+                  ) : (
+                    <textarea
+                      value={formData.description || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, description: e.target.value })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      placeholder="Masukkan deskripsi kategori"
+                      rows={3}
+                    />
+                  )}
                 </div>
 
                 <div>

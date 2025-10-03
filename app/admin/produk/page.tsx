@@ -497,12 +497,6 @@ export default function ProdukPage() {
                               </div>
                               <div>
                                 <h3 className="text-lg font-semibold text-gray-900">{subCategory.title}</h3>
-                                {subCategory.sub_title && (
-                                  <p className="text-sm text-gray-600">{subCategory.sub_title}</p>
-                                )}
-                                {subCategory.description && (
-                                  <p className="text-sm text-gray-500 mt-1">{subCategory.description}</p>
-                                )}
                               </div>
                             </button>
                           </div>

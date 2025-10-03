@@ -233,3 +233,75 @@ button {
   will-change: width;
   backface-visibility: hidden;
 }
+
+/* MDEditor Rich Text Editor Styles */
+.w-md-editor {
+  border-radius: 0.5rem !important;
+  overflow: hidden !important;
+}
+
+.w-md-editor-toolbar {
+  background: #f9fafb !important;
+  border-bottom: 1px solid #d1d5db !important;
+  padding: 8px 12px !important;
+}
+
+.w-md-editor-toolbar button {
+  color: #6b7280 !important;
+  border-radius: 4px !important;
+  padding: 4px 6px !important;
+  margin: 0 2px !important;
+}
+
+.w-md-editor-toolbar button:hover {
+  background: #e5e7eb !important;
+  color: #059669 !important;
+}
+
+.w-md-editor-toolbar button.active {
+  background: #059669 !important;
+  color: white !important;
+}
+
+.w-md-editor-text {
+  background: white !important;
+  color: #374151 !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  padding: 12px !important;
+}
+
+.w-md-editor-text:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1) !important;
+}
+
+.w-md-editor-text::placeholder {
+  color: #9ca3af !important;
+  font-style: normal !important;
+}
+
+/* Custom scrollbar for MDEditor */
+.w-md-editor-text::-webkit-scrollbar {
+  width: 6px;
+}
+
+.w-md-editor-text::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.w-md-editor-text::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.w-md-editor-text::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Focus styles for better UX */
+.w-md-editor:focus-within {
+  border-color: #059669 !important;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1) !important;
+}
