@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDebounce } from "@/hooks/use-debounce";
 import {
   Plus,
   Edit,
@@ -51,8 +52,10 @@ const statusConfig = {
 export default function DepositPage() {
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [showForm, setShowForm] = useState(false);
   const [editingDeposit, setEditingDeposit] = useState<Deposit | null>(null);
   const [selectedDeposit, setSelectedDeposit] = useState<Deposit | null>(null);
@@ -62,6 +65,8 @@ export default function DepositPage() {
     amount: "",
     notes: "",
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageLimit, setPageLimit] = useState(10);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -73,20 +78,49 @@ export default function DepositPage() {
   // Fetch deposits on component mount
   useEffect(() => {
     fetchDeposits();
-  }, [pagination.page, pagination.limit, statusFilter, searchTerm]);
+  }, [currentPage, pageLimit, statusFilter, debouncedSearchTerm]);
 
   const fetchDeposits = async () => {
     try {
       setLoading(true);
       const response = await api.deposits.getDeposits({
-        page: pagination.page,
-        limit: pagination.limit,
-        search: searchTerm || undefined,
+        page: currentPage,
+        limit: pageLimit,
+        search: debouncedSearchTerm || undefined,
         status: statusFilter !== "all" ? statusFilter as any : undefined,
       });
       
-      setDeposits(response.data.data);
-      setPagination(response.data.pagination);
+      console.log("API Response:", response); // Debug log
+      
+      // Handle different response structures
+      if (response.data && Array.isArray(response.data)) {
+        // If response.data is directly an array
+        setDeposits(response.data);
+        setPagination({
+          page: currentPage,
+          limit: pageLimit,
+          total: response.data.length,
+          totalPages: Math.ceil(response.data.length / pageLimit),
+        });
+      } else if (response.data && response.data.data) {
+        // If response.data has nested data and pagination
+        setDeposits(response.data.data);
+        setPagination(response.data.pagination || {
+          page: currentPage,
+          limit: pageLimit,
+          total: response.data.data.length,
+          totalPages: Math.ceil(response.data.data.length / pageLimit),
+        });
+      } else {
+        // Fallback
+        setDeposits([]);
+        setPagination({
+          page: currentPage,
+          limit: pageLimit,
+          total: 0,
+          totalPages: 0,
+        });
+      }
     } catch (error) {
       console.error("Error fetching deposits:", error);
       toast({
@@ -94,21 +128,20 @@ export default function DepositPage() {
         description: "Gagal memuat data deposit",
         variant: "destructive",
       });
+      setDeposits([]);
+      setPagination({
+        page: currentPage,
+        limit: pageLimit,
+        total: 0,
+        totalPages: 0,
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredDeposits = deposits.filter((deposit) => {
-    const matchesSearch = 
-      deposit.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      deposit.owner_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      deposit.account_number.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === "all" || deposit.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
+  // Remove client-side filtering since we're using server-side search
+  const filteredDeposits = deposits;
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -119,36 +152,58 @@ export default function DepositPage() {
   };
 
   const getTotalDeposits = () => {
-    return deposits
+    return (deposits || [])
       .filter(d => d.status === "APPROVED")
       .reduce((sum, d) => sum + d.amount, 0);
   };
 
   const getPendingDeposits = () => {
-    return deposits
+    return (deposits || [])
       .filter(d => d.status === "PENDING")
       .reduce((sum, d) => sum + d.amount, 0);
   };
 
   const getTotalCount = () => {
-    return pagination.total;
+    return pagination?.total || 0;
   };
 
   const getCompletedCount = () => {
-    return deposits.filter(d => d.status === "APPROVED").length;
+    return (deposits || []).filter(d => d.status === "APPROVED").length;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Form validation
+    if (!formData.owner_name.trim()) {
+      toast({
+        title: "Error",
+        description: "Nama pemilik rekening harus diisi",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!formData.amount || Number(formData.amount) < 200000) {
+      toast({
+        title: "Error",
+        description: "Jumlah deposit minimal Rp 200.000",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setSubmitting(true);
     try {
       if (editingDeposit) {
         // Update existing deposit
         const updateData: UpdateDepositRequest = {
           bank: formData.bank,
-          owner_name: formData.owner_name,
+          owner_name: formData.owner_name.trim(),
           amount: Number(formData.amount),
-          notes: formData.notes,
+          notes: formData.notes.trim(),
         };
+        console.log("Updating deposit:", updateData); // Debug log
         await api.deposits.updateDeposit(editingDeposit.id, updateData);
         toast({
           title: "Success",
@@ -158,10 +213,11 @@ export default function DepositPage() {
         // Create new deposit
         const createData: CreateDepositRequest = {
           bank: formData.bank,
-          owner_name: formData.owner_name,
+          owner_name: formData.owner_name.trim(),
           amount: Number(formData.amount),
-          notes: formData.notes,
+          notes: formData.notes.trim(),
         };
+        console.log("Creating deposit:", createData); // Debug log
         await api.deposits.createDeposit(createData);
         toast({
           title: "Success",
@@ -178,6 +234,8 @@ export default function DepositPage() {
         description: "Gagal menyimpan deposit",
         variant: "destructive",
       });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -193,7 +251,7 @@ export default function DepositPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this deposit?")) {
+    if (confirm("Apakah Anda yakin ingin menghapus deposit ini?")) {
       try {
         await api.deposits.deleteDeposit(id);
         toast({
@@ -209,6 +267,24 @@ export default function DepositPage() {
           variant: "destructive",
         });
       }
+    }
+  };
+
+  const handleStatusUpdate = async (id: string, status: 'PENDING' | 'APPROVED' | 'REJECTED') => {
+    try {
+      await api.deposits.updateDeposit(id, { status });
+      toast({
+        title: "Success",
+        description: `Status deposit berhasil diubah menjadi ${status === 'APPROVED' ? 'Disetujui' : status === 'PENDING' ? 'Menunggu' : 'Ditolak'}`,
+      });
+      await fetchDeposits();
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast({
+        title: "Error",
+        description: "Gagal mengubah status deposit",
+        variant: "destructive",
+      });
     }
   };
 
@@ -335,9 +411,12 @@ export default function DepositPage() {
           <option value="APPROVED">Disetujui</option>
           <option value="REJECTED">Ditolak</option>
         </select>
-        <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-          <Filter className="h-5 w-5" />
-          <span>Filter</span>
+        <button 
+          onClick={() => fetchDeposits()}
+          className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+        >
+          <RefreshCw className="h-5 w-5" />
+          <span>Refresh</span>
         </button>
         <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200">
           <Download className="h-5 w-5" />
@@ -392,7 +471,12 @@ export default function DepositPage() {
                 </tr>
               ) : (
                 filteredDeposits.map((deposit, index) => {
-                  const status = statusConfig[deposit.status as keyof typeof statusConfig];
+                  const status = statusConfig[deposit.status as keyof typeof statusConfig] || {
+                    icon: AlertCircle,
+                    color: "text-gray-600",
+                    bgColor: "bg-gray-100",
+                    label: "Unknown",
+                  };
                   const StatusIcon = status.icon;
                   
                   return (
@@ -447,13 +531,34 @@ export default function DepositPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
-                        <button 
-                          onClick={() => setSelectedDeposit(deposit)}
-                          className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors duration-200"
-                          title="Lihat detail"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </button>
+                          <button 
+                            onClick={() => setSelectedDeposit(deposit)}
+                            className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                            title="Lihat detail"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
+                          
+                          {/* Status Update Buttons */}
+                          {deposit.status === 'PENDING' && (
+                            <>
+                              <button
+                                onClick={() => handleStatusUpdate(deposit.id, 'APPROVED')}
+                                className="text-green-600 hover:text-green-900 p-2 hover:bg-green-50 rounded-lg transition-colors duration-200"
+                                title="Setujui deposit"
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleStatusUpdate(deposit.id, 'REJECTED')}
+                                className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                                title="Tolak deposit"
+                              >
+                                <XCircle className="h-4 w-4" />
+                              </button>
+                            </>
+                          )}
+                          
                           <button
                             onClick={() => handleEdit(deposit)}
                             className="text-indigo-600 hover:text-indigo-900 p-2 hover:bg-indigo-50 rounded-lg transition-colors duration-200"
@@ -477,6 +582,88 @@ export default function DepositPage() {
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination Controls */}
+        {pagination && pagination.totalPages > 1 && (
+          <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div className="flex-1 flex justify-between sm:hidden">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(Math.min(pagination.totalPages, currentPage + 1))}
+                disabled={currentPage === pagination.totalPages}
+                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Showing{' '}
+                  <span className="font-medium">
+                    {Math.min((currentPage - 1) * pageLimit + 1, pagination.total)}
+                  </span>{' '}
+                  to{' '}
+                  <span className="font-medium">
+                    {Math.min(currentPage * pageLimit, pagination.total)}
+                  </span>{' '}
+                  of{' '}
+                  <span className="font-medium">{pagination.total}</span>{' '}
+                  results
+                </p>
+              </div>
+              <div>
+                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="sr-only">Previous</span>
+                    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                  
+                  {/* Page numbers */}
+                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                    const pageNum = Math.max(1, Math.min(pagination.totalPages, currentPage - 2 + i));
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                          pageNum === currentPage
+                            ? 'z-10 bg-emerald-50 border-emerald-500 text-emerald-600'
+                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                  
+                  <button
+                    onClick={() => setCurrentPage(Math.min(pagination.totalPages, currentPage + 1))}
+                    disabled={currentPage === pagination.totalPages}
+                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="sr-only">Next</span>
+                    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Add/Edit Form Modal */}
@@ -577,13 +764,22 @@ export default function DepositPage() {
                     Batal
                   </button>
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: submitting ? 1 : 1.05 }}
+                    whileTap={{ scale: submitting ? 1 : 0.95 }}
                     type="submit"
-                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200"
+                    disabled={submitting}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+                      submitting 
+                        ? 'bg-gray-400 cursor-not-allowed' 
+                        : 'bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600'
+                    }`}
                   >
-                    <Save className="h-4 w-4" />
-                    <span>{editingDeposit ? "Update" : "Simpan"}</span>
+                    {submitting ? (
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4" />
+                    )}
+                    <span>{submitting ? "Menyimpan..." : editingDeposit ? "Update" : "Simpan"}</span>
                   </motion.button>
                 </div>
               </form>

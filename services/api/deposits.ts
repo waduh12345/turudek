@@ -8,7 +8,7 @@ import {
 } from '@/lib/types/deposits';
 
 class DepositsService extends BaseApiService {
-  private endpoint = '/digiflazz/deposit';
+  private endpoint = 'digiflazz/deposit';
 
   // Get all deposits with pagination
   async getDeposits(params?: DepositPaginationParams): Promise<ApiResponse<DepositPaginatedResponse>> {
