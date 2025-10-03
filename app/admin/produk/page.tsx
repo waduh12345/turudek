@@ -14,6 +14,11 @@ import {
   DollarSign,
   Tag,
   Loader2,
+  Folder,
+  ChevronRight,
+  ChevronDown,
+  RefreshCw,
+  Upload,
 } from "lucide-react";
 import { useApiCall, useDebounce } from "@/hooks";
 import { useTokenSync } from "@/hooks/use-token-sync";
@@ -23,17 +28,23 @@ import {
   CreateProductRequest,
   UpdateProductRequest,
 } from "@/lib/types";
+import { getImageUrl } from "@/lib/image-url";
 import { useToast } from "@/components/providers/toast-provider";
 // import { ErrorHandler } from "@/lib/utils/error-handler";
 
 export default function ProdukPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage] = useState(10);
+  
+  // Hierarchy states
+  const [expandedSubCategories, setExpandedSubCategories] = useState<Set<number>>(new Set());
+  const [selectedSubCategory, setSelectedSubCategory] = useState<number | null>(null);
+  const [subCategories, setSubCategories] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
 
   // Toast hook
   const { success, error, warning } = useToast();
@@ -47,6 +58,7 @@ export default function ProdukPage() {
     status: 1 as 0 | 1,
     image: null as File | null,
   });
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // Debounce search term untuk UX yang lebih baik
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
@@ -55,6 +67,22 @@ export default function ProdukPage() {
   const { isAuthenticated, hasToken } = useTokenSync();
 
   // API calls
+  // Fetch subcategories (children categories)
+  const {
+    data: subCategoriesData,
+    loading: subCategoriesLoading,
+    error: subCategoriesError,
+    execute: fetchSubCategories,
+  } = useApiCall(() =>
+    api.productCategories.getProductCategories({
+      page: 1,
+      paginate: 100,
+      // Get all categories first, then filter on client side
+      status: 1,
+    })
+  );
+
+  // Fetch all products
   const {
     data: productsData,
     loading: productsLoading,
@@ -62,16 +90,9 @@ export default function ProdukPage() {
     execute: fetchProducts,
   } = useApiCall(() =>
     api.products.getProducts({
-      page: currentPage,
-      paginate: perPage,
-      search: debouncedSearchTerm || undefined,
-    })
-  );
-
-  const { data: categoriesData, execute: fetchCategories } = useApiCall(() =>
-    api.productCategories.getProductCategories({
       page: 1,
-      paginate: 100, // Get all categories
+      paginate: 1000, // Get all products
+      search: debouncedSearchTerm || undefined,
     })
   );
 
@@ -89,33 +110,92 @@ export default function ProdukPage() {
     api.products.deleteProduct(slug)
   );
 
+  // Fetch all categories for dropdown
+  const { data: categoriesData, execute: fetchCategories } = useApiCall(() =>
+    api.productCategories.getProductCategories({
+      page: 1,
+      paginate: 100,
+    })
+  );
+
   // Fetch data on mount and when dependencies change
   useEffect(() => {
     if (isAuthenticated && hasToken) {
-      fetchProducts();
+      fetchSubCategories();
       fetchCategories();
     }
-  }, [
-    currentPage,
-    debouncedSearchTerm,
-    selectedCategory,
-    isAuthenticated,
-    hasToken,
-    fetchProducts,
-    fetchCategories,
-  ]);
+  }, [isAuthenticated, hasToken]);
 
-  const allProducts = productsData?.data?.data || [];
+  // Fetch products on mount and when search changes
+  useEffect(() => {
+    if (isAuthenticated && hasToken) {
+      fetchProducts();
+    }
+  }, [debouncedSearchTerm, isAuthenticated, hasToken]);
+
+  // Update state when data changes - filter only subcategories (children)
+  useEffect(() => {
+    if (subCategoriesData?.data?.data) {
+      console.log('Raw categories data:', subCategoriesData.data.data);
+      // Filter only subcategories (those with parent_id not null)
+      const subCategoriesOnly = subCategoriesData.data.data.filter(
+        (category: any) => category.parent_id !== null
+      );
+      console.log('Filtered subcategories:', subCategoriesOnly);
+      setSubCategories(subCategoriesOnly);
+    }
+  }, [subCategoriesData]);
+
+  useEffect(() => {
+    if (productsData?.data?.data) {
+      console.log('Products data received:', productsData.data.data);
+      setProducts(productsData.data.data);
+    }
+  }, [productsData]);
+
   const categories = categoriesData?.data?.data || [];
 
-  // Filter products based on selected category
-  const products =
-    selectedCategory === "all"
-      ? allProducts
-      : allProducts.filter(
-          (product) =>
-            product.product_category_id.toString() === selectedCategory
-        );
+  // Helper function to get products for a subcategory
+  const getProductsForSubCategory = (subCategoryId: number) => {
+    console.log('getProductsForSubCategory called with subCategoryId:', subCategoryId);
+    console.log('All products:', products);
+    console.log('Products with matching category_id:', products.filter(product => product.product_category_id === subCategoryId));
+    return products.filter(product => product.product_category_id === subCategoryId);
+  };
+
+  // Toggle subcategory expansion
+  const toggleSubCategoryExpansion = (subCategoryId: number) => {
+    setExpandedSubCategories(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(subCategoryId)) {
+        newSet.delete(subCategoryId);
+      } else {
+        newSet.add(subCategoryId);
+      }
+      return newSet;
+    });
+  };
+
+  // Handle subcategory selection for adding products
+  const handleSubCategorySelection = (subCategoryId: number) => {
+    setSelectedSubCategory(subCategoryId);
+    setFormData(prev => ({ ...prev, product_category_id: subCategoryId }));
+    setShowForm(true);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData({ ...formData, image: file });
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,11 +234,11 @@ export default function ProdukPage() {
 
       await submitProduct(submitData);
 
-      // Refresh data
-      await fetchProducts();
-
       // Reset form
       resetForm();
+
+      // Refresh data
+      await fetchProducts();
 
       // Show success toast
       success(
@@ -191,6 +271,14 @@ export default function ProdukPage() {
       status: product.status,
       image: null,
     });
+    
+    // Set image preview if product has an image
+    if (product.image) {
+      setImagePreview(getImageUrl(product.image));
+    } else {
+      setImagePreview(null);
+    }
+    
     setShowForm(true);
   };
 
@@ -227,7 +315,9 @@ export default function ProdukPage() {
       status: 1,
       image: null,
     });
+    setImagePreview(null);
     setEditingProduct(null);
+    setSelectedSubCategory(null);
     setShowForm(false);
   };
 
@@ -266,10 +356,10 @@ export default function ProdukPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Produk</h1>
           <p className="text-gray-600">
-            Kelola produk gaming store Anda
-            {allProducts.length > 0 && (
+            Kelola produk gaming store Anda berdasarkan subkategori
+            {subCategories.length > 0 && (
               <span className="ml-2 text-sm text-gray-500">
-                ({allProducts.length} total produk)
+                ({subCategories.length} subkategori)
               </span>
             )}
           </p>
@@ -304,23 +394,8 @@ export default function ProdukPage() {
 
       {isAuthenticated && hasToken && (
         <>
-          {/* Filter Info */}
-          {selectedCategory !== "all" && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-blue-800 text-sm">
-                Menampilkan {products.length} produk dari kategori:{" "}
-                <strong>
-                  {
-                    categories.find(
-                      (cat) => cat.id.toString() === selectedCategory
-                    )?.title
-                  }
-                </strong>
-              </p>
-            </div>
-          )}
 
-          {/* Search and Filter */}
+          {/* Search */}
           <div className="flex items-center space-x-4">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -332,32 +407,22 @@ export default function ProdukPage() {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               />
             </div>
-            <select
-              value={selectedCategory}
-              onChange={(e) => {
-                setSelectedCategory(e.target.value);
-                setCurrentPage(1); // Reset to first page when filter changes
-              }}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-            >
-              <option value="all">Semua Kategori</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id.toString()}>
-                  {category.title}
-                </option>
-              ))}
-            </select>
-            {selectedCategory !== "all" && (
               <button
                 onClick={() => {
-                  setSelectedCategory("all");
-                  setCurrentPage(1);
+                fetchSubCategories();
+                fetchProducts();
                 }}
-                className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-                title="Clear filter"
+              className="flex items-center space-x-2 px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+              title="Refresh data"
               >
-                Clear Filter
+              <RefreshCw className="h-4 w-4" />
+              <span>Refresh</span>
               </button>
+            {subCategoriesLoading && (
+              <div className="flex items-center text-sm text-gray-500">
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Loading...
+              </div>
             )}
           </div>
 
@@ -384,8 +449,164 @@ export default function ProdukPage() {
             </div>
           )}
 
-          {/* Desktop Table View */}
-          {!productsLoading && !productsError && (
+          {/* Hierarchy View - Subcategories and Products */}
+          {!subCategoriesLoading && !subCategoriesError && (
+            <div className="space-y-4">
+              {subCategories.length === 0 ? (
+                <div className="text-center py-12">
+                  <Folder className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Belum ada subkategori
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Mulai dengan membuat subkategori terlebih dahulu
+                  </p>
+                </div>
+              ) : (
+                subCategories.map((subCategory, index) => {
+                  const isExpanded = expandedSubCategories.has(subCategory.id);
+                  const subCategoryProducts = getProductsForSubCategory(subCategory.id);
+
+                  return (
+                    <div key={subCategory.id} className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 overflow-hidden">
+                      {/* Subcategory Header */}
+                      <div className="p-6 border-b border-gray-100">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-4">
+                            <button
+                              onClick={() => toggleSubCategoryExpansion(subCategory.id)}
+                              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                            >
+                              {isExpanded ? (
+                                <ChevronDown className="h-5 w-5" />
+                              ) : (
+                                <ChevronRight className="h-5 w-5" />
+                              )}
+                              <div className="relative">
+                                {subCategory.image ? (
+                                  <img
+                                    src={getImageUrl(subCategory.image)}
+                                    alt={subCategory.title}
+                                    className="h-12 w-12 rounded-lg object-cover"
+                                  />
+                                ) : (
+                                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500">
+                                    <Tag className="h-6 w-6 text-white" />
+                                  </div>
+                                )}
+                              </div>
+                              <div>
+                                <h3 className="text-lg font-semibold text-gray-900">{subCategory.title}</h3>
+                                {subCategory.sub_title && (
+                                  <p className="text-sm text-gray-600">{subCategory.sub_title}</p>
+                                )}
+                                {subCategory.description && (
+                                  <p className="text-sm text-gray-500 mt-1">{subCategory.description}</p>
+                                )}
+                              </div>
+                            </button>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              subCategory.status === 1 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {subCategory.status === 1 ? 'Aktif' : 'Tidak Aktif'}
+                            </span>
+                            <button
+                              onClick={() => handleSubCategorySelection(subCategory.id)}
+                              className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                              title="Tambah produk"
+                            >
+                              <Plus className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Products */}
+                      {isExpanded && (
+                        <div className="bg-gray-50">
+                          {subCategoryProducts.length > 0 ? (
+                            <div className="p-4 space-y-2">
+                              {subCategoryProducts.map((product) => (
+                                <div key={product.id} className="flex items-center justify-between bg-white rounded-lg p-3 border border-gray-200">
+                                  <div className="flex items-center space-x-3">
+                                    <div className="relative">
+                                      {product.image ? (
+                                        <img
+                                          src={getImageUrl(product.image)}
+                                          alt={product.name}
+                                          className="h-8 w-8 rounded-lg object-cover"
+                                        />
+                                      ) : (
+                                        <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                          <Package className="h-4 w-4 text-gray-600" />
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <h4 className="text-sm font-medium text-gray-900">{product.name}</h4>
+                                      <p className="text-xs text-gray-600">SKU: {product.sku}</p>
+                                      {product.description && (
+                                        <p className="text-xs text-gray-500 mt-1">{product.description}</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <div className="text-right">
+                                      <p className="text-sm font-medium text-gray-900">Rp {parseFloat(product.sell_price).toLocaleString()}</p>
+                                      <p className="text-xs text-gray-500">Beli: Rp {parseFloat(product.buy_price).toLocaleString()}</p>
+                                    </div>
+                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                      product.status === 1 
+                                        ? 'bg-green-100 text-green-800' 
+                                        : 'bg-red-100 text-red-800'
+                                    }`}>
+                                      {product.status === 1 ? 'Aktif' : 'Tidak Aktif'}
+                                    </span>
+                                    <button
+                                      onClick={() => handleEdit(product)}
+                                      className="text-indigo-600 hover:text-indigo-900 p-1 hover:bg-indigo-50 rounded transition-colors duration-200"
+                                      title="Edit produk"
+                                    >
+                                      <Edit className="h-3 w-3" />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDelete(product)}
+                                      className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded transition-colors duration-200"
+                                      title="Hapus produk"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="p-4 text-center text-gray-500">
+                              <Package className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                              <p className="text-sm">Belum ada produk</p>
+                              <button
+                                onClick={() => handleSubCategorySelection(subCategory.id)}
+                                className="text-blue-600 hover:text-blue-900 text-sm mt-1 underline"
+                              >
+                                Tambah produk pertama
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
+
+          {/* Loading State */}
+          {subCategoriesLoading && (
             <div className="hidden lg:block bg-white rounded-xl shadow-sm ring-1 ring-gray-200 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 table-fixed">
@@ -628,6 +849,7 @@ export default function ProdukPage() {
                     <button
                       onClick={resetForm}
                       className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                      title="Tutup form"
                     >
                       <X className="h-5 w-5" />
                     </button>
@@ -669,7 +891,7 @@ export default function ProdukPage() {
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Kategori Produk *
+                          Subkategori Produk *
                         </label>
                         <select
                           value={formData.product_category_id}
@@ -680,10 +902,11 @@ export default function ProdukPage() {
                             })
                           }
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                          title="Pilih kategori produk"
                           required
                         >
-                          <option value={0}>Pilih kategori</option>
-                          {categories.map((category) => (
+                          <option value={0}>Pilih subkategori</option>
+                          {subCategories.map((category) => (
                             <option key={category.id} value={category.id}>
                               {category.title}
                             </option>
@@ -704,6 +927,7 @@ export default function ProdukPage() {
                             })
                           }
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                          title="Pilih status produk"
                           required
                         >
                           <option value={1}>Aktif</option>
@@ -777,20 +1001,53 @@ export default function ProdukPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Gambar Produk
                       </label>
+                      <div className="space-y-4">
+                        {/* Image Preview */}
+                        {imagePreview && (
+                          <div className="relative">
+                            <img
+                              src={imagePreview}
+                              alt="Preview"
+                              className="w-full h-48 object-cover rounded-lg"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setImagePreview(null);
+                                setFormData({ ...formData, image: null });
+                              }}
+                              className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                              title="Remove image"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        )}
+                        
+                        {/* File Input */}
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-emerald-500 transition-colors">
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            image: e.target.files?.[0] || null,
-                          })
-                        }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
+                            onChange={handleImageChange}
+                            className="hidden"
+                            id="image-upload"
+                            aria-label="Upload product image"
+                          />
+                          <label
+                            htmlFor="image-upload"
+                            className="cursor-pointer flex flex-col items-center"
+                          >
+                            <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                            <p className="mt-2 text-sm text-gray-600">
+                              Klik untuk upload atau drag and drop
+                            </p>
+                            <p className="text-xs text-gray-500">
                         PNG, JPG, GIF up to 5MB
                       </p>
+                          </label>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-end space-x-3 pt-4">
@@ -850,6 +1107,7 @@ export default function ProdukPage() {
                     <button
                       onClick={() => setSelectedProduct(null)}
                       className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                      title="Tutup detail"
                     >
                       <X className="h-5 w-5" />
                     </button>
@@ -942,3 +1200,4 @@ export default function ProdukPage() {
     </div>
   );
 }
+

@@ -19,6 +19,7 @@ import {
   ChevronRight,
   ChevronDown,
   RefreshCw,
+  Upload,
 } from "lucide-react";
 import { useApiCall, useDebounce } from "@/hooks";
 import { useTokenSync } from "@/hooks/use-token-sync";
@@ -28,6 +29,7 @@ import {
   CreateProductCategoryRequest,
   UpdateProductCategoryRequest,
 } from "@/lib/types";
+import { getImageUrl } from "@/lib/image-url";
 import { useToast } from "@/components/providers/toast-provider";
 // import { ErrorHandler } from "@/lib/utils/error-handler";
 
@@ -77,6 +79,7 @@ export default function KategoriProdukPage() {
     parent_id: null,
     image: null,
   });
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage] = useState(10);
 
@@ -114,7 +117,6 @@ export default function KategoriProdukPage() {
   // Fetch subcategories for selected parent
   const {
     data: subCategoriesData,
-    loading: subCategoriesLoading,
     execute: fetchSubCategories,
   } = useApiCall((parentId: number) =>
     api.productCategories.getProductCategories({
@@ -142,7 +144,7 @@ export default function KategoriProdukPage() {
     }
   );
 
-  const { loading: deleteLoading, execute: deleteCategory } = useApiCall(
+  const { execute: deleteCategory } = useApiCall(
     (slug: string) => api.productCategories.deleteProductCategory(slug)
   );
 
@@ -195,6 +197,20 @@ export default function KategoriProdukPage() {
     setShowForm(true);
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData({ ...formData, image: file });
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Form data being submitted:", formData);
@@ -245,6 +261,14 @@ export default function KategoriProdukPage() {
       parent_id: category.parent_id,
       image: null,
     });
+    
+    // Set image preview if category has an image
+    if (category.image) {
+      setImagePreview(getImageUrl(category.image));
+    } else {
+      setImagePreview(null);
+    }
+    
     setShowForm(true);
   };
 
@@ -278,6 +302,7 @@ export default function KategoriProdukPage() {
       parent_id: null,
       image: null,
     });
+    setImagePreview(null);
     setEditingCategory(null);
     setSelectedParent(null);
     setShowForm(false);
@@ -288,10 +313,6 @@ export default function KategoriProdukPage() {
     return subCategories.filter(cat => cat.parent_id === parentId);
   };
 
-  // Helper function to check if parent has subcategories
-  const hasSubCategories = (parentId: number) => {
-    return subCategories.some(cat => cat.parent_id === parentId);
-  };
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -441,10 +462,20 @@ export default function KategoriProdukPage() {
                           ) : (
                             <ChevronRight className="h-5 w-5" />
                           )}
-                          <div
-                            className={`flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r ${colorClass}`}
-                          >
-                            <IconComponent className="h-6 w-6 text-white" />
+                          <div className="relative">
+                            {parent.image ? (
+                              <img
+                                src={getImageUrl(parent.image)}
+                                alt={parent.title}
+                                className="h-12 w-12 rounded-lg object-cover"
+                              />
+                            ) : (
+                              <div
+                                className={`flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r ${colorClass}`}
+                              >
+                                <IconComponent className="h-6 w-6 text-white" />
+                              </div>
+                            )}
                           </div>
                         </button>
                         <div>
@@ -498,8 +529,18 @@ export default function KategoriProdukPage() {
                           {parentSubCategories.map((subCategory) => (
                             <div key={subCategory.id} className="flex items-center justify-between bg-white rounded-lg p-3 border border-gray-200">
                               <div className="flex items-center space-x-3">
-                                <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                                  <Tag className="h-4 w-4 text-gray-600" />
+                                <div className="relative">
+                                  {subCategory.image ? (
+                                    <img
+                                      src={getImageUrl(subCategory.image)}
+                                      alt={subCategory.title}
+                                      className="h-8 w-8 rounded-lg object-cover"
+                                    />
+                                  ) : (
+                                    <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                      <Tag className="h-4 w-4 text-gray-600" />
+                                    </div>
+                                  )}
                                 </div>
                                 <div>
                                   <h4 className="text-sm font-medium text-gray-900">{subCategory.title}</h4>
@@ -696,23 +737,55 @@ export default function KategoriProdukPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Image
+                    Gambar Kategori
                   </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        image: e.target.files?.[0] || null,
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                    title="Pilih gambar untuk kategori"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Supported formats: JPEG, PNG, JPG, WebP, SVG (max 5MB)
-                  </p>
+                  <div className="space-y-4">
+                    {/* Image Preview */}
+                    {imagePreview && (
+                      <div className="relative">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="w-full h-48 object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setImagePreview(null);
+                            setFormData({ ...formData, image: null });
+                          }}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                          title="Remove image"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                    
+                    {/* File Input */}
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-emerald-500 transition-colors">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                        id="image-upload"
+                        aria-label="Upload category image"
+                      />
+                      <label
+                        htmlFor="image-upload"
+                        className="cursor-pointer flex flex-col items-center"
+                      >
+                        <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                        <p className="mt-2 text-sm text-gray-600">
+                          Klik untuk upload atau drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          PNG, JPG, GIF up to 5MB
+                        </p>
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-end space-x-3 pt-4">

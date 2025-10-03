@@ -23,6 +23,7 @@ class ProductsService extends BaseApiService {
     if (params?.page) query.append('page', params.page.toString());
     if (params?.paginate) query.append('paginate', params.paginate.toString());
     if (params?.search) query.append('search', params.search);
+    if (params?.product_category_id) query.append('product_category_id', params.product_category_id.toString());
     return this.get<ApiResponse<ProductPaginatedResponse>>(`master/products?${query.toString()}`);
   }
 
