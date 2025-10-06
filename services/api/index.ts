@@ -7,6 +7,7 @@ export { newsCategoriesService } from './news-categories';
 export { newsTagsService } from './news-tags';
 export { newsArticlesService } from './news-articles';
 export { depositsService } from './deposits';
+export { transactionService } from './transactions';
 export { default as BaseApiService } from './base';
 export type { ApiResponse, ApiError } from './base';
 export type { LoginRequest, LoginResponse, User } from './auth';
@@ -53,6 +54,12 @@ export type {
   DepositPaginationParams,
   DepositPaginatedResponse
 } from '@/lib/types/deposits';
+export type {
+  Transaction,
+  TransactionListResponse,
+  TransactionFilters,
+  TransactionStats
+} from '@/lib/types/transactions';
 
 // Main API service instance
 import { authService } from './auth';
@@ -63,6 +70,7 @@ import { newsCategoriesService } from './news-categories';
 import { newsTagsService } from './news-tags';
 import { newsArticlesService } from './news-articles';
 import { depositsService } from './deposits';
+import { transactionService } from './transactions';
 
 export const api = {
   auth: authService,
@@ -73,4 +81,5 @@ export const api = {
   newsTags: newsTagsService,
   newsArticles: newsArticlesService,
   deposits: depositsService,
+  transactions: transactionService,
 };
