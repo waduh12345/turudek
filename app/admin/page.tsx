@@ -1,147 +1,177 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-  Users,
   Package,
   ShoppingCart,
   DollarSign,
   TrendingUp,
   TrendingDown,
   Gamepad2,
-  Star,
-  Eye,
+  Loader2,
+  AlertCircle,
+  FileText,
+  Calendar,
 } from "lucide-react";
-// Clean admin dashboard
+import { useApiCall, useTokenSync } from "@/hooks";
+import { api } from "@/services/api";
 
-// Dummy data
-const stats = [
-  {
-    name: "Total Revenue",
-    value: "Rp 45,231,000",
-    change: "+12.5%",
-    changeType: "positive",
-    icon: DollarSign,
-    color: "from-green-500 to-emerald-500",
-  },
-  {
-    name: "Total Orders",
-    value: "1,234",
-    change: "+8.2%",
-    changeType: "positive",
-    icon: ShoppingCart,
-    color: "from-blue-500 to-cyan-500",
-  },
-  {
-    name: "Total Products",
-    value: "89",
-    change: "+3.1%",
-    changeType: "positive",
-    icon: Package,
-    color: "from-emerald-500 to-green-500",
-  },
-  {
-    name: "Active Users",
-    value: "2,456",
-    change: "-2.4%",
-    changeType: "negative",
-    icon: Users,
-    color: "from-orange-500 to-red-500",
-  },
-];
-
-const recentOrders = [
-  {
-    id: "ORD-001",
-    customer: "John Doe",
-    product: "PlayStation 5",
-    amount: "Rp 7,500,000",
-    status: "completed",
-    date: "2024-01-15",
-  },
-  {
-    id: "ORD-002",
-    customer: "Jane Smith",
-    product: "Xbox Series X",
-    amount: "Rp 6,200,000",
-    status: "pending",
-    date: "2024-01-15",
-  },
-  {
-    id: "ORD-003",
-    customer: "Mike Johnson",
-    product: "Nintendo Switch",
-    amount: "Rp 3,800,000",
-    status: "shipped",
-    date: "2024-01-14",
-  },
-  {
-    id: "ORD-004",
-    customer: "Sarah Wilson",
-    product: "Gaming PC",
-    amount: "Rp 15,000,000",
-    status: "completed",
-    date: "2024-01-14",
-  },
-  {
-    id: "ORD-005",
-    customer: "David Brown",
-    product: "Steam Deck",
-    amount: "Rp 4,500,000",
-    status: "processing",
-    date: "2024-01-13",
-  },
-];
-
-const topProducts = [
-  {
-    name: "PlayStation 5",
-    sales: 45,
-    revenue: "Rp 337,500,000",
-    image: "/images/ps5.jpg",
-  },
-  {
-    name: "Xbox Series X",
-    sales: 32,
-    revenue: "Rp 198,400,000",
-    image: "/images/xbox.jpg",
-  },
-  {
-    name: "Nintendo Switch",
-    sales: 28,
-    revenue: "Rp 106,400,000",
-    image: "/images/switch.jpg",
-  },
-  {
-    name: "Gaming PC",
-    sales: 15,
-    revenue: "Rp 225,000,000",
-    image: "/images/pc.jpg",
-  },
-];
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "completed":
-      return "bg-green-100 text-green-800";
-    case "pending":
-      return "bg-yellow-100 text-yellow-800";
-    case "shipped":
-      return "bg-blue-100 text-blue-800";
-    case "processing":
-      return "bg-emerald-100 text-emerald-800";
-    default:
-      return "bg-gray-100 text-gray-800";
+// Status mapping for transactions
+const getStatusInfo = (status: number, statusPayment: number) => {
+  if (statusPayment === 2) {
+    return {
+      label: "Lunas",
+      color: "bg-green-100 text-green-800",
+    };
   }
+  
+  if (statusPayment === 1) {
+    return {
+      label: "Menunggu Pembayaran",
+      color: "bg-yellow-100 text-yellow-800",
+    };
+  }
+  
+  if (status === 1) {
+    return {
+      label: "Diproses",
+      color: "bg-blue-100 text-blue-800",
+    };
+  }
+  
+  if (status === 2) {
+    return {
+      label: "Selesai",
+      color: "bg-green-100 text-green-800",
+    };
+  }
+  
+  return {
+    label: "Gagal",
+    color: "bg-red-100 text-red-800",
+  };
 };
 
 export default function AdminDashboard() {
+  const { isAuthenticated, hasToken } = useTokenSync();
+  
+  // API calls for dashboard data
+  const {
+    data: transactionsData,
+    loading: transactionsLoading,
+    execute: fetchTransactions,
+  } = useApiCall(() => api.transactions.getTransactions({ page: 1, paginate: 10 }));
+
+  const {
+    data: productsData,
+    loading: productsLoading,
+    execute: fetchProducts,
+  } = useApiCall(() => api.products.getProducts({ page: 1, paginate: 10 }));
+
+  const {
+    data: newsData,
+    loading: newsLoading,
+    execute: fetchNews,
+  } = useApiCall(() => api.newsArticles.getNewsArticles({ page: 1, paginate: 5 }));
+
+  // Fetch data on component mount
+  useEffect(() => {
+    if (isAuthenticated && hasToken) {
+      fetchTransactions();
+      fetchProducts();
+      fetchNews();
+    }
+  }, [isAuthenticated, hasToken, fetchTransactions, fetchProducts, fetchNews]);
+
+  // Helper functions
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(price);
+  };
+
+  const getTotalRevenue = () => {
+    if (!transactionsData?.data?.data) return 0;
+    return transactionsData.data.data
+      .filter(t => t.status_payment === 2)
+      .reduce((sum, t) => sum + t.amount, 0);
+  };
+
+  const getTotalOrders = () => {
+    return transactionsData?.data?.total || 0;
+  };
+
+  const getTotalProducts = () => {
+    return productsData?.data?.total || 0;
+  };
+
+  const getPendingOrders = () => {
+    if (!transactionsData?.data?.data) return 0;
+    return transactionsData.data.data.filter(t => t.status_payment === 0).length;
+  };
+
+  // Stats data
+  const stats = [
+    {
+      name: "Total Revenue",
+      value: formatPrice(getTotalRevenue()),
+      change: "+12.5%",
+      changeType: "positive",
+      icon: DollarSign,
+      color: "from-green-500 to-emerald-500",
+    },
+    {
+      name: "Total Orders",
+      value: getTotalOrders().toLocaleString(),
+      change: "+8.2%",
+      changeType: "positive",
+      icon: ShoppingCart,
+      color: "from-blue-500 to-cyan-500",
+    },
+    {
+      name: "Total Products",
+      value: getTotalProducts().toLocaleString(),
+      change: "+3.1%",
+      changeType: "positive",
+      icon: Package,
+      color: "from-emerald-500 to-green-500",
+    },
+    {
+      name: "Pending Orders",
+      value: getPendingOrders().toLocaleString(),
+      change: "-2.4%",
+      changeType: "negative",
+      icon: AlertCircle,
+      color: "from-orange-500 to-red-500",
+    },
+  ];
+
+  const recentTransactions = transactionsData?.data?.data?.slice(0, 5) || [];
+  const topProducts = productsData?.data?.data?.slice(0, 4) || [];
+  const recentNews = newsData?.data?.data?.slice(0, 3) || [];
+
+  // Show loading state while checking authentication
+  if (!isAuthenticated || !hasToken) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-emerald-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Loading...</h1>
+          <p className="text-gray-600">Please wait while we verify your authentication.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-600">Welcome back! Here&apos;s what&apos;s happening with your gaming store.</p>
+        <p className="text-gray-600">Welcome back! Here&apos;s what&apos;s happening with your gaming store.</p>
       </div>
 
       {/* Stats Grid */}
@@ -183,7 +213,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Recent Orders */}
+        {/* Recent Transactions */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -191,44 +221,57 @@ export default function AdminDashboard() {
           className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200"
         >
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
-            <button className="text-sm font-medium text-emerald-600 hover:text-emerald-500">
+            <h2 className="text-lg font-semibold text-gray-900">Recent Transactions</h2>
+            <a href="/admin/transaksi" className="text-sm font-medium text-emerald-600 hover:text-emerald-500">
               View all
-            </button>
+            </a>
           </div>
           <div className="space-y-4">
-            {recentOrders.map((order, index) => (
-              <motion.div
-                key={order.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 + index * 0.1 }}
-                className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-green-500">
-                    <Gamepad2 className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{order.customer}</p>
-                    <p className="text-xs text-gray-500">{order.product}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">{order.amount}</p>
-                  <div className="flex items-center space-x-2">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(
-                        order.status
-                      )}`}
-                    >
-                      {order.status}
-                    </span>
-                    <span className="text-xs text-gray-500">{order.date}</span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+            {transactionsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-emerald-500" />
+                <span className="ml-2 text-gray-600">Loading transactions...</span>
+              </div>
+            ) : recentTransactions.length === 0 ? (
+              <div className="text-center py-8">
+                <ShoppingCart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">No transactions found</p>
+              </div>
+            ) : (
+              recentTransactions.map((transaction, index) => {
+                const status = getStatusInfo(transaction.status, transaction.status_payment);
+                return (
+                  <motion.div
+                    key={transaction.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 + index * 0.1 }}
+                    className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-green-500">
+                        <Gamepad2 className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{transaction.customer_name}</p>
+                        <p className="text-xs text-gray-500">{transaction.product.name}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-gray-900">{formatPrice(transaction.amount)}</p>
+                      <div className="flex items-center space-x-2">
+                        <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${status.color}`}>
+                          {status.label}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(transaction.created_at).toLocaleDateString('id-ID')}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })
+            )}
           </div>
         </motion.div>
 
@@ -241,70 +284,137 @@ export default function AdminDashboard() {
         >
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-gray-900">Top Products</h2>
-            <button className="text-sm font-medium text-emerald-600 hover:text-emerald-500">
+            <a href="/admin/produk" className="text-sm font-medium text-emerald-600 hover:text-emerald-500">
               View all
-            </button>
+            </a>
           </div>
           <div className="space-y-4">
-            {topProducts.map((product, index) => (
-              <motion.div
-                key={product.name}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 + index * 0.1 }}
-                className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500">
-                    <Package className="h-5 w-5 text-white" />
+            {productsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-emerald-500" />
+                <span className="ml-2 text-gray-600">Loading products...</span>
+              </div>
+            ) : topProducts.length === 0 ? (
+              <div className="text-center py-8">
+                <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">No products found</p>
+              </div>
+            ) : (
+              topProducts.map((product, index) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 + index * 0.1 }}
+                  className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500">
+                      <Package className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{product.name}</p>
+                      <p className="text-xs text-gray-500">SKU: {product.sku}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{product.name}</p>
-                    <p className="text-xs text-gray-500">{product.sales} sales</p>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-900">{formatPrice(parseFloat(product.sell_price))}</p>
+                    <div className="flex items-center space-x-1">
+                      <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                        product.status === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {product.status === 1 ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">{product.revenue}</p>
-                  <div className="flex items-center space-x-1">
-                    <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                    <span className="text-xs text-gray-500">4.8</span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))
+            )}
           </div>
         </motion.div>
       </div>
+
+      {/* Recent News */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+        className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-semibold text-gray-900">Recent News</h2>
+          <a href="/admin/news" className="text-sm font-medium text-emerald-600 hover:text-emerald-500">
+            View all
+          </a>
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          {newsLoading ? (
+            <div className="col-span-3 flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-emerald-500" />
+              <span className="ml-2 text-gray-600">Loading news...</span>
+            </div>
+          ) : recentNews.length === 0 ? (
+            <div className="col-span-3 text-center py-8">
+              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">No news articles found</p>
+            </div>
+          ) : (
+            recentNews.map((article, index) => (
+              <motion.div
+                key={article.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 + index * 0.1 }}
+                className="rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow duration-200"
+              >
+                <div className="flex items-start space-x-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-purple-500 to-pink-500">
+                    <FileText className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-medium text-gray-900 truncate">{article.title}</h3>
+                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">{article.content?.substring(0, 100)}...</p>
+                    <div className="flex items-center space-x-2 mt-2">
+                      <Calendar className="h-3 w-3 text-gray-400" />
+                      <span className="text-xs text-gray-500">
+                        {new Date(article.created_at).toLocaleDateString('id-ID')}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))
+          )}
+        </div>
+      </motion.div>
 
       {/* Quick Actions */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
+        transition={{ delay: 0.8 }}
         className="rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 p-6 text-white"
       >
         <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <button className="flex items-center space-x-3 rounded-lg bg-white/20 p-4 hover:bg-white/30 transition-colors duration-200">
+          <a href="/admin/produk" className="flex items-center space-x-3 rounded-lg bg-white/20 p-4 hover:bg-white/30 transition-colors duration-200">
             <Package className="h-5 w-5" />
-            <span className="text-sm font-medium">Add Product</span>
-          </button>
-          <button className="flex items-center space-x-3 rounded-lg bg-white/20 p-4 hover:bg-white/30 transition-colors duration-200">
+            <span className="text-sm font-medium">Manage Products</span>
+          </a>
+          <a href="/admin/transaksi" className="flex items-center space-x-3 rounded-lg bg-white/20 p-4 hover:bg-white/30 transition-colors duration-200">
             <ShoppingCart className="h-5 w-5" />
-            <span className="text-sm font-medium">View Orders</span>
-          </button>
-          <button className="flex items-center space-x-3 rounded-lg bg-white/20 p-4 hover:bg-white/30 transition-colors duration-200">
+            <span className="text-sm font-medium">View Transactions</span>
+          </a>
+          <a href="/admin/news" className="flex items-center space-x-3 rounded-lg bg-white/20 p-4 hover:bg-white/30 transition-colors duration-200">
+            <FileText className="h-5 w-5" />
+            <span className="text-sm font-medium">Manage News</span>
+          </a>
+          <a href="/admin/deposit" className="flex items-center space-x-3 rounded-lg bg-white/20 p-4 hover:bg-white/30 transition-colors duration-200">
             <DollarSign className="h-5 w-5" />
-            <span className="text-sm font-medium">Manage Pricing</span>
-          </button>
-          <button className="flex items-center space-x-3 rounded-lg bg-white/20 p-4 hover:bg-white/30 transition-colors duration-200">
-            <Eye className="h-5 w-5" />
-            <span className="text-sm font-medium">View Analytics</span>
-          </button>
+            <span className="text-sm font-medium">View Deposits</span>
+          </a>
         </div>
       </motion.div>
-
-      {/* Clean admin dashboard */}
     </div>
   );
 }
