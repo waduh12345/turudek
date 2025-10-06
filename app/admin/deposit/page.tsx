@@ -407,9 +407,6 @@ export default function DepositPage() {
                   Metode
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Tanggal
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -476,14 +473,6 @@ export default function DepositPage() {
                           <CreditCard className="h-4 w-4 text-gray-400 mr-2" />
                           <span className="text-sm text-gray-900">{deposit.payment_method}</span>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${status.bgColor} ${status.color}`}
-                        >
-                          <StatusIcon className="h-3 w-3 mr-1" />
-                          {status.label}
-                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
