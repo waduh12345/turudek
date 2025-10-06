@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Search,
-  Filter,
   Eye,
   Download,
   User,
@@ -365,89 +364,80 @@ export default function TransaksiPage() {
 
       {/* Search and Filter */}
       <div className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-6">
-        <div className="space-y-4">
-          {/* Search Row */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Cari Transaksi</label>
-              <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-          <input
-            type="text"
-                  placeholder="Masukkan reference, nama, atau telepon..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-          />
-        </div>
-            </div>
-            
-            <div className="sm:w-64">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Status Pembayaran</label>
-        <select
-                value={statusPaymentFilter}
-                onChange={(e) => setStatusPaymentFilter(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                aria-label="Filter by payment status"
-              >
-                <option value="all">Semua Pembayaran</option>
-                <option value="0">Belum Bayar</option>
-                <option value="1">Menunggu Pembayaran</option>
-                <option value="2">Lunas</option>
-        </select>
+        <div className="flex flex-col lg:flex-row gap-4 items-end">
+          {/* Search */}
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Cari Transaksi</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Masukkan reference, nama, atau telepon..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              />
             </div>
           </div>
           
-          {/* Date Range Row */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
+          {/* Status Payment Filter */}
+          <div className="lg:w-48">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Status Pembayaran</label>
+            <select
+              value={statusPaymentFilter}
+              onChange={(e) => setStatusPaymentFilter(e.target.value)}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              aria-label="Filter by payment status"
+            >
+              <option value="all">Semua Pembayaran</option>
+              <option value="0">Belum Bayar</option>
+              <option value="1">Menunggu Pembayaran</option>
+              <option value="2">Lunas</option>
+            </select>
+          </div>
+          
+          {/* Date Range */}
+          <div className="flex gap-2">
+            <div className="w-40">
               <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai</label>
               <input
                 type="date"
                 value={dateRange.startDate}
                 onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
                 aria-label="Tanggal mulai filter"
               />
             </div>
             
-            <div className="flex-1">
+            <div className="w-40">
               <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Akhir</label>
               <input
                 type="date"
                 value={dateRange.endDate}
                 onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
                 aria-label="Tanggal akhir filter"
               />
             </div>
           </div>
           
-          {/* Action Buttons Row */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
-            <button 
-              onClick={fetchTransactions}
-              className="flex items-center justify-center space-x-2 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium"
-            >
-          <Filter className="h-5 w-5" />
-              <span>Terapkan Filter</span>
-        </button>
-            
+          {/* Action Buttons */}
+          <div className="flex gap-2">
             <div className="relative hidden">
               <button 
                 onClick={() => setShowExportDropdown(!showExportDropdown)}
                 disabled={isExporting || !transactions.length}
-                className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isExporting ? (
                   <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     <span>Exporting...</span>
                   </>
                 ) : (
                   <>
-          <Download className="h-5 w-5" />
-                    <span>Export Data</span>
+                    <Download className="h-4 w-4" />
+                    <span>Export</span>
                   </>
                 )}
               </button>
@@ -485,7 +475,7 @@ export default function TransaksiPage() {
                       <div className="font-medium text-gray-900">Export to JSON</div>
                       <div className="text-sm text-gray-500">Download as .json file</div>
                     </div>
-        </button>
+                  </button>
                 </div>
               )}
             </div>

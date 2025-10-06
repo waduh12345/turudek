@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
@@ -8,14 +8,12 @@ import {
   Edit,
   Trash2,
   Search,
-  Filter,
   Coins,
   User,
   CreditCard,
   CheckCircle,
   Clock,
   XCircle,
-  AlertCircle,
   X,
   Save,
   Download,
@@ -26,28 +24,8 @@ import {
 import { api } from "@/services/api";
 import { Deposit, CreateDepositRequest, UpdateDepositRequest } from "@/lib/types/deposits";
 import { useToast } from "@/components/providers/toast-provider";
+import { useApiCall } from "@/hooks";
 
-// Status configuration mapping
-const statusConfig = {
-  APPROVED: {
-    icon: CheckCircle,
-    color: "text-green-600",
-    bgColor: "bg-green-100",
-    label: "Disetujui",
-  },
-  PENDING: {
-    icon: Clock,
-    color: "text-yellow-600",
-    bgColor: "bg-yellow-100",
-    label: "Menunggu",
-  },
-  REJECTED: {
-    icon: XCircle,
-    color: "text-red-600",
-    bgColor: "bg-red-100",
-    label: "Ditolak",
-  },
-};
 
 export default function DepositPage() {
   const [deposits, setDeposits] = useState<Deposit[]>([]);
@@ -66,7 +44,7 @@ export default function DepositPage() {
     notes: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageLimit, setPageLimit] = useState(10);
+  const [pageLimit] = useState(10);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -75,12 +53,28 @@ export default function DepositPage() {
   });
   const { success, error } = useToast();
 
-  // Fetch deposits on component mount
-  useEffect(() => {
-    fetchDeposits();
-  }, [currentPage, pageLimit, statusFilter, debouncedSearchTerm]);
+  // API call for Digiflazz saldo
+  const {
+    data: saldoData,
+    loading: saldoLoading,
+    execute: fetchSaldo,
+  } = useApiCall(async () => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}digiflazz/saldo`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch saldo');
+    }
+    
+    return response.json();
+  });
 
-  const fetchDeposits = async () => {
+  const fetchDeposits = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.deposits.getDeposits({
@@ -134,7 +128,13 @@ export default function DepositPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, pageLimit, statusFilter, debouncedSearchTerm, error]);
+
+  // Fetch deposits and saldo on component mount
+  useEffect(() => {
+    fetchDeposits();
+    fetchSaldo();
+  }, [fetchDeposits, fetchSaldo]);
 
   // Remove client-side filtering since we're using server-side search
   const filteredDeposits = deposits;
@@ -148,6 +148,12 @@ export default function DepositPage() {
   };
 
   const getTotalDeposits = () => {
+    // Use real saldo data from Digiflazz API
+    if (saldoData?.data !== undefined) {
+      return saldoData.data;
+    }
+    
+    // Fallback to calculated deposits if API fails
     return (deposits || [])
       .filter(d => d.status === "APPROVED")
       .reduce((sum, d) => sum + d.amount, 0);
@@ -295,7 +301,14 @@ export default function DepositPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Deposit</p>
-              <p className="text-2xl font-semibold text-gray-900">{formatPrice(getTotalDeposits())}</p>
+              {saldoLoading ? (
+                <div className="flex items-center space-x-2">
+                  <RefreshCw className="h-4 w-4 animate-spin text-gray-400" />
+                  <span className="text-sm text-gray-500">Loading...</span>
+                </div>
+              ) : (
+                <p className="text-2xl font-semibold text-gray-900">{formatPrice(getTotalDeposits())}</p>
+              )}
             </div>
           </div>
         </motion.div>
@@ -432,13 +445,6 @@ export default function DepositPage() {
                 </tr>
               ) : (
                 filteredDeposits.map((deposit, index) => {
-                  const status = statusConfig[deposit.status as keyof typeof statusConfig] || {
-                    icon: AlertCircle,
-                    color: "text-gray-600",
-                    bgColor: "bg-gray-100",
-                    label: "Unknown",
-                  };
-                  const StatusIcon = status.icon;
                   
                   return (
                     <motion.tr
