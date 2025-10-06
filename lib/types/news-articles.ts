@@ -1,16 +1,4 @@
-export interface NewsTag {
-  id: number;
-  name: string;
-  slug: string;
-  description: string;
-  status: 0 | 1;
-  created_at: string;
-  updated_at: string;
-  pivot?: {
-    news_id: number;
-    tag_id: number;
-  };
-}
+import { NewsTag } from './news-tags';
 
 export interface NewsArticle {
   id: number;

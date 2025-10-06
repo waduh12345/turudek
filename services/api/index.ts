@@ -52,7 +52,7 @@ export type {
   UpdateDepositRequest,
   DepositPaginationParams,
   DepositPaginatedResponse
-} from './deposits';
+} from '@/lib/types/deposits';
 
 // Main API service instance
 import { authService } from './auth';

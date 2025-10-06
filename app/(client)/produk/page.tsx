@@ -945,7 +945,7 @@ const ProdukPageContent = () => {
   // Debounce search term
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  const selectedCategory = searchParams.get("category") || "All";
+  const selectedCategory = searchParams?.get("category") || "All";
 
   // API calls - only fetch subcategories (categories with parent_id)
   const {
@@ -997,7 +997,7 @@ const ProdukPageContent = () => {
   }, [parentCategoriesData]);
 
   const setSelectedCategory = (category: string) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() || "");
     params.set("category", category);
 
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });

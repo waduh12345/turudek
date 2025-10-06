@@ -235,7 +235,7 @@ export default function AdminLayout({
                         </div>
                       )}
                     </div>
-                  ) : (
+                  ) : item.href ? (
                     <Link
                       href={item.href}
                       className={`group relative flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
@@ -261,6 +261,15 @@ export default function AdminLayout({
                         </div>
                       )}
                     </Link>
+                  ) : (
+                    <div className="group relative flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 text-gray-300">
+                      <item.icon
+                        className={`h-5 w-5 text-gray-400 ${sidebarCollapsed ? "mx-auto" : "mr-3"}`}
+                      />
+                      {!sidebarCollapsed && (
+                        <span className="truncate">{item.name}</span>
+                      )}
+                    </div>
                   )}
                 </div>
               );
@@ -310,6 +319,7 @@ export default function AdminLayout({
               </div>
             </div>
             <button
+              title="Close Sidebar"
               onClick={() => setSidebarOpen(false)}
               className="text-gray-400 hover:text-white"
             >
@@ -378,7 +388,7 @@ export default function AdminLayout({
                         </div>
                       )}
                     </div>
-                  ) : (
+                  ) : item.href ? (
                     <Link
                       href={item.href}
                       className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
@@ -394,6 +404,11 @@ export default function AdminLayout({
                       />
                       {item.name}
                     </Link>
+                  ) : (
+                    <div className="group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 text-gray-300">
+                      <item.icon className="mr-3 h-5 w-5 text-gray-400" />
+                      {item.name}
+                    </div>
                   )}
                 </div>
               );
@@ -430,6 +445,7 @@ export default function AdminLayout({
         <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
           {/* Mobile menu button */}
           <button
+            title="Open Sidebar"
             type="button"
             className="-m-2.5 p-2.5 text-gray-700 lg:hidden"
             onClick={() => setSidebarOpen(true)}
@@ -439,6 +455,7 @@ export default function AdminLayout({
 
           {/* Desktop sidebar toggle */}
           <button
+            title="Toggle Sidebar"
             type="button"
             className="-m-2.5 p-2.5 text-gray-700 hidden lg:block"
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}

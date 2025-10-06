@@ -25,6 +25,7 @@ import { useTokenSync } from "@/hooks/use-token-sync";
 import { api } from "@/services/api";
 import {
   Product,
+  ProductCategory,
   CreateProductRequest,
   UpdateProductRequest,
 } from "@/lib/types";
@@ -43,7 +44,7 @@ export default function ProdukPage() {
   // Hierarchy states
   const [expandedSubCategories, setExpandedSubCategories] = useState<Set<number>>(new Set());
   const [selectedSubCategory, setSelectedSubCategory] = useState<number | null>(null);
-  const [subCategories, setSubCategories] = useState<any[]>([]);
+  const [subCategories, setSubCategories] = useState<ProductCategory[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
 
   // Toast hook
@@ -139,7 +140,7 @@ export default function ProdukPage() {
       console.log('Raw categories data:', subCategoriesData.data.data);
       // Filter only subcategories (those with parent_id not null)
       const subCategoriesOnly = subCategoriesData.data.data.filter(
-        (category: any) => category.parent_id !== null
+        (category: ProductCategory) => category.parent_id !== null
       );
       console.log('Filtered subcategories:', subCategoriesOnly);
       setSubCategories(subCategoriesOnly);

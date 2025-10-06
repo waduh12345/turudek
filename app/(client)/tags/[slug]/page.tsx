@@ -48,7 +48,7 @@ const TagsPage = () => {
     const fetchCategoryData = async () => {
       try {
         setLoading(true);
-        const slug = params.slug as string;
+        const slug = params?.slug as string;
         
         // Try to fetch from game categories first
         let response = await fetch(`/dummy/game-categories.json`);
@@ -75,10 +75,10 @@ const TagsPage = () => {
       }
     };
 
-    if (params.slug) {
+    if (params?.slug) {
       fetchCategoryData();
     }
-  }, [params.slug]);
+  }, [params?.slug]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

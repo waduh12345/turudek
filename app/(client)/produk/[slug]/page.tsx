@@ -16,18 +16,9 @@ import {
 import { publicProductCategoriesService, PublicProductCategory } from "@/services/api/public-product-categories";
 import { publicProductsService, PublicProduct } from "@/services/api/public-products";
 import { checkoutService, CheckoutRequest } from "@/services/api/checkout";
-import { useApiCall } from "@/hooks";
+import { useApiCall, useAuth } from "@/hooks";
 
 
-interface Package {
-  id: number;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  discount?: number;
-  description?: string;
-  popular?: boolean;
-}
 
 
 const testimonials = [
@@ -72,18 +63,21 @@ const paymentMethods = [
 ];
 
 const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) => {
+  const { user, isAuthenticated } = useAuth();
   const [category, setCategory] = useState<PublicProductCategory | null>(null);
   const [products, setProducts] = useState<PublicProduct[]>([]);
   const [selectedPackage, setSelectedPackage] = useState<PublicProduct | null>(null);
-  const [userID, setUserID] = useState("");
+  const [customerNo, setCustomerNo] = useState("");
+  const [customerName, setCustomerName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
   const [discountCode, setDiscountCode] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [emailReceipt, setEmailReceipt] = useState<boolean>(false);
   const [selectedPayment, setSelectedPayment] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const [checkoutSuccess, setCheckoutSuccess] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Unwrap params using React.use()
   const resolvedParams = use(params);
@@ -135,9 +129,9 @@ const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) =>
   }, [productsData]);
 
   useEffect(() => {
-    const valid = userID.trim() !== "" && selectedPackage !== null && selectedPayment !== "" && phoneNumber.trim() !== "";
+    const valid = customerNo.trim() !== "" && selectedPackage !== null && customerPhone.trim() !== "";
     setIsFormValid(valid);
-  }, [userID, selectedPackage, selectedPayment, phoneNumber]);
+  }, [customerNo, selectedPackage, customerPhone]);
 
 
   const handleYouTubeRedirect = (youtubeId: string) => {
@@ -153,29 +147,41 @@ const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) =>
 
     try {
       const checkoutData: CheckoutRequest = {
+        user_id: isAuthenticated && user?.id ? parseInt(user.id) : undefined,
         product_id: selectedPackage.id,
-        user_id: userID,
-        phone_number: phoneNumber,
-        email_receipt: emailReceipt,
-        discount_code: discountCode || undefined,
-        payment_method: selectedPayment,
+        customer_no: customerNo,
+        customer_name: customerName.trim() || undefined,
+        customer_email: customerEmail.trim() || undefined,
+        customer_phone: customerPhone,
       };
 
       const response = await checkoutService.checkout(checkoutData);
       
       if (response.data) {
-        setCheckoutSuccess(true);
-        // Reset form
-        setUserID("");
-        setPhoneNumber("");
+        // Reset form first
+        setCustomerNo("");
+        setCustomerName("");
+        setCustomerEmail("");
+        setCustomerPhone("");
         setDiscountCode("");
-        setEmailReceipt(false);
         setSelectedPayment("");
         setSelectedPackage(null);
         
-        // Show success message or redirect to payment
-        if (response.data.payment_url) {
-          window.open(response.data.payment_url, '_blank');
+        // Show success message briefly
+        setCheckoutSuccess(true);
+        
+        // Redirect to payment link after a short delay for better UX
+        if (response.data.payment_link) {
+          setTimeout(() => {
+            setIsRedirecting(true);
+            try {
+              window.location.href = response.data.payment_link;
+            } catch (error) {
+              console.error('Redirect failed:', error);
+              // Fallback: open in new tab if redirect fails
+              window.open(response.data.payment_link, '_blank');
+            }
+          }, 1500); // 1.5 second delay to show success message
         }
       }
     } catch (error: unknown) {
@@ -401,19 +407,19 @@ const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) =>
                 </div>
 
                 <div className="p-6 space-y-6">
-                  {/* 1. Find Account */}
+                  {/* 1. Game Account Info */}
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3">1. Cari Akun Anda</h3>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">1. Informasi Akun Game</h3>
                     <div className="space-y-3">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Enter User ID
+                          Game ID / Customer Number *
                         </label>
                         <input
                           type="text"
-                          value={userID}
-                          onChange={(e) => setUserID(e.target.value)}
-                          placeholder="Masukkan User ID atau Username"
+                          value={customerNo}
+                          onChange={(e) => setCustomerNo(e.target.value)}
+                          placeholder="Masukkan Game ID atau Customer Number"
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                         />
                       </div>
@@ -426,9 +432,53 @@ const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) =>
                     </div>
                   </div>
 
-                  {/* 2. Select Package */}
+                  {/* 2. Contact Info */}
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3">2. Pilih Paket</h3>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">2. Informasi Kontak</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Nama (Opsional)
+                        </label>
+                        <input
+                          type="text"
+                          value={customerName}
+                          onChange={(e) => setCustomerName(e.target.value)}
+                          placeholder="Masukkan nama Anda"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Email (Opsional)
+                        </label>
+                        <input
+                          type="email"
+                          value={customerEmail}
+                          onChange={(e) => setCustomerEmail(e.target.value)}
+                          placeholder="Masukkan email Anda"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Nomor WhatsApp *
+                        </label>
+                        <input
+                          type="tel"
+                          value={customerPhone}
+                          onChange={(e) => setCustomerPhone(e.target.value)}
+                          placeholder="+62 812 3456 7890"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Pastikan nomor WhatsApp Anda sudah benar untuk notifikasi.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Select Package */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">3. Pilih Paket</h3>
                     <div className="space-y-2">
                       <h4 className="text-sm font-medium text-gray-600">Top Up</h4>
                       {products.length > 0 ? (
@@ -484,9 +534,9 @@ const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) =>
                     </div>
                   </div>
 
-                  {/* 3. Discount Code */}
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3">3. Masukkan Kode Diskon</h3>
+                  {/* 4. Discount Code - Hidden for now */}
+                  <div className="hidden">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">4. Masukkan Kode Diskon</h3>
                     <input
                       type="text"
                       value={discountCode}
@@ -496,9 +546,10 @@ const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) =>
                     />
                   </div>
 
-                  {/* 4. Payment Method */}
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3">4. Pilih Cara Pembayaran</h3>
+
+                  {/* 5. Payment Method - Hidden for now */}
+                  <div className="hidden">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">5. Pilih Cara Pembayaran</h3>
                     <div className="grid grid-cols-3 gap-2">
                       {paymentMethods.slice(0, 9).map((method, index) => (
                         <motion.button
@@ -519,35 +570,6 @@ const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) =>
                     </div>
                   </div>
 
-                  {/* 5. Contact Info */}
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-3">5. Cara Menghubungi Anda</h3>
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Phone No
-                        </label>
-                        <input
-                          type="tel"
-                          value={phoneNumber}
-                          onChange={(e) => setPhoneNumber(e.target.value)}
-                          placeholder="+62 812 3456 7890"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">Pastikan nomor Anda sudah benar.</p>
-                      </div>
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={emailReceipt}
-                          onChange={(e) => setEmailReceipt(Boolean(e.target.checked))}
-                          className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                        />
-                        <span className="text-sm text-gray-700">Kirim Receipt via Email?</span>
-                      </label>
-                    </div>
-                  </div>
-
                   {/* Success Message */}
                   {checkoutSuccess && (
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
@@ -558,8 +580,17 @@ const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) =>
                         <span className="font-medium">Checkout berhasil!</span>
                       </div>
                       <p className="text-green-700 text-sm mt-1">
-                        Pesanan Anda sedang diproses. Silakan cek WhatsApp untuk instruksi pembayaran.
+                        {isRedirecting 
+                          ? "Mengarahkan ke halaman pembayaran..." 
+                          : "Pesanan berhasil dibuat! Anda akan diarahkan ke halaman pembayaran dalam beberapa detik..."
+                        }
                       </p>
+                      {isRedirecting && (
+                        <div className="flex items-center gap-2 mt-2">
+                          <Loader2 size={16} className="animate-spin text-green-600" />
+                          <span className="text-green-600 text-sm">Sedang mengalihkan...</span>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -592,7 +623,7 @@ const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) =>
                         <span>Memproses...</span>
                       </div>
                     ) : isFormValid ? (
-                      "Lanjut ke Pembayaran"
+                      "Buat Pesanan"
                     ) : (
                       "Mohon Lengkapi Form"
                     )}

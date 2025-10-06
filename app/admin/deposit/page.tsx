@@ -73,7 +73,7 @@ export default function DepositPage() {
     total: 0,
     totalPages: 0,
   });
-  const { toast } = useToast();
+  const { success, error } = useToast();
 
   // Fetch deposits on component mount
   useEffect(() => {
@@ -87,7 +87,7 @@ export default function DepositPage() {
         page: currentPage,
         limit: pageLimit,
         search: debouncedSearchTerm || undefined,
-        status: statusFilter !== "all" ? statusFilter as any : undefined,
+        status: statusFilter !== "all" ? statusFilter as 'PENDING' | 'APPROVED' | 'REJECTED' : undefined,
       });
       
       console.log("API Response:", response); // Debug log
@@ -121,13 +121,9 @@ export default function DepositPage() {
           totalPages: 0,
         });
       }
-    } catch (error) {
-      console.error("Error fetching deposits:", error);
-      toast({
-        title: "Error",
-        description: "Gagal memuat data deposit",
-        variant: "destructive",
-      });
+    } catch (err) {
+      console.error("Error fetching deposits:", err);
+      error("Error", "Gagal memuat data deposit");
       setDeposits([]);
       setPagination({
         page: currentPage,
@@ -176,20 +172,12 @@ export default function DepositPage() {
     
     // Form validation
     if (!formData.owner_name.trim()) {
-      toast({
-        title: "Error",
-        description: "Nama pemilik rekening harus diisi",
-        variant: "destructive",
-      });
+      error("Error", "Nama pemilik rekening harus diisi");
       return;
     }
     
     if (!formData.amount || Number(formData.amount) < 200000) {
-      toast({
-        title: "Error",
-        description: "Jumlah deposit minimal Rp 200.000",
-        variant: "destructive",
-      });
+      error("Error", "Jumlah deposit minimal Rp 200.000");
       return;
     }
     
@@ -205,10 +193,7 @@ export default function DepositPage() {
         };
         console.log("Updating deposit:", updateData); // Debug log
         await api.deposits.updateDeposit(editingDeposit.id, updateData);
-        toast({
-          title: "Success",
-          description: "Deposit berhasil diperbarui",
-        });
+        success("Success", "Deposit berhasil diperbarui");
       } else {
         // Create new deposit
         const createData: CreateDepositRequest = {
@@ -219,21 +204,14 @@ export default function DepositPage() {
         };
         console.log("Creating deposit:", createData); // Debug log
         await api.deposits.createDeposit(createData);
-        toast({
-          title: "Success",
-          description: "Deposit berhasil dibuat",
-        });
+        success("Success", "Deposit berhasil dibuat");
       }
       
       await fetchDeposits();
       resetForm();
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      toast({
-        title: "Error",
-        description: "Gagal menyimpan deposit",
-        variant: "destructive",
-      });
+    } catch (err) {
+      console.error("Error submitting form:", err);
+      error("Error", "Gagal menyimpan deposit");
     } finally {
       setSubmitting(false);
     }
@@ -254,18 +232,11 @@ export default function DepositPage() {
     if (confirm("Apakah Anda yakin ingin menghapus deposit ini?")) {
       try {
         await api.deposits.deleteDeposit(id);
-        toast({
-          title: "Success",
-          description: "Deposit berhasil dihapus",
-        });
+        success("Success", "Deposit berhasil dihapus");
         await fetchDeposits();
-      } catch (error) {
-        console.error("Error deleting deposit:", error);
-        toast({
-          title: "Error",
-          description: "Gagal menghapus deposit",
-          variant: "destructive",
-        });
+      } catch (err) {
+        console.error("Error deleting deposit:", err);
+        error("Error", "Gagal menghapus deposit");
       }
     }
   };
@@ -273,18 +244,11 @@ export default function DepositPage() {
   const handleStatusUpdate = async (id: string, status: 'PENDING' | 'APPROVED' | 'REJECTED') => {
     try {
       await api.deposits.updateDeposit(id, { status });
-      toast({
-        title: "Success",
-        description: `Status deposit berhasil diubah menjadi ${status === 'APPROVED' ? 'Disetujui' : status === 'PENDING' ? 'Menunggu' : 'Ditolak'}`,
-      });
+      success("Success", `Status deposit berhasil diubah menjadi ${status === 'APPROVED' ? 'Disetujui' : status === 'PENDING' ? 'Menunggu' : 'Ditolak'}`);
       await fetchDeposits();
-    } catch (error) {
-      console.error("Error updating status:", error);
-      toast({
-        title: "Error",
-        description: "Gagal mengubah status deposit",
-        variant: "destructive",
-      });
+    } catch (err) {
+      console.error("Error updating status:", err);
+      error("Error", "Gagal mengubah status deposit");
     }
   };
 
