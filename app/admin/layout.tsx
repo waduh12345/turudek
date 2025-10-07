@@ -18,7 +18,7 @@ import {
   ChevronDown,
   Tag,
   Coins,
-  Icon,
+  AlertTriangle,
 } from "lucide-react";
 
 const navigation = [
@@ -36,6 +36,7 @@ const navigation = [
   // { name: "Produk", href: "/admin/produk", icon: Package },
   { name: "Transaksi", href: "/admin/transaksi", icon: ShoppingCart },
   { name: "Deposit", href: "/admin/deposit", icon: Coins },
+  { name: "Debug", href: "/admin/debug", icon: AlertTriangle },
   { 
     name: "News", 
     href: "/admin/news", 

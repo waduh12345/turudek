@@ -69,6 +69,16 @@ class DigiflazzService extends BaseApiService {
       product.brand.toLowerCase().includes(brand.toLowerCase())
     );
   }
+
+  // Helper method to get unique categories from products
+  getUniqueCategories(products: DigiflazzProduct[]): string[] {
+    return [...new Set(products.map(product => product.category))];
+  }
+
+  // Helper method to get unique brands from products
+  getUniqueBrands(products: DigiflazzProduct[]): string[] {
+    return [...new Set(products.map(product => product.brand))];
+  }
 }
 
 export const digiflazzService = new DigiflazzService();
