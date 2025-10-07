@@ -78,10 +78,11 @@ export default function KategoriProdukPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] =
     useState<ProductCategory | null>(null);
-  const [expandedParents, setExpandedParents] = useState<Set<number>>(new Set());
+  const [expandedParent, setExpandedParent] = useState<number | null>(null);
   const [selectedParent, setSelectedParent] = useState<number | null>(null);
   const [parentCategories, setParentCategories] = useState<ProductCategory[]>([]);
   const [subCategories, setSubCategories] = useState<ProductCategory[]>([]);
+  const [loadingSubCategories, setLoadingSubCategories] = useState<Set<number>>(new Set());
 
   // Toast hook
   const { success, error, warning } = useToast();
@@ -98,36 +99,24 @@ export default function KategoriProdukPage() {
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [perPage] = useState(10);
+  const [perPage] = useState(5);
 
   // Token synchronization
   const { isAuthenticated, hasToken } = useTokenSync();
 
-  // API calls
+  // Fetch parent categories with search and pagination
   const {
-    data: categoriesData,
-    loading: categoriesLoading,
-    error: categoriesError,
-    execute: fetchCategories,
+    data: parentCategoriesData,
+    loading: parentCategoriesLoading,
+    error: parentCategoriesError,
+    execute: fetchParentCategories,
   } = useApiCall(() =>
     api.productCategories.getProductCategories({
       page: currentPage,
       paginate: perPage,
-      search: debouncedSearchTerm || undefined,
-    })
-  );
-
-  // Fetch parent categories
-  const {
-    data: parentCategoriesData,
-    loading: parentCategoriesLoading,
-    execute: fetchParentCategories,
-  } = useApiCall(() =>
-    api.productCategories.getProductCategories({
-      page: 1,
-      paginate: 100,
       is_parent: 1,
       status: 1,
+      search: debouncedSearchTerm || undefined,
     })
   );
 
@@ -165,10 +154,9 @@ export default function KategoriProdukPage() {
     (slug: string) => api.productCategories.deleteProductCategory(slug)
   );
 
-  // Load categories on component mount and when search/page changes
+  // Load parent categories on component mount and when search/page changes
   useEffect(() => {
     if (isAuthenticated && hasToken) {
-      fetchCategories();
       fetchParentCategories();
     }
   }, [
@@ -176,7 +164,6 @@ export default function KategoriProdukPage() {
     debouncedSearchTerm,
     isAuthenticated,
     hasToken,
-    fetchCategories,
     fetchParentCategories,
   ]);
 
@@ -195,16 +182,28 @@ export default function KategoriProdukPage() {
   }, [subCategoriesData]);
 
   // Toggle parent category expansion
-  const toggleParentExpansion = (parentId: number) => {
-    const newExpanded = new Set(expandedParents);
-    if (newExpanded.has(parentId)) {
-      newExpanded.delete(parentId);
+  const toggleParentExpansion = async (parentId: number) => {
+    if (expandedParent === parentId) {
+      // If already expanded, collapse it
+      setExpandedParent(null);
     } else {
-      newExpanded.add(parentId);
-      // Fetch subcategories when expanding
-      fetchSubCategories(parentId);
+      // If different parent, expand it and fetch subcategories
+      setExpandedParent(parentId);
+      setLoadingSubCategories(prev => new Set(prev).add(parentId));
+      
+      try {
+        await fetchSubCategories(parentId);
+      } catch (err) {
+        console.error("Error fetching subcategories:", err);
+        error("Gagal Memuat Subkategori", "Terjadi kesalahan saat memuat subkategori");
+      } finally {
+        setLoadingSubCategories(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(parentId);
+          return newSet;
+        });
+      }
     }
-    setExpandedParents(newExpanded);
   };
 
   // Handle parent selection for creating subcategory
@@ -248,7 +247,7 @@ export default function KategoriProdukPage() {
       setShowForm(false);
       setEditingCategory(null);
       resetForm();
-      fetchCategories(); // Refresh the list
+      fetchParentCategories(); // Refresh the list
 
       // Show success toast
       success(
@@ -293,7 +292,7 @@ export default function KategoriProdukPage() {
     if (confirm(`Are you sure you want to delete "${category.title}"?`)) {
       try {
         await deleteCategory(category.slug);
-        fetchCategories(); // Refresh the list
+        fetchParentCategories(); // Refresh the list
 
         // Show success toast
         success(
@@ -392,20 +391,19 @@ export default function KategoriProdukPage() {
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
           />
         </div>
-        <button
-          onClick={() => {
-            fetchCategories();
-            fetchParentCategories();
-          }}
-          className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-        >
-          <RefreshCw className="h-5 w-5" />
-          <span>Refresh</span>
-        </button>
+         <button
+           onClick={() => {
+             fetchParentCategories();
+           }}
+           className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+         >
+           <RefreshCw className="h-5 w-5" />
+           <span>Refresh</span>
+         </button>
       </div>
 
       {/* Loading State */}
-      {(categoriesLoading || parentCategoriesLoading) && (
+      {parentCategoriesLoading && (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
           <span className="ml-2 text-gray-600">Loading categories...</span>
@@ -413,18 +411,14 @@ export default function KategoriProdukPage() {
       )}
 
       {/* Error State */}
-      {categoriesError && (
+      {parentCategoriesError && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-red-600">
-            Error loading categories: {categoriesError}
+            Error loading categories: {parentCategoriesError}
           </p>
           <button
             onClick={() => {
-              fetchCategories();
-              error(
-                "Gagal Memuat Data",
-                "Terjadi kesalahan saat memuat data kategori"
-              );
+              fetchParentCategories();
             }}
             className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
           >
@@ -434,7 +428,7 @@ export default function KategoriProdukPage() {
       )}
 
       {/* Categories Display */}
-      {!categoriesLoading && !categoriesError && (
+      {!parentCategoriesLoading && !parentCategoriesError && (
         <div className="space-y-4">
           {parentCategories.length === 0 ? (
             <div className="text-center py-12">
@@ -461,7 +455,8 @@ export default function KategoriProdukPage() {
             parentCategories.map((parent, index) => {
               const IconComponent = getCategoryIcon(parent.title);
               const colorClass = getCategoryColor(index);
-              const isExpanded = expandedParents.has(parent.id);
+              const isExpanded = expandedParent === parent.id;
+              const isLoadingSubCategories = loadingSubCategories.has(parent.id);
               const parentSubCategories = getSubCategoriesForParent(parent.id);
 
               return (
@@ -472,9 +467,12 @@ export default function KategoriProdukPage() {
                       <div className="flex items-center space-x-4">
                         <button
                           onClick={() => toggleParentExpansion(parent.id)}
-                          className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                          disabled={isLoadingSubCategories}
+                          className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          {isExpanded ? (
+                          {isLoadingSubCategories ? (
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                          ) : isExpanded ? (
                             <ChevronDown className="h-5 w-5" />
                           ) : (
                             <ChevronRight className="h-5 w-5" />
@@ -541,7 +539,12 @@ export default function KategoriProdukPage() {
                   {/* Subcategories */}
                   {isExpanded && (
                     <div className="bg-gray-50">
-                      {parentSubCategories.length > 0 ? (
+                      {isLoadingSubCategories ? (
+                        <div className="p-4 flex items-center justify-center">
+                          <Loader2 className="h-6 w-6 animate-spin text-emerald-500" />
+                          <span className="ml-2 text-gray-600">Loading subcategories...</span>
+                        </div>
+                      ) : parentSubCategories.length > 0 ? (
                         <div className="p-4 space-y-2">
                           {parentSubCategories.map((subCategory) => (
                             <div key={subCategory.id} className="flex items-center justify-between bg-white rounded-lg p-3 border border-gray-200">
@@ -614,18 +617,18 @@ export default function KategoriProdukPage() {
       )}
 
       {/* Empty State */}
-      {!categoriesLoading &&
-        !categoriesError &&
-        categoriesData?.data.data.length === 0 && (
+      {!parentCategoriesLoading &&
+        !parentCategoriesError &&
+        parentCategories.length === 0 && (
           <div className="text-center py-12">
             <Tag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No categories found
+              {searchTerm ? "Kategori tidak ditemukan" : "Belum ada kategori utama"}
             </h3>
             <p className="text-gray-600 mb-4">
               {searchTerm
-                ? "Try adjusting your search terms."
-                : "Get started by creating your first category."}
+                ? "Coba ubah kata kunci pencarian Anda."
+                : "Mulai dengan membuat kategori utama terlebih dahulu."}
             </p>
             {!searchTerm && (
               <button
@@ -633,7 +636,7 @@ export default function KategoriProdukPage() {
                 className="inline-flex items-center px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Create Category
+                Buat Kategori
               </button>
             )}
           </div>
@@ -849,32 +852,32 @@ export default function KategoriProdukPage() {
       </AnimatePresence>
 
       {/* Pagination */}
-      {!categoriesLoading &&
-        !categoriesError &&
-        categoriesData?.data.data &&
-        categoriesData.data.data.length > 0 && (
+      {!parentCategoriesLoading &&
+        !parentCategoriesError &&
+        parentCategoriesData?.data.data &&
+        parentCategoriesData.data.data.length > 0 && (
           <div className="flex items-center justify-between mt-8">
             <div className="text-sm text-gray-700">
-              Showing {categoriesData.data.from} to {categoriesData.data.to} of{" "}
-              {categoriesData.data.total} results
+              Menampilkan {parentCategoriesData.data.from} - {parentCategoriesData.data.to} dari{" "}
+              {parentCategoriesData.data.total} kategori utama
             </div>
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setCurrentPage(currentPage - 1)}
-                disabled={!categoriesData.data.prev_page_url}
+                disabled={!parentCategoriesData.data.prev_page_url}
                 className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Previous
+                Sebelumnya
               </button>
               <span className="px-3 py-2 text-sm bg-emerald-500 text-white rounded-lg">
-                {categoriesData.data.current_page}
+                {parentCategoriesData.data.current_page}
               </span>
               <button
                 onClick={() => setCurrentPage(currentPage + 1)}
-                disabled={!categoriesData.data.next_page_url}
+                disabled={!parentCategoriesData.data.next_page_url}
                 className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Next
+                Selanjutnya
               </button>
             </div>
           </div>
