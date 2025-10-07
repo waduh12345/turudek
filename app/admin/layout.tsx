@@ -29,6 +29,7 @@ const navigation = [
     submenu: [
       { name: "Produk", href: "/admin/produk", icon: Package },
       { name: "Kategori Produk", href: "/admin/kategori-produk", icon: Tag },
+      { name: "Migrasi Produk", href: "/admin/migrasi-produk", icon: Package },
     ]
   },
   // { name: "Kategori Produk", href: "/admin/kategori-produk", icon: Tag },
