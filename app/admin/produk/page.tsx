@@ -31,6 +31,7 @@ import {
 } from "@/lib/types";
 import { getImageUrl } from "@/lib/image-url";
 import { useToast } from "@/components/providers/toast-provider";
+import Image from "next/image";
 // import { ErrorHandler } from "@/lib/utils/error-handler";
 
 export default function ProdukPage() {
@@ -38,12 +39,16 @@ export default function ProdukPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [perPage] = useState(10);
-  
+  // const [currentPage, setCurrentPage] = useState(1);
+  // const [perPage] = useState(10);
+
   // Hierarchy states
-  const [expandedSubCategories, setExpandedSubCategories] = useState<Set<number>>(new Set());
-  const [selectedSubCategory, setSelectedSubCategory] = useState<number | null>(null);
+  const [expandedSubCategories, setExpandedSubCategories] = useState<
+    Set<number>
+  >(new Set());
+  const [selectedSubCategory, setSelectedSubCategory] = useState<number | null>(
+    null
+  );
   const [subCategories, setSubCategories] = useState<ProductCategory[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
 
@@ -137,19 +142,19 @@ export default function ProdukPage() {
   // Update state when data changes - filter only subcategories (children)
   useEffect(() => {
     if (subCategoriesData?.data?.data) {
-      console.log('Raw categories data:', subCategoriesData.data.data);
+      console.log("Raw categories data:", subCategoriesData.data.data);
       // Filter only subcategories (those with parent_id not null)
       const subCategoriesOnly = subCategoriesData.data.data.filter(
         (category: ProductCategory) => category.parent_id !== null
       );
-      console.log('Filtered subcategories:', subCategoriesOnly);
+      console.log("Filtered subcategories:", subCategoriesOnly);
       setSubCategories(subCategoriesOnly);
     }
   }, [subCategoriesData]);
 
   useEffect(() => {
     if (productsData?.data?.data) {
-      console.log('Products data received:', productsData.data.data);
+      console.log("Products data received:", productsData.data.data);
       setProducts(productsData.data.data);
     }
   }, [productsData]);
@@ -158,15 +163,25 @@ export default function ProdukPage() {
 
   // Helper function to get products for a subcategory
   const getProductsForSubCategory = (subCategoryId: number) => {
-    console.log('getProductsForSubCategory called with subCategoryId:', subCategoryId);
-    console.log('All products:', products);
-    console.log('Products with matching category_id:', products.filter(product => product.product_category_id === subCategoryId));
-    return products.filter(product => product.product_category_id === subCategoryId);
+    console.log(
+      "getProductsForSubCategory called with subCategoryId:",
+      subCategoryId
+    );
+    console.log("All products:", products);
+    console.log(
+      "Products with matching category_id:",
+      products.filter(
+        (product) => product.product_category_id === subCategoryId
+      )
+    );
+    return products.filter(
+      (product) => product.product_category_id === subCategoryId
+    );
   };
 
   // Toggle subcategory expansion
   const toggleSubCategoryExpansion = (subCategoryId: number) => {
-    setExpandedSubCategories(prev => {
+    setExpandedSubCategories((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(subCategoryId)) {
         newSet.delete(subCategoryId);
@@ -180,7 +195,7 @@ export default function ProdukPage() {
   // Handle subcategory selection for adding products
   const handleSubCategorySelection = (subCategoryId: number) => {
     setSelectedSubCategory(subCategoryId);
-    setFormData(prev => ({ ...prev, product_category_id: subCategoryId }));
+    setFormData((prev) => ({ ...prev, product_category_id: subCategoryId }));
     setShowForm(true);
   };
 
@@ -188,7 +203,7 @@ export default function ProdukPage() {
     const file = e.target.files?.[0];
     if (file) {
       setFormData({ ...formData, image: file });
-      
+
       // Create preview URL
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -272,14 +287,14 @@ export default function ProdukPage() {
       status: product.status,
       image: null,
     });
-    
+
     // Set image preview if product has an image
     if (product.image) {
       setImagePreview(getImageUrl(product.image));
     } else {
       setImagePreview(null);
     }
-    
+
     setShowForm(true);
   };
 
@@ -395,7 +410,6 @@ export default function ProdukPage() {
 
       {isAuthenticated && hasToken && (
         <>
-
           {/* Search */}
           <div className="flex items-center space-x-4">
             <div className="relative flex-1 max-w-md">
@@ -408,17 +422,17 @@ export default function ProdukPage() {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               />
             </div>
-              <button
-                onClick={() => {
+            <button
+              onClick={() => {
                 fetchSubCategories();
                 fetchProducts();
-                }}
+              }}
               className="flex items-center space-x-2 px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200"
               title="Refresh data"
-              >
+            >
               <RefreshCw className="h-4 w-4" />
               <span>Refresh</span>
-              </button>
+            </button>
             {subCategoriesLoading && (
               <div className="flex items-center text-sm text-gray-500">
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -466,16 +480,23 @@ export default function ProdukPage() {
               ) : (
                 subCategories.map((subCategory, index) => {
                   const isExpanded = expandedSubCategories.has(subCategory.id);
-                  const subCategoryProducts = getProductsForSubCategory(subCategory.id);
+                  const subCategoryProducts = getProductsForSubCategory(
+                    subCategory.id
+                  );
 
                   return (
-                    <div key={subCategory.id} className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 overflow-hidden">
+                    <div
+                      key={subCategory.id}
+                      className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 overflow-hidden"
+                    >
                       {/* Subcategory Header */}
                       <div className="p-6 border-b border-gray-100">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-4">
                             <button
-                              onClick={() => toggleSubCategoryExpansion(subCategory.id)}
+                              onClick={() =>
+                                toggleSubCategoryExpansion(subCategory.id)
+                              }
                               className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors duration-200"
                             >
                               {isExpanded ? (
@@ -485,7 +506,7 @@ export default function ProdukPage() {
                               )}
                               <div className="relative">
                                 {subCategory.image ? (
-                                  <img
+                                  <Image
                                     src={getImageUrl(subCategory.image)}
                                     alt={subCategory.title}
                                     className="h-12 w-12 rounded-lg object-cover"
@@ -497,20 +518,28 @@ export default function ProdukPage() {
                                 )}
                               </div>
                               <div>
-                                <h3 className="text-lg font-semibold text-gray-900">{subCategory.title}</h3>
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                  {subCategory.title}
+                                </h3>
                               </div>
                             </button>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              subCategory.status === 1 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-red-100 text-red-800'
-                            }`}>
-                              {subCategory.status === 1 ? 'Aktif' : 'Tidak Aktif'}
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                subCategory.status === 1
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {subCategory.status === 1
+                                ? "Aktif"
+                                : "Tidak Aktif"}
                             </span>
                             <button
-                              onClick={() => handleSubCategorySelection(subCategory.id)}
+                              onClick={() =>
+                                handleSubCategorySelection(subCategory.id)
+                              }
                               className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors duration-200"
                               title="Tambah produk"
                             >
@@ -526,11 +555,14 @@ export default function ProdukPage() {
                           {subCategoryProducts.length > 0 ? (
                             <div className="p-4 space-y-2">
                               {subCategoryProducts.map((product) => (
-                                <div key={product.id} className="flex items-center justify-between bg-white rounded-lg p-3 border border-gray-200">
+                                <div
+                                  key={product.id}
+                                  className="flex items-center justify-between bg-white rounded-lg p-3 border border-gray-200"
+                                >
                                   <div className="flex items-center space-x-3">
                                     <div className="relative">
                                       {product.image ? (
-                                        <img
+                                        <Image
                                           src={getImageUrl(product.image)}
                                           alt={product.name}
                                           className="h-8 w-8 rounded-lg object-cover"
@@ -542,24 +574,44 @@ export default function ProdukPage() {
                                       )}
                                     </div>
                                     <div>
-                                      <h4 className="text-sm font-medium text-gray-900">{product.name}</h4>
-                                      <p className="text-xs text-gray-600">SKU: {product.sku}</p>
+                                      <h4 className="text-sm font-medium text-gray-900">
+                                        {product.name}
+                                      </h4>
+                                      <p className="text-xs text-gray-600">
+                                        SKU: {product.sku}
+                                      </p>
                                       {product.description && (
-                                        <p className="text-xs text-gray-500 mt-1">{product.description}</p>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          {product.description}
+                                        </p>
                                       )}
                                     </div>
                                   </div>
                                   <div className="flex items-center space-x-2">
                                     <div className="text-right">
-                                      <p className="text-sm font-medium text-gray-900">Rp {parseFloat(product.sell_price).toLocaleString()}</p>
-                                      <p className="text-xs text-gray-500">Beli: Rp {parseFloat(product.buy_price).toLocaleString()}</p>
+                                      <p className="text-sm font-medium text-gray-900">
+                                        Rp{" "}
+                                        {parseFloat(
+                                          product.sell_price
+                                        ).toLocaleString()}
+                                      </p>
+                                      <p className="text-xs text-gray-500">
+                                        Beli: Rp{" "}
+                                        {parseFloat(
+                                          product.buy_price
+                                        ).toLocaleString()}
+                                      </p>
                                     </div>
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                      product.status === 1 
-                                        ? 'bg-green-100 text-green-800' 
-                                        : 'bg-red-100 text-red-800'
-                                    }`}>
-                                      {product.status === 1 ? 'Aktif' : 'Tidak Aktif'}
+                                    <span
+                                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                        product.status === 1
+                                          ? "bg-green-100 text-green-800"
+                                          : "bg-red-100 text-red-800"
+                                      }`}
+                                    >
+                                      {product.status === 1
+                                        ? "Aktif"
+                                        : "Tidak Aktif"}
                                     </span>
                                     <button
                                       onClick={() => handleEdit(product)}
@@ -584,7 +636,9 @@ export default function ProdukPage() {
                               <Package className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                               <p className="text-sm">Belum ada produk</p>
                               <button
-                                onClick={() => handleSubCategorySelection(subCategory.id)}
+                                onClick={() =>
+                                  handleSubCategorySelection(subCategory.id)
+                                }
                                 className="text-blue-600 hover:text-blue-900 text-sm mt-1 underline"
                               >
                                 Tambah produk pertama
@@ -1000,7 +1054,7 @@ export default function ProdukPage() {
                         {/* Image Preview */}
                         {imagePreview && (
                           <div className="relative">
-                            <img
+                            <Image
                               src={imagePreview}
                               alt="Preview"
                               className="w-full h-48 object-cover rounded-lg"
@@ -1018,12 +1072,12 @@ export default function ProdukPage() {
                             </button>
                           </div>
                         )}
-                        
+
                         {/* File Input */}
                         <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-emerald-500 transition-colors">
-                      <input
-                        type="file"
-                        accept="image/*"
+                          <input
+                            type="file"
+                            accept="image/*"
                             onChange={handleImageChange}
                             className="hidden"
                             id="image-upload"
@@ -1038,8 +1092,8 @@ export default function ProdukPage() {
                               Klik untuk upload atau drag and drop
                             </p>
                             <p className="text-xs text-gray-500">
-                        PNG, JPG, GIF up to 5MB
-                      </p>
+                              PNG, JPG, GIF up to 5MB
+                            </p>
                           </label>
                         </div>
                       </div>
@@ -1195,4 +1249,3 @@ export default function ProdukPage() {
     </div>
   );
 }
-

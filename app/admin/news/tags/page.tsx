@@ -15,7 +15,11 @@ import {
 import { useApiCall, useDebounce } from "@/hooks";
 import { useTokenSync } from "@/hooks/use-token-sync";
 import { api } from "@/services/api";
-import { NewsTag, CreateNewsTagRequest, UpdateNewsTagRequest } from "@/lib/types";
+import {
+  NewsTag,
+  CreateNewsTagRequest,
+  UpdateNewsTagRequest,
+} from "@/lib/types";
 
 export default function NewsTagsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,35 +33,30 @@ export default function NewsTagsPage() {
     description: "",
     status: 1 as 0 | 1,
   });
-  
+
   // Debounce search term untuk UX yang lebih baik
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
-  
+
   // Token sync untuk authentication
   const { isAuthenticated, hasToken } = useTokenSync();
 
   // API calls
-  const { 
-    data: tagsData, 
-    loading: tagsLoading, 
-    error: tagsError, 
-    execute: fetchTags 
+  const {
+    data: tagsData,
+    loading: tagsLoading,
+    error: tagsError,
+    execute: fetchTags,
   } = useApiCall(api.newsTags.getNewsTags);
 
-  const { 
-    loading: submitLoading, 
-    execute: submitTag 
-  } = useApiCall(api.newsTags.createNewsTag);
+  const { loading: submitLoading, execute: submitTag } = useApiCall(
+    api.newsTags.createNewsTag
+  );
 
-  const { 
-    loading: updateLoading, 
-    execute: updateTag 
-  } = useApiCall(api.newsTags.updateNewsTag);
+  const { loading: updateLoading, execute: updateTag } = useApiCall(
+    api.newsTags.updateNewsTag
+  );
 
-  const { 
-    loading: deleteLoading, 
-    execute: deleteTag 
-  } = useApiCall(api.newsTags.deleteNewsTag);
+  const { execute: deleteTag } = useApiCall(api.newsTags.deleteNewsTag);
 
   // Load tags on component mount and when search/page changes
   useEffect(() => {
@@ -67,11 +66,17 @@ export default function NewsTagsPage() {
         paginate: perPage,
         search: debouncedSearchTerm || undefined,
       }).catch((error) => {
-        console.error('Error in fetchTags:', error);
+        console.error("Error in fetchTags:", error);
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, debouncedSearchTerm, isAuthenticated, hasToken, retryTrigger]);
+  }, [
+    currentPage,
+    debouncedSearchTerm,
+    isAuthenticated,
+    hasToken,
+    retryTrigger,
+  ]);
 
   // Get tags from API response
   const tags = tagsData?.data?.data || [];
@@ -79,13 +84,13 @@ export default function NewsTagsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Client-side validation
     if (!formData.name.trim()) {
       console.error("Nama tag harus diisi");
       return;
     }
-    
+
     if (!formData.description.trim()) {
       console.error("Deskripsi tag harus diisi");
       return;
@@ -96,7 +101,7 @@ export default function NewsTagsPage() {
         name: formData.name.trim(),
         description: formData.description.trim(),
         status: formData.status,
-        ...(editingTag && { slug: editingTag.slug })
+        ...(editingTag && { slug: editingTag.slug }),
       };
 
       if (editingTag) {
@@ -104,13 +109,13 @@ export default function NewsTagsPage() {
       } else {
         await submitTag(submitData as CreateNewsTagRequest);
       }
-      
+
       // Refresh data
-      setRetryTrigger(prev => prev + 1);
-      
+      setRetryTrigger((prev) => prev + 1);
+
       resetForm();
     } catch (error) {
-      console.error('Error submitting news tag:', error);
+      console.error("Error submitting news tag:", error);
     }
   };
 
@@ -128,11 +133,11 @@ export default function NewsTagsPage() {
     if (confirm(`Are you sure you want to delete "${tag.name}"?`)) {
       try {
         await deleteTag(tag.slug);
-        
+
         // Refresh data
-        setRetryTrigger(prev => prev + 1);
+        setRetryTrigger((prev) => prev + 1);
       } catch (error) {
-        console.error('Error deleting news tag:', error);
+        console.error("Error deleting news tag:", error);
       }
     }
   };
@@ -183,11 +188,12 @@ export default function NewsTagsPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <p className="text-red-600 mb-4">
-            Error loading tags: {typeof tagsError === 'string' ? tagsError : 'Unknown error'}
+            Error loading tags:{" "}
+            {typeof tagsError === "string" ? tagsError : "Unknown error"}
           </p>
           <button
             onClick={() => {
-              setRetryTrigger(prev => prev + 1);
+              setRetryTrigger((prev) => prev + 1);
             }}
             className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
           >
@@ -203,7 +209,9 @@ export default function NewsTagsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Authentication required to access this page.</p>
+          <p className="text-gray-600 mb-4">
+            Authentication required to access this page.
+          </p>
         </div>
       </div>
     );
@@ -217,7 +225,9 @@ export default function NewsTagsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Tags News</h1>
-            <p className="text-gray-600">Kelola tags untuk artikel dan berita</p>
+            <p className="text-gray-600">
+              Kelola tags untuk artikel dan berita
+            </p>
           </div>
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -255,13 +265,12 @@ export default function NewsTagsPage() {
           <div className="text-center">
             <Tag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {searchTerm ? 'Tidak ada tag yang sesuai' : 'Belum ada tags'}
+              {searchTerm ? "Tidak ada tag yang sesuai" : "Belum ada tags"}
             </h3>
             <p className="text-gray-600 mb-4">
-              {searchTerm 
-                ? 'Coba ubah kata kunci pencarian Anda.' 
-                : 'Mulai dengan menambahkan tag pertama Anda.'
-              }
+              {searchTerm
+                ? "Coba ubah kata kunci pencarian Anda."
+                : "Mulai dengan menambahkan tag pertama Anda."}
             </p>
             {!searchTerm && (
               <button
@@ -310,7 +319,9 @@ export default function NewsTagsPage() {
                     <input
                       type="text"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                       placeholder="Masukkan nama tag"
                       required
@@ -323,7 +334,12 @@ export default function NewsTagsPage() {
                     </label>
                     <textarea
                       value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                       placeholder="Masukkan deskripsi tag"
                       rows={3}
@@ -337,7 +353,12 @@ export default function NewsTagsPage() {
                     </label>
                     <select
                       value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: parseInt(e.target.value) as 0 | 1 })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          status: parseInt(e.target.value) as 0 | 1,
+                        })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                       aria-label="Select status"
                     >
@@ -361,16 +382,19 @@ export default function NewsTagsPage() {
                       disabled={submitLoading || updateLoading}
                       className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {(submitLoading || updateLoading) ? (
+                      {submitLoading || updateLoading ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <Save className="h-4 w-4" />
                       )}
                       <span>
-                        {submitLoading || updateLoading 
-                          ? (editingTag ? "Updating..." : "Saving...") 
-                          : (editingTag ? "Update" : "Simpan")
-                        }
+                        {submitLoading || updateLoading
+                          ? editingTag
+                            ? "Updating..."
+                            : "Saving..."
+                          : editingTag
+                          ? "Update"
+                          : "Simpan"}
                       </span>
                     </motion.button>
                   </div>
@@ -445,7 +469,9 @@ export default function NewsTagsPage() {
                   <Tag className="h-5 w-5 text-white" />
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-lg font-semibold text-gray-900">{tag.name}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {tag.name}
+                  </h3>
                   <p className="text-sm text-gray-500">#{tag.slug}</p>
                 </div>
               </div>
@@ -461,8 +487,12 @@ export default function NewsTagsPage() {
             <p className="text-gray-600 text-sm mb-4">{tag.description}</p>
 
             <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-              <span>Dibuat: {new Date(tag.created_at).toLocaleDateString('id-ID')}</span>
-              <span>Diupdate: {new Date(tag.updated_at).toLocaleDateString('id-ID')}</span>
+              <span>
+                Dibuat: {new Date(tag.created_at).toLocaleDateString("id-ID")}
+              </span>
+              <span>
+                Diupdate: {new Date(tag.updated_at).toLocaleDateString("id-ID")}
+              </span>
             </div>
 
             <div className="flex items-center justify-end space-x-2">
@@ -521,7 +551,9 @@ export default function NewsTagsPage() {
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     placeholder="Masukkan nama tag"
                     required
@@ -534,7 +566,9 @@ export default function NewsTagsPage() {
                   </label>
                   <textarea
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     placeholder="Masukkan deskripsi tag"
                     rows={3}
@@ -546,12 +580,17 @@ export default function NewsTagsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Status
                   </label>
-                    <select
-                      value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: parseInt(e.target.value) as 0 | 1 })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                      aria-label="Select status"
-                    >
+                  <select
+                    value={formData.status}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        status: parseInt(e.target.value) as 0 | 1,
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    aria-label="Select status"
+                  >
                     <option value={1}>Aktif</option>
                     <option value={0}>Tidak Aktif</option>
                   </select>
@@ -572,16 +611,19 @@ export default function NewsTagsPage() {
                     disabled={submitLoading || updateLoading}
                     className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {(submitLoading || updateLoading) ? (
+                    {submitLoading || updateLoading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <Save className="h-4 w-4" />
                     )}
                     <span>
-                      {submitLoading || updateLoading 
-                        ? (editingTag ? "Updating..." : "Saving...") 
-                        : (editingTag ? "Update" : "Simpan")
-                      }
+                      {submitLoading || updateLoading
+                        ? editingTag
+                          ? "Updating..."
+                          : "Saving..."
+                        : editingTag
+                        ? "Update"
+                        : "Simpan"}
                     </span>
                   </motion.button>
                 </div>
@@ -595,11 +637,12 @@ export default function NewsTagsPage() {
       {pagination && pagination.last_page > 1 && (
         <div className="flex items-center justify-between mt-8">
           <div className="text-sm text-gray-700">
-            Menampilkan {pagination.from} sampai {pagination.to} dari {pagination.total} tags
+            Menampilkan {pagination.from} sampai {pagination.to} dari{" "}
+            {pagination.total} tags
           </div>
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
               className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -609,7 +652,11 @@ export default function NewsTagsPage() {
               Halaman {currentPage} dari {pagination.last_page}
             </span>
             <button
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, pagination.last_page))}
+              onClick={() =>
+                setCurrentPage((prev) =>
+                  Math.min(prev + 1, pagination.last_page)
+                )
+              }
               disabled={currentPage === pagination.last_page}
               className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >

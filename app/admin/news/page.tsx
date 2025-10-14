@@ -22,8 +22,13 @@ import {
 import { useApiCall, useDebounce } from "@/hooks";
 import { useTokenSync } from "@/hooks/use-token-sync";
 import { api } from "@/services/api";
-import { NewsArticle, CreateNewsArticleRequest, UpdateNewsArticleRequest } from "@/lib/types";
+import {
+  NewsArticle,
+  CreateNewsArticleRequest,
+  UpdateNewsArticleRequest,
+} from "@/lib/types";
 import { getImageUrl } from "@/lib/image-url";
+import Image from "next/image";
 
 export default function NewsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -31,7 +36,9 @@ export default function NewsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [showForm, setShowForm] = useState(false);
   const [editingNews, setEditingNews] = useState<NewsArticle | null>(null);
-  const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
+  const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(
+    null
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage] = useState(10);
   const [retryTrigger, setRetryTrigger] = useState(0);
@@ -46,45 +53,41 @@ export default function NewsPage() {
     image: null as File | null,
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  
+
   // Debounce search term untuk UX yang lebih baik
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
-  
+
   // Token sync untuk authentication
   const { isAuthenticated, hasToken } = useTokenSync();
 
   // API calls
-  const { 
-    data: articlesData, 
-    loading: articlesLoading, 
-    error: articlesError, 
-    execute: fetchArticles 
+  const {
+    data: articlesData,
+    loading: articlesLoading,
+    error: articlesError,
+    execute: fetchArticles,
   } = useApiCall(api.newsArticles.getNewsArticles);
 
-  const { 
-    loading: submitLoading, 
-    execute: submitArticle 
-  } = useApiCall(api.newsArticles.createNewsArticle);
+  const { loading: submitLoading, execute: submitArticle } = useApiCall(
+    api.newsArticles.createNewsArticle
+  );
 
-  const { 
-    loading: updateLoading, 
-    execute: updateArticle 
-  } = useApiCall(api.newsArticles.updateNewsArticle);
+  const { loading: updateLoading, execute: updateArticle } = useApiCall(
+    api.newsArticles.updateNewsArticle
+  );
 
-  const { 
-    execute: deleteArticle 
-  } = useApiCall(api.newsArticles.deleteNewsArticle);
+  const { execute: deleteArticle } = useApiCall(
+    api.newsArticles.deleteNewsArticle
+  );
 
   // Fetch categories and tags for dropdowns
-  const { 
-    data: categoriesData, 
-    execute: fetchCategories 
-  } = useApiCall(api.newsCategories.getNewsCategories);
+  const { data: categoriesData, execute: fetchCategories } = useApiCall(
+    api.newsCategories.getNewsCategories
+  );
 
-  const { 
-    data: tagsData, 
-    execute: fetchTags 
-  } = useApiCall(api.newsTags.getNewsTags);
+  const { data: tagsData, execute: fetchTags } = useApiCall(
+    api.newsTags.getNewsTags
+  );
 
   // Load data on component mount and when search/page changes
   useEffect(() => {
@@ -99,43 +102,51 @@ export default function NewsPage() {
         page: currentPage,
         paginate: perPage,
       };
-      
+
       // Only add optional parameters if they have values
       if (debouncedSearchTerm) {
         params.search = debouncedSearchTerm;
       }
-      
+
       if (statusFilter !== "all") {
         params.status = statusFilter === "published" ? 1 : 0;
       }
-      
+
       if (categoryFilter !== "all") {
         params.news_category_id = parseInt(categoryFilter);
       }
-      
+
       // console.log('Fetching articles with params:', params);
-      
+
       fetchArticles(params).catch((error) => {
-        console.error('Error in fetchArticles:', error);
+        console.error("Error in fetchArticles:", error);
       });
 
       fetchCategories({ page: 1, paginate: 100 }).catch((error) => {
-        console.error('Error in fetchCategories:', error);
+        console.error("Error in fetchCategories:", error);
       });
 
       fetchTags({ page: 1, paginate: 100 }).catch((error) => {
-        console.error('Error in fetchTags:', error);
+        console.error("Error in fetchTags:", error);
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, debouncedSearchTerm, categoryFilter, statusFilter, isAuthenticated, hasToken, retryTrigger]);
+  }, [
+    currentPage,
+    debouncedSearchTerm,
+    categoryFilter,
+    statusFilter,
+    isAuthenticated,
+    hasToken,
+    retryTrigger,
+  ]);
 
   // Get data from API responses
   const articles = articlesData?.data?.data || [];
   const pagination = articlesData?.data;
   const categories = categoriesData?.data?.data || [];
   const tags = tagsData?.data?.data || [];
-  
+
   // Debug logging
   // console.log('Categories loaded:', categories);
   // console.log('Current categoryFilter:', categoryFilter);
@@ -168,18 +179,18 @@ export default function NewsPage() {
   };
 
   const getPublishedCount = () => {
-    return articles.filter(article => article.status === 1).length;
+    return articles.filter((article) => article.status === 1).length;
   };
 
   const getDraftCount = () => {
-    return articles.filter(article => article.status === 0).length;
+    return articles.filter((article) => article.status === 0).length;
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setFormData({ ...formData, image: file });
-      
+
       // Create preview URL
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -189,16 +200,15 @@ export default function NewsPage() {
     }
   };
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Client-side validation
     if (!formData.title.trim()) {
       console.error("Judul artikel harus diisi");
       return;
     }
-    
+
     if (!formData.content.trim()) {
       console.error("Konten artikel harus diisi");
       return;
@@ -227,26 +237,31 @@ export default function NewsPage() {
       };
 
       if (editingNews) {
-        await updateArticle(editingNews.slug, submitData as UpdateNewsArticleRequest);
+        await updateArticle(
+          editingNews.slug,
+          submitData as UpdateNewsArticleRequest
+        );
       } else {
         await submitArticle(submitData as CreateNewsArticleRequest);
       }
-      
+
       // Refresh data
-      setRetryTrigger(prev => prev + 1);
-      
+      setRetryTrigger((prev) => prev + 1);
+
       resetForm();
     } catch (error) {
-      console.error('Error submitting news article:', error);
+      console.error("Error submitting news article:", error);
     }
   };
 
   const handleEdit = (article: NewsArticle) => {
     setEditingNews(article);
-    
+
     // Format published_at for datetime-local input
-    const publishedAtFormatted = new Date(article.published_at).toISOString().slice(0, 16);
-    
+    const publishedAtFormatted = new Date(article.published_at)
+      .toISOString()
+      .slice(0, 16);
+
     setFormData({
       news_category_id: article.news_category_id,
       title: article.title,
@@ -254,17 +269,17 @@ export default function NewsPage() {
       content: article.content,
       published_at: publishedAtFormatted,
       status: article.status,
-      tag_ids: article.tags.map(tag => tag.id),
+      tag_ids: article.tags.map((tag) => tag.id),
       image: null,
     });
-    
+
     // Set image preview if article has an image
     if (article.image) {
       setImagePreview(getImageUrl(article.image));
     } else {
       setImagePreview(null);
     }
-    
+
     setShowForm(true);
   };
 
@@ -272,11 +287,11 @@ export default function NewsPage() {
     if (confirm(`Are you sure you want to delete "${article.title}"?`)) {
       try {
         await deleteArticle(article.slug);
-        
+
         // Refresh data
-        setRetryTrigger(prev => prev + 1);
+        setRetryTrigger((prev) => prev + 1);
       } catch (error) {
-        console.error('Error deleting news article:', error);
+        console.error("Error deleting news article:", error);
       }
     }
   };
@@ -315,11 +330,14 @@ export default function NewsPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <p className="text-red-600 mb-4">
-            Error loading articles: {typeof articlesError === 'string' ? articlesError : 'Unknown error'}
+            Error loading articles:{" "}
+            {typeof articlesError === "string"
+              ? articlesError
+              : "Unknown error"}
           </p>
           <button
             onClick={() => {
-              setRetryTrigger(prev => prev + 1);
+              setRetryTrigger((prev) => prev + 1);
             }}
             className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
           >
@@ -335,7 +353,9 @@ export default function NewsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Authentication required to access this page.</p>
+          <p className="text-gray-600 mb-4">
+            Authentication required to access this page.
+          </p>
         </div>
       </div>
     );
@@ -380,7 +400,9 @@ export default function NewsPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Artikel</p>
-              <p className="text-2xl font-semibold text-gray-900">{articles.length}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {articles.length}
+              </p>
             </div>
           </div>
         </motion.div>
@@ -397,7 +419,9 @@ export default function NewsPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Dipublikasi</p>
-              <p className="text-2xl font-semibold text-gray-900">{getPublishedCount()}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {getPublishedCount()}
+              </p>
             </div>
           </div>
         </motion.div>
@@ -414,7 +438,9 @@ export default function NewsPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Draft</p>
-              <p className="text-2xl font-semibold text-gray-900">{getDraftCount()}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {getDraftCount()}
+              </p>
             </div>
           </div>
         </motion.div>
@@ -431,7 +457,9 @@ export default function NewsPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Views</p>
-              <p className="text-2xl font-semibold text-gray-900">{getTotalViews().toLocaleString()}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {getTotalViews().toLocaleString()}
+              </p>
             </div>
           </div>
         </motion.div>
@@ -520,7 +548,7 @@ export default function NewsPage() {
             {/* Article Image */}
             <div className="relative h-48 bg-gradient-to-r from-emerald-500 to-green-500">
               {article.image ? (
-                <img
+                <Image
                   src={getImageUrl(article.image)}
                   alt={article.title}
                   className="w-full h-full object-cover"
@@ -544,7 +572,9 @@ export default function NewsPage() {
             {/* Article Content */}
             <div className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-emerald-600">{article.category_name}</span>
+                <span className="text-sm font-medium text-emerald-600">
+                  {article.category_name}
+                </span>
                 <div className="flex items-center text-sm text-gray-500">
                   <Eye className="h-4 w-4 mr-1" />
                   {article.view_count}
@@ -582,7 +612,7 @@ export default function NewsPage() {
               <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
                 <div className="flex items-center">
                   <Calendar className="h-4 w-4 mr-1" />
-                  {new Date(article.published_at).toLocaleDateString('id-ID')}
+                  {new Date(article.published_at).toLocaleDateString("id-ID")}
                 </div>
                 <div className="flex items-center">
                   <span className="text-xs text-gray-400">
@@ -594,7 +624,7 @@ export default function NewsPage() {
               {/* Actions */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <button 
+                  <button
                     onClick={() => setSelectedArticle(article)}
                     className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors duration-200"
                     title="View article details"
@@ -616,9 +646,7 @@ export default function NewsPage() {
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
-                <span className="text-xs text-gray-500">
-                  {article.slug}
-                </span>
+                <span className="text-xs text-gray-500">{article.slug}</span>
               </div>
             </div>
           </motion.div>
@@ -662,7 +690,9 @@ export default function NewsPage() {
                     <input
                       type="text"
                       value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, title: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                       placeholder="Masukkan judul artikel"
                       required
@@ -675,7 +705,12 @@ export default function NewsPage() {
                     </label>
                     <select
                       value={formData.news_category_id}
-                      onChange={(e) => setFormData({ ...formData, news_category_id: parseInt(e.target.value) })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          news_category_id: parseInt(e.target.value),
+                        })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                       required
                       aria-label="Select category"
@@ -697,12 +732,13 @@ export default function NewsPage() {
                   <input
                     type="text"
                     value={formData.sub_title}
-                    onChange={(e) => setFormData({ ...formData, sub_title: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, sub_title: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     placeholder="Masukkan sub judul artikel"
                   />
                 </div>
-
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -710,7 +746,9 @@ export default function NewsPage() {
                   </label>
                   <textarea
                     value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, content: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     placeholder="Masukkan konten artikel lengkap"
                     rows={8}
@@ -726,7 +764,12 @@ export default function NewsPage() {
                     </label>
                     <select
                       value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: parseInt(e.target.value) as 0 | 1 })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          status: parseInt(e.target.value) as 0 | 1,
+                        })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                       aria-label="Select status"
                     >
@@ -742,7 +785,12 @@ export default function NewsPage() {
                     <input
                       type="datetime-local"
                       value={formData.published_at}
-                      onChange={(e) => setFormData({ ...formData, published_at: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          published_at: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                       required
                     />
@@ -761,14 +809,24 @@ export default function NewsPage() {
                           checked={formData.tag_ids.includes(tag.id)}
                           onChange={(e) => {
                             if (e.target.checked) {
-                              setFormData({ ...formData, tag_ids: [...formData.tag_ids, tag.id] });
+                              setFormData({
+                                ...formData,
+                                tag_ids: [...formData.tag_ids, tag.id],
+                              });
                             } else {
-                              setFormData({ ...formData, tag_ids: formData.tag_ids.filter(id => id !== tag.id) });
+                              setFormData({
+                                ...formData,
+                                tag_ids: formData.tag_ids.filter(
+                                  (id) => id !== tag.id
+                                ),
+                              });
                             }
                           }}
                           className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
                         />
-                        <span className="ml-2 text-sm text-gray-900">{tag.name}</span>
+                        <span className="ml-2 text-sm text-gray-900">
+                          {tag.name}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -782,7 +840,7 @@ export default function NewsPage() {
                     {/* Image Preview */}
                     {imagePreview && (
                       <div className="relative">
-                        <img
+                        <Image
                           src={imagePreview}
                           alt="Preview"
                           className="w-full h-48 object-cover rounded-lg"
@@ -800,7 +858,7 @@ export default function NewsPage() {
                         </button>
                       </div>
                     )}
-                    
+
                     {/* File Input */}
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-emerald-500 transition-colors">
                       <input
@@ -819,7 +877,9 @@ export default function NewsPage() {
                         <p className="mt-2 text-sm text-gray-600">
                           Klik untuk upload atau drag and drop
                         </p>
-                        <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                        <p className="text-xs text-gray-500">
+                          PNG, JPG, GIF up to 10MB
+                        </p>
                       </label>
                     </div>
                   </div>
@@ -840,16 +900,19 @@ export default function NewsPage() {
                     disabled={submitLoading || updateLoading}
                     className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {(submitLoading || updateLoading) ? (
+                    {submitLoading || updateLoading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <Save className="h-4 w-4" />
                     )}
                     <span>
-                      {submitLoading || updateLoading 
-                        ? (editingNews ? "Updating..." : "Saving...") 
-                        : (editingNews ? "Update" : "Simpan")
-                      }
+                      {submitLoading || updateLoading
+                        ? editingNews
+                          ? "Updating..."
+                          : "Saving..."
+                        : editingNews
+                        ? "Update"
+                        : "Simpan"}
                     </span>
                   </motion.button>
                 </div>
@@ -875,7 +938,9 @@ export default function NewsPage() {
               className="bg-white rounded-xl shadow-xl max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">Detail Artikel</h2>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Detail Artikel
+                </h2>
                 <button
                   onClick={() => setSelectedArticle(null)}
                   className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
@@ -888,11 +953,15 @@ export default function NewsPage() {
               <div className="space-y-6">
                 {/* Article Header */}
                 <div className="text-center">
-                  <h1 className="text-2xl font-bold text-gray-900 mb-4">{selectedArticle.title}</h1>
+                  <h1 className="text-2xl font-bold text-gray-900 mb-4">
+                    {selectedArticle.title}
+                  </h1>
                   <div className="flex items-center justify-center space-x-4 text-sm text-gray-500 mb-4">
                     <span className="flex items-center">
                       <Calendar className="h-4 w-4 mr-1" />
-                      {new Date(selectedArticle.published_at).toLocaleDateString('id-ID')}
+                      {new Date(
+                        selectedArticle.published_at
+                      ).toLocaleDateString("id-ID")}
                     </span>
                     <span className="flex items-center">
                       <Eye className="h-4 w-4 mr-1" />
@@ -905,7 +974,9 @@ export default function NewsPage() {
                     </span>
                   </div>
                   <div className="flex items-center justify-center space-x-2">
-                    <span className="text-sm font-medium text-emerald-600">{selectedArticle.category_name}</span>
+                    <span className="text-sm font-medium text-emerald-600">
+                      {selectedArticle.category_name}
+                    </span>
                     <span
                       className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
                         selectedArticle.status
@@ -919,7 +990,7 @@ export default function NewsPage() {
                 {/* Article Image */}
                 <div className="flex justify-center">
                   {selectedArticle.image ? (
-                    <img
+                    <Image
                       src={getImageUrl(selectedArticle.image)}
                       alt={selectedArticle.title}
                       className="w-full max-w-md h-48 object-cover rounded-lg"
@@ -935,21 +1006,31 @@ export default function NewsPage() {
                 <div className="space-y-4">
                   {selectedArticle.sub_title && (
                     <div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">Sub Judul</h3>
-                      <p className="text-gray-600 leading-relaxed">{selectedArticle.sub_title}</p>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        Sub Judul
+                      </h3>
+                      <p className="text-gray-600 leading-relaxed">
+                        {selectedArticle.sub_title}
+                      </p>
                     </div>
                   )}
 
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Konten</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      Konten
+                    </h3>
                     <div className="prose max-w-none">
-                      <p className="text-gray-600 leading-relaxed">{selectedArticle.content}</p>
+                      <p className="text-gray-600 leading-relaxed">
+                        {selectedArticle.content}
+                      </p>
                     </div>
                   </div>
 
                   {/* Tags */}
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Tags</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      Tags
+                    </h3>
                     <div className="flex flex-wrap gap-2">
                       {selectedArticle.tags.map((tag, tagIndex) => (
                         <span
@@ -965,25 +1046,37 @@ export default function NewsPage() {
 
                   {/* Article Meta */}
                   <div className="bg-gray-50 rounded-lg p-4">
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Informasi Artikel</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      Informasi Artikel
+                    </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-gray-600">Slug:</span>
-                        <span className="ml-2 font-medium text-gray-900">{selectedArticle.slug}</span>
+                        <span className="ml-2 font-medium text-gray-900">
+                          {selectedArticle.slug}
+                        </span>
                       </div>
                       <div>
                         <span className="text-gray-600">Dibuat:</span>
-                        <span className="ml-2 font-medium text-gray-900">{new Date(selectedArticle.created_at).toLocaleDateString('id-ID')}</span>
+                        <span className="ml-2 font-medium text-gray-900">
+                          {new Date(
+                            selectedArticle.created_at
+                          ).toLocaleDateString("id-ID")}
+                        </span>
                       </div>
                       <div>
                         <span className="text-gray-600">Dipublikasi:</span>
                         <span className="ml-2 font-medium text-gray-900">
-                          {new Date(selectedArticle.published_at).toLocaleDateString('id-ID')}
+                          {new Date(
+                            selectedArticle.published_at
+                          ).toLocaleDateString("id-ID")}
                         </span>
                       </div>
                       <div>
                         <span className="text-gray-600">Status:</span>
-                        <span className="ml-2 font-medium text-gray-900">{getStatusText(selectedArticle.status)}</span>
+                        <span className="ml-2 font-medium text-gray-900">
+                          {getStatusText(selectedArticle.status)}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -998,11 +1091,12 @@ export default function NewsPage() {
       {pagination && pagination.last_page > 1 && (
         <div className="flex items-center justify-between mt-8">
           <div className="text-sm text-gray-700">
-            Menampilkan {pagination.from} sampai {pagination.to} dari {pagination.total} artikel
+            Menampilkan {pagination.from} sampai {pagination.to} dari{" "}
+            {pagination.total} artikel
           </div>
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
               className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -1012,7 +1106,11 @@ export default function NewsPage() {
               Halaman {currentPage} dari {pagination.last_page}
             </span>
             <button
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, pagination.last_page))}
+              onClick={() =>
+                setCurrentPage((prev) =>
+                  Math.min(prev + 1, pagination.last_page)
+                )
+              }
               disabled={currentPage === pagination.last_page}
               className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >

@@ -6,7 +6,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import PromotionBanner from "@/components/section/promotion-banner";
-import { publicProductCategoriesService, PublicProductCategory } from "@/services/api/public-product-categories";
+import {
+  publicProductCategoriesService,
+  PublicProductCategory,
+} from "@/services/api/public-product-categories";
 import { useApiCall, useDebounce } from "@/hooks";
 
 interface Product {
@@ -16,916 +19,6 @@ interface Product {
 }
 
 type ProductData = Record<string, Product[]>;
-
-// Sample data organized by category and alphabet (fallback)
-const fallbackProductData = {
-  All: {
-    A: [
-      {
-        id: 1,
-        name: "AFK Arena",
-        image:
-          "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 2,
-        name: "Among Us",
-        image:
-          "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 3,
-        name: "Apex Legends",
-        image:
-          "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 4,
-        name: "Arena of Valor",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 101,
-        name: "Amazon Gift Card",
-        image:
-          "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 102,
-        name: "Apple Gift Card",
-        image:
-          "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 201,
-        name: "Airtime Telkomsel",
-        image:
-          "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    B: [
-      {
-        id: 5,
-        name: "Bigo Live",
-        image:
-          "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 6,
-        name: "Boss Party",
-        image:
-          "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 7,
-        name: "Brawl Stars",
-        image:
-          "https://images.unsplash.com/photo-1556438064-2d7646166914?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    C: [
-      {
-        id: 8,
-        name: "Call of Duty Mobile",
-        image:
-          "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 9,
-        name: "Clash of Clans",
-        image:
-          "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 10,
-        name: "Clash Royale",
-        image:
-          "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 11,
-        name: "Counter Strike",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    D: [
-      {
-        id: 12,
-        name: "Dragon Raja",
-        image:
-          "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 13,
-        name: "Dota 2",
-        image:
-          "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 301,
-        name: "DANA",
-        image:
-          "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    F: [
-      {
-        id: 14,
-        name: "Free Fire",
-        image:
-          "https://images.unsplash.com/photo-1556438064-2d7646166914?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 15,
-        name: "Fortnite",
-        image:
-          "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 16,
-        name: "FIFA Mobile",
-        image:
-          "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    G: [
-      {
-        id: 17,
-        name: "Genshin Impact",
-        image:
-          "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 18,
-        name: "Google Play",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 19,
-        name: "Garena Shells",
-        image:
-          "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 103,
-        name: "Google Play Gift",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 302,
-        name: "GoPay",
-        image:
-          "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    H: [
-      {
-        id: 20,
-        name: "Honkai Star Rail",
-        image:
-          "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 21,
-        name: "Honor of Kings",
-        image:
-          "https://images.unsplash.com/photo-1556438064-2d7646166914?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 22,
-        name: "Hearthstone",
-        image:
-          "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    I: [
-      {
-        id: 202,
-        name: "Indosat Ooredoo",
-        image:
-          "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    L: [
-      {
-        id: 23,
-        name: "League of Legends",
-        image:
-          "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 24,
-        name: "Lords Mobile",
-        image:
-          "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 25,
-        name: "Lineage 2",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 303,
-        name: "LinkAja",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    M: [
-      {
-        id: 26,
-        name: "Mobile Legends",
-        image:
-          "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 27,
-        name: "Minecraft",
-        image:
-          "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 28,
-        name: "MLBB",
-        image:
-          "https://images.unsplash.com/photo-1556438064-2d7646166914?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    N: [
-      {
-        id: 104,
-        name: "Netflix Voucher",
-        image:
-          "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    O: [
-      {
-        id: 304,
-        name: "OVO",
-        image:
-          "https://images.unsplash.com/photo-1556438064-2d7646166914?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    P: [
-      {
-        id: 29,
-        name: "PUBG Mobile",
-        image:
-          "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 30,
-        name: "Pokemon GO",
-        image:
-          "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 31,
-        name: "Point Blank",
-        image:
-          "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    R: [
-      {
-        id: 32,
-        name: "Roblox",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 33,
-        name: "Ragnarok M",
-        image:
-          "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 34,
-        name: "Rise of Kingdoms",
-        image:
-          "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    S: [
-      {
-        id: 35,
-        name: "Steam Wallet",
-        image:
-          "https://images.unsplash.com/photo-1556438064-2d7646166914?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 36,
-        name: "State of Survival",
-        image:
-          "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 37,
-        name: "Summoners War",
-        image:
-          "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 105,
-        name: "Spotify Premium",
-        image:
-          "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 106,
-        name: "Steam Gift Card",
-        image:
-          "https://images.unsplash.com/photo-1556438064-2d7646166914?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 305,
-        name: "ShopeePay",
-        image:
-          "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    T: [
-      {
-        id: 203,
-        name: "Tri (3)",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 204,
-        name: "Telkomsel",
-        image:
-          "https://images.unsplash.com/photo-1556438064-2d7646166914?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    V: [
-      {
-        id: 38,
-        name: "Valorant",
-        image:
-          "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 39,
-        name: "V Rising",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    W: [
-      {
-        id: 40,
-        name: "World of Warcraft",
-        image:
-          "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 41,
-        name: "Wild Rift",
-        image:
-          "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    X: [
-      {
-        id: 42,
-        name: "xForce",
-        image:
-          "https://images.unsplash.com/photo-1556438064-2d7646166914?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 43,
-        name: "XCOM 2",
-        image:
-          "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 47,
-        name: "Xenoblade",
-        image:
-          "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 205,
-        name: "XL Axiata",
-        image:
-          "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    Y: [
-      {
-        id: 44,
-        name: "Yu-Gi-Oh!",
-        image:
-          "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 48,
-        name: "Yakuza",
-        image:
-          "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 107,
-        name: "YouTube Premium",
-        image:
-          "https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    Z: [
-      {
-        id: 45,
-        name: "Zombie Army",
-        image:
-          "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 46,
-        name: "Zone of Enders",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 49,
-        name: "Zelda",
-        image:
-          "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-  },
-  Games: {
-    A: [
-      {
-        id: 1,
-        name: "AFK Arena",
-        image:
-          "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 2,
-        name: "Among Us",
-        image:
-          "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 3,
-        name: "Apex Legends",
-        image:
-          "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 4,
-        name: "Arena of Valor",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    B: [
-      {
-        id: 5,
-        name: "Bigo Live",
-        image:
-          "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 6,
-        name: "Boss Party",
-        image:
-          "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 7,
-        name: "Brawl Stars",
-        image:
-          "https://images.unsplash.com/photo-1556438064-2d7646166914?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    C: [
-      {
-        id: 8,
-        name: "Call of Duty Mobile",
-        image:
-          "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 9,
-        name: "Clash of Clans",
-        image:
-          "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 10,
-        name: "Clash Royale",
-        image:
-          "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 11,
-        name: "Counter Strike",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    D: [
-      {
-        id: 12,
-        name: "Dragon Raja",
-        image:
-          "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 13,
-        name: "Dota 2",
-        image:
-          "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    F: [
-      {
-        id: 14,
-        name: "Free Fire",
-        image:
-          "https://images.unsplash.com/photo-1556438064-2d7646166914?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 15,
-        name: "Fortnite",
-        image:
-          "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 16,
-        name: "FIFA Mobile",
-        image:
-          "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    G: [
-      {
-        id: 17,
-        name: "Genshin Impact",
-        image:
-          "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 18,
-        name: "Google Play",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 19,
-        name: "Garena Shells",
-        image:
-          "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    H: [
-      {
-        id: 20,
-        name: "Honkai Star Rail",
-        image:
-          "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 21,
-        name: "Honor of Kings",
-        image:
-          "https://images.unsplash.com/photo-1556438064-2d7646166914?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 22,
-        name: "Hearthstone",
-        image:
-          "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    L: [
-      {
-        id: 23,
-        name: "League of Legends",
-        image:
-          "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 24,
-        name: "Lords Mobile",
-        image:
-          "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 25,
-        name: "Lineage 2",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    M: [
-      {
-        id: 26,
-        name: "Mobile Legends",
-        image:
-          "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 27,
-        name: "Minecraft",
-        image:
-          "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 28,
-        name: "MLBB",
-        image:
-          "https://images.unsplash.com/photo-1556438064-2d7646166914?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    P: [
-      {
-        id: 29,
-        name: "PUBG Mobile",
-        image:
-          "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 30,
-        name: "Pokemon GO",
-        image:
-          "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 31,
-        name: "Point Blank",
-        image:
-          "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    R: [
-      {
-        id: 32,
-        name: "Roblox",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 33,
-        name: "Ragnarok M",
-        image:
-          "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 34,
-        name: "Rise of Kingdoms",
-        image:
-          "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    S: [
-      {
-        id: 35,
-        name: "Steam Wallet",
-        image:
-          "https://images.unsplash.com/photo-1556438064-2d7646166914?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 36,
-        name: "State of Survival",
-        image:
-          "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 37,
-        name: "Summoners War",
-        image:
-          "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    V: [
-      {
-        id: 38,
-        name: "Valorant",
-        image:
-          "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 39,
-        name: "V Rising",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    W: [
-      {
-        id: 40,
-        name: "World of Warcraft",
-        image:
-          "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 41,
-        name: "Wild Rift",
-        image:
-          "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    X: [
-      {
-        id: 42,
-        name: "xForce",
-        image:
-          "https://images.unsplash.com/photo-1556438064-2d7646166914?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 43,
-        name: "XCOM 2",
-        image:
-          "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 47,
-        name: "Xenoblade",
-        image:
-          "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    Y: [
-      {
-        id: 44,
-        name: "Yu-Gi-Oh!",
-        image:
-          "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 48,
-        name: "Yakuza",
-        image:
-          "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    Z: [
-      {
-        id: 45,
-        name: "Zombie Army",
-        image:
-          "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 46,
-        name: "Zone of Enders",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 49,
-        name: "Zelda",
-        image:
-          "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-  },
-  Voucher: {
-    A: [
-      {
-        id: 101,
-        name: "Amazon Gift Card",
-        image:
-          "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 102,
-        name: "Apple Gift Card",
-        image:
-          "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    G: [
-      {
-        id: 103,
-        name: "Google Play Gift",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    N: [
-      {
-        id: 104,
-        name: "Netflix Voucher",
-        image:
-          "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    S: [
-      {
-        id: 105,
-        name: "Spotify Premium",
-        image:
-          "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 106,
-        name: "Steam Gift Card",
-        image:
-          "https://images.unsplash.com/photo-1556438064-2d7646166914?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    Y: [
-      {
-        id: 107,
-        name: "YouTube Premium",
-        image:
-          "https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-  },
-  Phone: {
-    A: [
-      {
-        id: 201,
-        name: "Airtime Telkomsel",
-        image:
-          "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    I: [
-      {
-        id: 202,
-        name: "Indosat Ooredoo",
-        image:
-          "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    T: [
-      {
-        id: 203,
-        name: "Tri (3)",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-      {
-        id: 204,
-        name: "Telkomsel",
-        image:
-          "https://images.unsplash.com/photo-1556438064-2d7646166914?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    X: [
-      {
-        id: 205,
-        name: "XL Axiata",
-        image:
-          "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-  },
-  "E-Money": {
-    D: [
-      {
-        id: 301,
-        name: "DANA",
-        image:
-          "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    G: [
-      {
-        id: 302,
-        name: "GoPay",
-        image:
-          "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    L: [
-      {
-        id: 303,
-        name: "LinkAja",
-        image:
-          "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    O: [
-      {
-        id: 304,
-        name: "OVO",
-        image:
-          "https://images.unsplash.com/photo-1556438064-2d7646166914?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-    S: [
-      {
-        id: 305,
-        name: "ShopeePay",
-        image:
-          "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=100&h=100&fit=crop&crop=center",
-      },
-    ],
-  },
-};
 
 const getAlphabet = (data: ProductData) => Object.keys(data).sort();
 
@@ -939,7 +32,9 @@ const ProdukPageContent = () => {
   const [filteredGames, setFilteredGames] = useState<ProductData>({});
   const [isAlphabetOpen, setIsAlphabetOpen] = useState(false);
   const [categories, setCategories] = useState<PublicProductCategory[]>([]);
-  const [parentCategories, setParentCategories] = useState<PublicProductCategory[]>([]);
+  const [parentCategories, setParentCategories] = useState<
+    PublicProductCategory[]
+  >([]);
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   // Debounce search term
@@ -1006,27 +101,35 @@ const ProdukPageContent = () => {
   // Filter products based on search term and category
   useEffect(() => {
     // Only show subcategories (categories with parent_id)
-    let currentCategories = categories.filter(cat => cat.parent_id !== null);
-    
+    let currentCategories = categories.filter((cat) => cat.parent_id !== null);
+
     // Filter by parent category if not "All"
     if (selectedCategory !== "All") {
-      const parentCategory = parentCategories.find(cat => cat.title === selectedCategory);
+      const parentCategory = parentCategories.find(
+        (cat) => cat.title === selectedCategory
+      );
       if (parentCategory) {
-        currentCategories = currentCategories.filter(cat => cat.parent_id === parentCategory.id);
+        currentCategories = currentCategories.filter(
+          (cat) => cat.parent_id === parentCategory.id
+        );
       }
     }
 
     // Filter by search term
     if (debouncedSearchTerm.trim() !== "") {
-      currentCategories = currentCategories.filter(cat =>
-        cat.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-        (cat.sub_title && cat.sub_title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()))
+      currentCategories = currentCategories.filter(
+        (cat) =>
+          cat.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+          (cat.sub_title &&
+            cat.sub_title
+              .toLowerCase()
+              .includes(debouncedSearchTerm.toLowerCase()))
       );
     }
 
     // Group by first letter
     const grouped: ProductData = {};
-    currentCategories.forEach(category => {
+    currentCategories.forEach((category) => {
       const firstLetter = category.title.charAt(0).toUpperCase();
       if (!grouped[firstLetter]) {
         grouped[firstLetter] = [];
@@ -1034,7 +137,7 @@ const ProdukPageContent = () => {
       grouped[firstLetter].push({
         id: category.id,
         name: category.title,
-        image: category.image || '/images/placeholder-game.png'
+        image: category.image || "/images/placeholder-game.png",
       });
     });
 
@@ -1199,7 +302,9 @@ const ProdukPageContent = () => {
                       {category.title === "Voucher" && "🎫"}
                       {category.title === "Phone" && "📱"}
                       {category.title === "E-Money" && "💳"}
-                      {!["Games", "Voucher", "Phone", "E-Money"].includes(category.title) && "🎯"}
+                      {!["Games", "Voucher", "Phone", "E-Money"].includes(
+                        category.title
+                      ) && "🎯"}
                     </span>
                     <span className="hidden sm:inline">{category.title}</span>
                     <span className="sm:hidden text-xs">{category.title}</span>
@@ -1247,79 +352,80 @@ const ProdukPageContent = () => {
           <div className="max-w-7xl mx-auto">
             {/* Games Grid by Category */}
             {Object.entries(filteredGames).map(([letter, games]) => (
-            <div
-              key={letter}
-              ref={(el) => {
-                sectionRefs.current[letter] = el;
-              }}
-              id={`section-${letter}`}
-              className="mb-12"
-            >
-              {/* Category Header */}
-              <div className="flex items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 mr-4">
-                  {letter}
-                </h2>
-                <div className="flex-1 h-px bg-gray-300"></div>
-              </div>
+              <div
+                key={letter}
+                ref={(el) => {
+                  sectionRefs.current[letter] = el;
+                }}
+                id={`section-${letter}`}
+                className="mb-12"
+              >
+                {/* Category Header */}
+                <div className="flex items-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800 mr-4">
+                    {letter}
+                  </h2>
+                  <div className="flex-1 h-px bg-gray-300"></div>
+                </div>
 
-              {/* Games Grid */}
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
-                {games.map((game, index) => (
-                  <Link
-                    key={game.id}
-                    href={`/produk/${game.name
-                      .toLowerCase()
-                      .replace(/\s+/g, "-")
-                      .replace(/[^a-z0-9-]/g, "")}`}
-                  >
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.02 }}
-                      whileHover={{ scale: 1.05 }}
-                      className="text-center cursor-pointer group"
+                {/* Games Grid */}
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
+                  {games.map((game, index) => (
+                    <Link
+                      key={game.id}
+                      href={`/produk/${game.name
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")
+                        .replace(/[^a-z0-9-]/g, "")}`}
                     >
-                      {/* Game Image */}
-                      <div className="w-full aspect-square mb-2 rounded-xl overflow-hidden bg-gray-100 group-hover:shadow-md transition-all duration-200">
-                        <Image
-                          src={game.image}
-                          alt={game.name}
-                          width={100}
-                          height={100}
-                          className="w-full h-full object-cover"
-                          unoptimized
-                        />
-                      </div>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.02 }}
+                        whileHover={{ scale: 1.05 }}
+                        className="text-center cursor-pointer group"
+                      >
+                        {/* Game Image */}
+                        <div className="w-full aspect-square mb-2 rounded-xl overflow-hidden bg-gray-100 group-hover:shadow-md transition-all duration-200">
+                          <Image
+                            src={game.image}
+                            alt={game.name}
+                            width={100}
+                            height={100}
+                            className="w-full h-full object-cover"
+                            unoptimized
+                          />
+                        </div>
 
-                      {/* Game Name */}
-                      <p className="text-center font-mono text-sm sm:text-base group-hover:text-green-600 transition-colors">
-                        {game.name}
-                      </p>
-                    </motion.div>
-                  </Link>
-                ))}
+                        {/* Game Name */}
+                        <p className="text-center font-mono text-sm sm:text-base group-hover:text-green-600 transition-colors">
+                          {game.name}
+                        </p>
+                      </motion.div>
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
-          {/* Empty State */}
-          {allGames.length === 0 && (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                {debouncedSearchTerm ? 'Produk tidak ditemukan' : 'Belum ada produk tersedia'}
-              </h3>
-              <p className="text-gray-600">
-                {debouncedSearchTerm 
-                  ? 'Coba cari dengan kata kunci yang berbeda' 
-                  : 'Produk akan segera ditambahkan'
-                }
-              </p>
-            </div>
-          )}
+            {/* Empty State */}
+            {allGames.length === 0 && (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                  {debouncedSearchTerm
+                    ? "Produk tidak ditemukan"
+                    : "Belum ada produk tersedia"}
+                </h3>
+                <p className="text-gray-600">
+                  {debouncedSearchTerm
+                    ? "Coba cari dengan kata kunci yang berbeda"
+                    : "Produk akan segera ditambahkan"}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
       )}
 
       {/* Mobile Alphabet Toggle Button */}
@@ -1404,14 +510,16 @@ const ProdukPageContent = () => {
 
 const ProdukPage = () => {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-green-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-green-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <ProdukPageContent />
     </Suspense>
   );
