@@ -32,8 +32,25 @@ import {
 } from "@/lib/types";
 import { getImageUrl } from "@/lib/image-url";
 import { useToast } from "@/components/providers/toast-provider";
+import Image from "next/image";
 // import { ErrorHandler } from "@/lib/utils/error-handler";
 
+// Dynamic import for MDEditor to avoid SSR issues
+const MDEditor = dynamic(() => import("@uiw/react-md-editor"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-32 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center text-gray-500">
+      Loading editor...
+    </div>
+  ),
+});
+
+// MDEditor configuration
+const editorConfig = {
+  height: 200,
+  preview: "edit" as const,
+  hideToolbar: false,
+};
 
 // Icon mapping for categories
 const getCategoryIcon = (title: string) => {
@@ -65,9 +82,13 @@ export default function KategoriProdukPage() {
     useState<ProductCategory | null>(null);
   const [expandedParent, setExpandedParent] = useState<number | null>(null);
   const [selectedParent, setSelectedParent] = useState<number | null>(null);
-  const [parentCategories, setParentCategories] = useState<ProductCategory[]>([]);
+  const [parentCategories, setParentCategories] = useState<ProductCategory[]>(
+    []
+  );
   const [subCategories, setSubCategories] = useState<ProductCategory[]>([]);
-  const [loadingSubCategories, setLoadingSubCategories] = useState<Set<number>>(new Set());
+  const [loadingSubCategories, setLoadingSubCategories] = useState<Set<number>>(
+    new Set()
+  );
 
   // Toast hook
   const { success, error, warning } = useToast();
@@ -106,16 +127,14 @@ export default function KategoriProdukPage() {
   );
 
   // Fetch subcategories for selected parent
-  const {
-    data: subCategoriesData,
-    execute: fetchSubCategories,
-  } = useApiCall((parentId: number) =>
-    api.productCategories.getProductCategories({
-      page: 1,
-      paginate: 100,
-      parent_id: parentId,
-      status: 1,
-    })
+  const { data: subCategoriesData, execute: fetchSubCategories } = useApiCall(
+    (parentId: number) =>
+      api.productCategories.getProductCategories({
+        page: 1,
+        paginate: 100,
+        parent_id: parentId,
+        status: 1,
+      })
   );
 
   const { loading: submitLoading, execute: submitCategory } = useApiCall(
@@ -135,8 +154,8 @@ export default function KategoriProdukPage() {
     }
   );
 
-  const { execute: deleteCategory } = useApiCall(
-    (slug: string) => api.productCategories.deleteProductCategory(slug)
+  const { execute: deleteCategory } = useApiCall((slug: string) =>
+    api.productCategories.deleteProductCategory(slug)
   );
 
   // Load parent categories on component mount and when search/page changes
@@ -174,15 +193,18 @@ export default function KategoriProdukPage() {
     } else {
       // If different parent, expand it and fetch subcategories
       setExpandedParent(parentId);
-      setLoadingSubCategories(prev => new Set(prev).add(parentId));
-      
+      setLoadingSubCategories((prev) => new Set(prev).add(parentId));
+
       try {
         await fetchSubCategories(parentId);
       } catch (err) {
         console.error("Error fetching subcategories:", err);
-        error("Gagal Memuat Subkategori", "Terjadi kesalahan saat memuat subkategori");
+        error(
+          "Gagal Memuat Subkategori",
+          "Terjadi kesalahan saat memuat subkategori"
+        );
       } finally {
-        setLoadingSubCategories(prev => {
+        setLoadingSubCategories((prev) => {
           const newSet = new Set(prev);
           newSet.delete(parentId);
           return newSet;
@@ -194,7 +216,7 @@ export default function KategoriProdukPage() {
   // Handle parent selection for creating subcategory
   const handleParentSelection = (parentId: number) => {
     setSelectedParent(parentId);
-    setFormData(prev => ({ ...prev, parent_id: parentId }));
+    setFormData((prev) => ({ ...prev, parent_id: parentId }));
     setShowForm(true);
   };
 
@@ -202,7 +224,7 @@ export default function KategoriProdukPage() {
     const file = e.target.files?.[0];
     if (file) {
       setFormData({ ...formData, image: file });
-      
+
       // Create preview URL
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -262,14 +284,14 @@ export default function KategoriProdukPage() {
       parent_id: category.parent_id,
       image: null,
     });
-    
+
     // Set image preview if category has an image
     if (category.image) {
       setImagePreview(getImageUrl(category.image));
     } else {
       setImagePreview(null);
     }
-    
+
     setShowForm(true);
   };
 
@@ -311,9 +333,8 @@ export default function KategoriProdukPage() {
 
   // Helper function to get subcategories for a parent
   const getSubCategoriesForParent = (parentId: number) => {
-    return subCategories.filter(cat => cat.parent_id === parentId);
+    return subCategories.filter((cat) => cat.parent_id === parentId);
   };
-
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -335,7 +356,7 @@ export default function KategoriProdukPage() {
           whileTap={{ scale: 0.95 }}
           onClick={() => {
             setSelectedParent(null);
-            setFormData(prev => ({ ...prev, parent_id: null }));
+            setFormData((prev) => ({ ...prev, parent_id: null }));
             setShowForm(true);
           }}
           className="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white px-4 py-2 rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200"
@@ -376,15 +397,15 @@ export default function KategoriProdukPage() {
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
           />
         </div>
-         <button
-           onClick={() => {
-             fetchParentCategories();
-           }}
-           className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
-         >
-           <RefreshCw className="h-5 w-5" />
-           <span>Refresh</span>
-         </button>
+        <button
+          onClick={() => {
+            fetchParentCategories();
+          }}
+          className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+        >
+          <RefreshCw className="h-5 w-5" />
+          <span>Refresh</span>
+        </button>
       </div>
 
       {/* Loading State */}
@@ -427,7 +448,7 @@ export default function KategoriProdukPage() {
               <button
                 onClick={() => {
                   setSelectedParent(null);
-                  setFormData(prev => ({ ...prev, parent_id: null }));
+                  setFormData((prev) => ({ ...prev, parent_id: null }));
                   setShowForm(true);
                 }}
                 className="inline-flex items-center px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
@@ -441,11 +462,16 @@ export default function KategoriProdukPage() {
               const IconComponent = getCategoryIcon(parent.title);
               const colorClass = getCategoryColor(index);
               const isExpanded = expandedParent === parent.id;
-              const isLoadingSubCategories = loadingSubCategories.has(parent.id);
+              const isLoadingSubCategories = loadingSubCategories.has(
+                parent.id
+              );
               const parentSubCategories = getSubCategoriesForParent(parent.id);
 
               return (
-                <div key={parent.id} className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 overflow-hidden">
+                <div
+                  key={parent.id}
+                  className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 overflow-hidden"
+                >
                   {/* Parent Category */}
                   <div className="p-6 border-b border-gray-100">
                     <div className="flex items-center justify-between">
@@ -464,7 +490,7 @@ export default function KategoriProdukPage() {
                           )}
                           <div className="relative">
                             {parent.image ? (
-                              <img
+                              <Image
                                 src={getImageUrl(parent.image)}
                                 alt={parent.title}
                                 className="h-12 w-12 rounded-lg object-cover"
@@ -479,22 +505,30 @@ export default function KategoriProdukPage() {
                           </div>
                         </button>
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900">{parent.title}</h3>
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {parent.title}
+                          </h3>
                           {parent.sub_title && (
-                            <p className="text-sm text-gray-600">{parent.sub_title}</p>
+                            <p className="text-sm text-gray-600">
+                              {parent.sub_title}
+                            </p>
                           )}
                           {parent.description && (
-                            <p className="text-sm text-gray-500 mt-1">{parent.description}</p>
+                            <p className="text-sm text-gray-500 mt-1">
+                              {parent.description}
+                            </p>
                           )}
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          parent.status === 1 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {parent.status === 1 ? 'Aktif' : 'Tidak Aktif'}
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            parent.status === 1
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {parent.status === 1 ? "Aktif" : "Tidak Aktif"}
                         </span>
                         <button
                           onClick={() => handleParentSelection(parent.id)}
@@ -518,8 +552,8 @@ export default function KategoriProdukPage() {
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
-                      </div>
                     </div>
+                  </div>
 
                   {/* Subcategories */}
                   {isExpanded && (
@@ -527,16 +561,21 @@ export default function KategoriProdukPage() {
                       {isLoadingSubCategories ? (
                         <div className="p-4 flex items-center justify-center">
                           <Loader2 className="h-6 w-6 animate-spin text-emerald-500" />
-                          <span className="ml-2 text-gray-600">Loading subcategories...</span>
+                          <span className="ml-2 text-gray-600">
+                            Loading subcategories...
+                          </span>
                         </div>
                       ) : parentSubCategories.length > 0 ? (
                         <div className="p-4 space-y-2">
                           {parentSubCategories.map((subCategory) => (
-                            <div key={subCategory.id} className="flex items-center justify-between bg-white rounded-lg p-3 border border-gray-200">
+                            <div
+                              key={subCategory.id}
+                              className="flex items-center justify-between bg-white rounded-lg p-3 border border-gray-200"
+                            >
                               <div className="flex items-center space-x-3">
                                 <div className="relative">
                                   {subCategory.image ? (
-                                    <img
+                                    <Image
                                       src={getImageUrl(subCategory.image)}
                                       alt={subCategory.title}
                                       className="h-8 w-8 rounded-lg object-cover"
@@ -548,19 +587,27 @@ export default function KategoriProdukPage() {
                                   )}
                                 </div>
                                 <div>
-                                  <h4 className="text-sm font-medium text-gray-900">{subCategory.title}</h4>
+                                  <h4 className="text-sm font-medium text-gray-900">
+                                    {subCategory.title}
+                                  </h4>
                                   {subCategory.sub_title && (
-                                    <p className="text-xs text-gray-600">{subCategory.sub_title}</p>
+                                    <p className="text-xs text-gray-600">
+                                      {subCategory.sub_title}
+                                    </p>
                                   )}
                                 </div>
                               </div>
                               <div className="flex items-center space-x-2">
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  subCategory.status === 1 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : 'bg-red-100 text-red-800'
-                                }`}>
-                                  {subCategory.status === 1 ? 'Aktif' : 'Tidak Aktif'}
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    subCategory.status === 1
+                                      ? "bg-green-100 text-green-800"
+                                      : "bg-red-100 text-red-800"
+                                  }`}
+                                >
+                                  {subCategory.status === 1
+                                    ? "Aktif"
+                                    : "Tidak Aktif"}
                                 </span>
                                 <button
                                   onClick={() => handleEdit(subCategory)}
@@ -577,9 +624,9 @@ export default function KategoriProdukPage() {
                                   <Trash2 className="h-3 w-3" />
                                 </button>
                               </div>
-                              </div>
-                            ))}
-                          </div>
+                            </div>
+                          ))}
+                        </div>
                       ) : (
                         <div className="p-4 text-center text-gray-500">
                           <Folder className="h-8 w-8 mx-auto mb-2 text-gray-400" />
@@ -608,7 +655,9 @@ export default function KategoriProdukPage() {
           <div className="text-center py-12">
             <Tag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {searchTerm ? "Kategori tidak ditemukan" : "Belum ada kategori utama"}
+              {searchTerm
+                ? "Kategori tidak ditemukan"
+                : "Belum ada kategori utama"}
             </h3>
             <p className="text-gray-600 mb-4">
               {searchTerm
@@ -644,12 +693,15 @@ export default function KategoriProdukPage() {
             >
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">
-                  {editingCategory 
-                    ? `Edit ${editingCategory.parent_id ? 'Subkategori' : 'Kategori Utama'}` 
-                    : selectedParent 
-                      ? 'Tambah Subkategori' 
-                      : 'Tambah Kategori Utama'
-                  }
+                  {editingCategory
+                    ? `Edit ${
+                        editingCategory.parent_id
+                          ? "Subkategori"
+                          : "Kategori Utama"
+                      }`
+                    : selectedParent
+                    ? "Tambah Subkategori"
+                    : "Tambah Kategori Utama"}
                 </h2>
                 <button
                   onClick={resetForm}
@@ -668,7 +720,8 @@ export default function KategoriProdukPage() {
                       Kategori Induk
                     </label>
                     <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700">
-                      {parentCategories.find(p => p.id === selectedParent)?.title || 'Kategori Induk'}
+                      {parentCategories.find((p) => p.id === selectedParent)
+                        ?.title || "Kategori Induk"}
                     </div>
                   </div>
                 )}
@@ -709,7 +762,7 @@ export default function KategoriProdukPage() {
                     Description
                   </label>
                   {/* Show rich text editor only for subcategories */}
-                  {(editingCategory?.parent_id || selectedParent) ? (
+                  {editingCategory?.parent_id || selectedParent ? (
                     <div className="border border-gray-300 rounded-lg overflow-hidden">
                       <textarea
                       value={formData.description || ""}
@@ -725,7 +778,10 @@ export default function KategoriProdukPage() {
                     <textarea
                       value={formData.description || ""}
                       onChange={(e) =>
-                        setFormData({ ...formData, description: e.target.value })
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                       placeholder="Masukkan deskripsi kategori"
@@ -763,7 +819,7 @@ export default function KategoriProdukPage() {
                     {/* Image Preview */}
                     {imagePreview && (
                       <div className="relative">
-                        <img
+                        <Image
                           src={imagePreview}
                           alt="Preview"
                           className="w-full h-48 object-cover rounded-lg"
@@ -781,7 +837,7 @@ export default function KategoriProdukPage() {
                         </button>
                       </div>
                     )}
-                    
+
                     {/* File Input */}
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-emerald-500 transition-colors">
                       <input
@@ -844,7 +900,8 @@ export default function KategoriProdukPage() {
         parentCategoriesData.data.data.length > 0 && (
           <div className="flex items-center justify-between mt-8">
             <div className="text-sm text-gray-700">
-              Menampilkan {parentCategoriesData.data.from} - {parentCategoriesData.data.to} dari{" "}
+              Menampilkan {parentCategoriesData.data.from} -{" "}
+              {parentCategoriesData.data.to} dari{" "}
               {parentCategoriesData.data.total} kategori utama
             </div>
             <div className="flex items-center space-x-2">

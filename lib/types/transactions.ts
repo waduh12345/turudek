@@ -1,3 +1,20 @@
+import { User } from "./auth";
+import { Media } from "./media";
+
+export interface TransactionResponse {
+  ref_id: string;
+  customer_no: string;
+  buyer_sku_code: string;
+  message: string;
+  status: string;
+  rc: string;
+  buyer_last_saldo: number;
+  sn: string;
+  price: number;
+  tele: string | null;
+  wa: string | null;
+}
+
 export interface Transaction {
   id: number;
   user_id: number | null;
@@ -19,7 +36,7 @@ export interface Transaction {
     description: string;
     product_category_id: number;
   };
-  response: unknown;
+  response: any;
   customer_no: string;
   customer_name: string;
   customer_email: string | null;
@@ -33,7 +50,7 @@ export interface Transaction {
   status: number;
   created_at: string;
   updated_at: string;
-  user: unknown;
+  user: any;
   product: {
     id: number;
     product_category_id: number;
@@ -47,7 +64,7 @@ export interface Transaction {
     created_at: string;
     updated_at: string;
     image: string;
-    media: unknown[];
+    media: any[];
   };
 }
 

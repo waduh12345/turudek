@@ -6,7 +6,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import PromotionBanner from "@/components/section/promotion-banner";
-import { publicProductCategoriesService, PublicProductCategory } from "@/services/api/public-product-categories";
+import {
+  publicProductCategoriesService,
+  PublicProductCategory,
+} from "@/services/api/public-product-categories";
 import { useApiCall, useDebounce } from "@/hooks";
 
 interface Product {
@@ -16,7 +19,6 @@ interface Product {
 }
 
 type ProductData = Record<string, Product[]>;
-
 
 const getAlphabet = (data: ProductData) => Object.keys(data).sort();
 
@@ -30,7 +32,9 @@ const ProdukPageContent = () => {
   const [filteredGames, setFilteredGames] = useState<ProductData>({});
   const [isAlphabetOpen, setIsAlphabetOpen] = useState(false);
   const [categories, setCategories] = useState<PublicProductCategory[]>([]);
-  const [parentCategories, setParentCategories] = useState<PublicProductCategory[]>([]);
+  const [parentCategories, setParentCategories] = useState<
+    PublicProductCategory[]
+  >([]);
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   // Debounce search term
@@ -100,9 +104,13 @@ const ProdukPageContent = () => {
     
     // 1. Filter by parent category
     if (selectedCategory !== "All") {
-      const parentCategory = parentCategories.find(cat => cat.title === selectedCategory);
+      const parentCategory = parentCategories.find(
+        (cat) => cat.title === selectedCategory
+      );
       if (parentCategory) {
-        currentCategories = currentCategories.filter(cat => cat.parent_id === parentCategory.id);
+        currentCategories = currentCategories.filter(
+          (cat) => cat.parent_id === parentCategory.id
+        );
       }
     }
 
@@ -120,7 +128,7 @@ const ProdukPageContent = () => {
 
     // 4. Group by first letter
     const grouped: ProductData = {};
-    currentCategories.forEach(category => {
+    currentCategories.forEach((category) => {
       const firstLetter = category.title.charAt(0).toUpperCase();
       if (!grouped[firstLetter]) {
         grouped[firstLetter] = [];
@@ -128,8 +136,7 @@ const ProdukPageContent = () => {
       grouped[firstLetter].push({
         id: category.id,
         name: category.title,
-        // Use general placeholder if image is null
-        image: category.image || 'https://placehold.co/100x100/ccc/333?text=Product' 
+        image: category.image || "/images/placeholder-game.png",
       });
     });
 
@@ -294,7 +301,9 @@ const ProdukPageContent = () => {
                       {category.title === "Voucher" && "🎫"}
                       {category.title === "Phone" && "📱"}
                       {category.title === "E-Money" && "💳"}
-                      {!["Games", "Voucher", "Phone", "E-Money"].includes(category.title) && "🎯"}
+                      {!["Games", "Voucher", "Phone", "E-Money"].includes(
+                        category.title
+                      ) && "🎯"}
                     </span>
                     <span className="hidden sm:inline">{category.title}</span>
                     <span className="sm:hidden text-xs">{category.title}</span>
@@ -342,79 +351,80 @@ const ProdukPageContent = () => {
           <div className="max-w-7xl mx-auto">
             {/* Games Grid by Category */}
             {Object.entries(filteredGames).map(([letter, games]) => (
-            <div
-              key={letter}
-              ref={(el) => {
-                sectionRefs.current[letter] = el;
-              }}
-              id={`section-${letter}`}
-              className="mb-12"
-            >
-              {/* Category Header */}
-              <div className="flex items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 mr-4">
-                  {letter}
-                </h2>
-                <div className="flex-1 h-px bg-gray-300"></div>
-              </div>
+              <div
+                key={letter}
+                ref={(el) => {
+                  sectionRefs.current[letter] = el;
+                }}
+                id={`section-${letter}`}
+                className="mb-12"
+              >
+                {/* Category Header */}
+                <div className="flex items-center mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800 mr-4">
+                    {letter}
+                  </h2>
+                  <div className="flex-1 h-px bg-gray-300"></div>
+                </div>
 
-              {/* Games Grid */}
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
-                {games.map((game, index) => (
-                  <Link
-                    key={game.id}
-                    href={`/produk/${game.name
-                      .toLowerCase()
-                      .replace(/\s+/g, "-")
-                      .replace(/[^a-z0-9-]/g, "")}`}
-                  >
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.02 }}
-                      whileHover={{ scale: 1.05 }}
-                      className="text-center cursor-pointer group"
+                {/* Games Grid */}
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
+                  {games.map((game, index) => (
+                    <Link
+                      key={game.id}
+                      href={`/produk/${game.name
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")
+                        .replace(/[^a-z0-9-]/g, "")}`}
                     >
-                      {/* Game Image */}
-                      <div className="w-full aspect-square mb-2 rounded-xl overflow-hidden bg-gray-100 group-hover:shadow-md transition-all duration-200">
-                        <Image
-                          src={game.image}
-                          alt={game.name}
-                          width={100}
-                          height={100}
-                          className="w-full h-full object-cover"
-                          unoptimized
-                        />
-                      </div>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.02 }}
+                        whileHover={{ scale: 1.05 }}
+                        className="text-center cursor-pointer group"
+                      >
+                        {/* Game Image */}
+                        <div className="w-full aspect-square mb-2 rounded-xl overflow-hidden bg-gray-100 group-hover:shadow-md transition-all duration-200">
+                          <Image
+                            src={game.image}
+                            alt={game.name}
+                            width={100}
+                            height={100}
+                            className="w-full h-full object-cover"
+                            unoptimized
+                          />
+                        </div>
 
-                      {/* Game Name */}
-                      <p className="text-center font-mono text-sm sm:text-base group-hover:text-green-600 transition-colors">
-                        {game.name}
-                      </p>
-                    </motion.div>
-                  </Link>
-                ))}
+                        {/* Game Name */}
+                        <p className="text-center font-mono text-sm sm:text-base group-hover:text-green-600 transition-colors">
+                          {game.name}
+                        </p>
+                      </motion.div>
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
 
-          {/* Empty State */}
-          {allGames.length === 0 && (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                {debouncedSearchTerm ? 'Produk tidak ditemukan' : 'Belum ada produk tersedia'}
-              </h3>
-              <p className="text-gray-600">
-                {debouncedSearchTerm 
-                  ? 'Coba cari dengan kata kunci yang berbeda' 
-                  : 'Produk akan segera ditambahkan'
-                }
-              </p>
-            </div>
-          )}
+            {/* Empty State */}
+            {allGames.length === 0 && (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                  {debouncedSearchTerm
+                    ? "Produk tidak ditemukan"
+                    : "Belum ada produk tersedia"}
+                </h3>
+                <p className="text-gray-600">
+                  {debouncedSearchTerm
+                    ? "Coba cari dengan kata kunci yang berbeda"
+                    : "Produk akan segera ditambahkan"}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
       )}
 
       {/* Mobile Alphabet Toggle Button */}
@@ -499,14 +509,16 @@ const ProdukPageContent = () => {
 
 const ProdukPage = () => {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-green-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-green-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <ProdukPageContent />
     </Suspense>
   );
