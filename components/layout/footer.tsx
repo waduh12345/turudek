@@ -163,7 +163,7 @@ const Footer = () => {
               })}
             </div>
 
-            {/* Logo Tokogame */}
+            {/* Logo Kios Tetta */}
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gray-700 rounded flex items-center justify-center">
                 <div className={`w-4 h-4 ${footerData.footer.companyInfo.logo.color} rounded-sm`}></div>
@@ -326,24 +326,6 @@ const Footer = () => {
 
               {/* Content */}
               <div className="p-4 space-y-4">
-                {/* Start a conversation */}
-                <div>
-                  <h4 className="font-semibold text-gray-800 text-sm mb-1">
-                    Start a conversation
-                  </h4>
-                  <p className="text-gray-500 text-xs mb-3">
-                    Expect a reply within a few minutes
-                  </p>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full bg-green-500 text-white px-4 py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-green-600 transition-colors"
-                  >
-                    <span className="font-medium text-sm">Start Chat</span>
-                    <Play size={14} className="text-white" />
-                  </motion.button>
-                </div>
-
                 {/* Chat on your favorite channel */}
                 <div>
                   <h4 className="font-medium text-gray-800 text-sm mb-3">

@@ -1,178 +1,144 @@
+"use client";
+
 import SectionWrapper from "@/components/ui/section-wrapper";
-import Image from "next/image";
-import Link from "next/link";
 import HotNews from "./(home)/hot-news";
 import FAQ from "@/components/section/faq";
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import PromotionBanner from "@/components/section/promotion-banner";
+import { publicProductCategoriesService, PublicProductCategory } from "@/services/api/public-product-categories";
+import { useApiCall, useDebounce } from "@/hooks";
+
+type Item = {
+  id: number;
+  name: string;
+  thumbnail: string;
+};
 
 const Page = () => {
-  type Item = {
-    id: number;
-    name: string;
-    thumbnail: string;
-  };
+  const [categories, setCategories] = useState<PublicProductCategory[]>([]);
+  const [parentCategories, setParentCategories] = useState<PublicProductCategory[]>([]);
+  const [groupedProducts, setGroupedProducts] = useState<Record<string, Item[]>>({});
+  
+  // State for loading and error (using the unified state for simplicity)
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
 
-  const games: Item[] = [
-    {
-      id: 1,
-      name: "Mobile Legends: Bang Bang",
-      thumbnail: "https://placehold.co/650?text=Mobile+Legends",
-    },
-    {
-      id: 2,
-      name: "PUBG Mobile",
-      thumbnail: "https://placehold.co/650?text=PUBG+Mobile",
-    },
-    {
-      id: 3,
-      name: "Free Fire",
-      thumbnail: "https://placehold.co/650?text=Free+Fire",
-    },
-    {
-      id: 4,
-      name: "Genshin Impact",
-      thumbnail: "https://placehold.co/650?text=Genshin+Impact",
-    },
-    {
-      id: 5,
-      name: "Call of Duty Mobile",
-      thumbnail: "https://placehold.co/650?text=COD+Mobile",
-    },
-    {
-      id: 6,
-      name: "Valorant",
-      thumbnail: "https://placehold.co/650?text=Valorant",
-    },
-    {
-      id: 7,
-      name: "Clash of Clans",
-      thumbnail: "https://placehold.co/650?text=Clash+of+Clans",
-    },
-    {
-      id: 8,
-      name: "Arena of Valor",
-      thumbnail: "https://placehold.co/650?text=Arena+of+Valor",
-    },
-    {
-      id: 9,
-      name: "League of Legends: Wild Rift",
-      thumbnail: "https://placehold.co/650?text=LoL+Wild+Rift",
-    },
-    {
-      id: 10,
-      name: "Minecraft",
-      thumbnail: "https://placehold.co/650?text=Minecraft",
-    },
-  ];
 
-  const vouchers: Item[] = [
-    {
-      id: 1,
-      name: "Google Play Gift Card",
-      thumbnail: "https://placehold.co/650?text=Google+Play",
-    },
-    {
-      id: 2,
-      name: "App Store & iTunes Gift Card",
-      thumbnail: "https://placehold.co/650?text=iTunes",
-    },
-    {
-      id: 3,
-      name: "Steam Wallet",
-      thumbnail: "https://placehold.co/650?text=Steam+Wallet",
-    },
-    {
-      id: 4,
-      name: "Garena Shells",
-      thumbnail: "https://placehold.co/650?text=Garena+Shells",
-    },
-    {
-      id: 5,
-      name: "PlayStation Store",
-      thumbnail: "https://placehold.co/650?text=PlayStation",
-    },
-    {
-      id: 6,
-      name: "Xbox Live Gift Card",
-      thumbnail: "https://placehold.co/650?text=Xbox+Live",
-    },
-    {
-      id: 7,
-      name: "Netflix Voucher",
-      thumbnail: "https://placehold.co/650?text=Netflix",
-    },
-    {
-      id: 8,
-      name: "Spotify Premium",
-      thumbnail: "https://placehold.co/650?text=Spotify",
-    },
-    {
-      id: 9,
-      name: "Token PLN",
-      thumbnail: "https://placehold.co/650?text=TokenPLN",
-    },
-    {
-      id: 10,
-      name: "Vidio Premier",
-      thumbnail: "https://placehold.co/650?text=Vidio",
-    },
-  ];
+  // Fetch all parent categories (for grouping titles)
+  const {
+    data: parentCategoriesData,
+    loading: parentCategoriesLoading,
+    error: parentCategoriesError,
+    execute: fetchParentCategories,
+  } = useApiCall(() =>
+    publicProductCategoriesService.getProductCategories({ is_parent: 1, paginate: 100, status: 1 })
+  );
 
-  const phonesCredit: Item[] = [
-    {
-      id: 1,
-      name: "Indosat",
-      thumbnail: "https://placehold.co/650?text=Indosat",
-    },
-    {
-      id: 2,
-      name: "Tri",
-      thumbnail: "https://placehold.co/650?text=Tri",
-    },
-    {
-      id: 3,
-      name: "Telkomsel",
-      thumbnail: "https://placehold.co/650?text=Telkomsel",
-    },
-    {
-      id: 4,
-      name: "XL",
-      thumbnail: "https://placehold.co/650?text=XL",
-    },
-    {
-      id: 5,
-      name: "Axis",
-      thumbnail: "https://placehold.co/650?text=Axis",
-    },
-    {
-      id: 6,
-      name: "Smartfren",
-      thumbnail: "https://placehold.co/650?text=Smartfren",
-    },
-  ];
+  // Fetch all subcategories (the products)
+  const {
+    data: subCategoriesData,
+    loading: subCategoriesLoading,
+    error: subCategoriesError,
+    execute: fetchSubCategories,
+  }
+   = useApiCall(() =>
+    publicProductCategoriesService.getProductCategories({ paginate: 100, status: 1 })
+  );
 
-  const eMoneys: Item[] = [
-    {
-      id: 1,
-      name: "Dana",
-      thumbnail: "https://placehold.co/650?text=Dana",
-    },
-    {
-      id: 2,
-      name: "Gopay",
-      thumbnail: "https://placehold.co/650?text=Gopay",
-    },
-    {
-      id: 3,
-      name: "Ovo",
-      thumbnail: "https://placehold.co/650?text=Ovo",
-    },
-    {
-      id: 4,
-      name: "Shopee Pay",
-      thumbnail: "https://placehold.co/650?text=Shoope+Pay",
-    },
-  ];
+  // Load data on component mount
+  useEffect(() => {
+    const loadData = async () => {
+        setIsLoading(true);
+        setIsError(false);
+        try {
+            await Promise.all([fetchParentCategories(), fetchSubCategories()]);
+        } catch(e) {
+            setIsError(true);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+    loadData();
+  }, []); // Only runs once on mount
+
+  // Update categories and parent categories
+  useEffect(() => {
+    if (parentCategoriesData?.data?.data) {
+      setParentCategories(parentCategoriesData.data.data);
+    }
+    if (subCategoriesData?.data?.data) {
+      // Filter out parents to keep only products (subcategories)
+      const subCategories = subCategoriesData.data.data.filter((cat: PublicProductCategory) => cat.parent_id !== null);
+      setCategories(subCategories);
+    }
+
+    // Handle overall loading/error state based on mocks
+    setIsLoading(parentCategoriesLoading || subCategoriesLoading);
+    setIsError(!!(parentCategoriesError || subCategoriesError));
+
+  }, [parentCategoriesData, subCategoriesData, parentCategoriesLoading, subCategoriesLoading, parentCategoriesError, subCategoriesError]);
+
+
+  // Group products when data is ready
+  useEffect(() => {
+    if (categories.length > 0 && parentCategories.length > 0) {
+      const parentMap: Record<number, string> = {};
+      parentCategories.forEach(p => {
+        parentMap[p.id] = p.title;
+      });
+
+      const grouped: Record<string, Item[]> = {};
+
+      // Initialize groups with parent titles
+      parentCategories.forEach(p => {
+        grouped[p.title] = [];
+      });
+
+      // Populate groups
+      categories.forEach(cat => {
+        if (cat.parent_id !== null && parentMap[cat.parent_id]) {
+          const parentTitle = parentMap[cat.parent_id];
+          grouped[parentTitle].push({
+            id: cat.id,
+            name: cat.title,
+            thumbnail: cat.image || 'https://placehold.co/650/ccc/333?text=Product'
+          });
+        }
+      });
+      
+      setGroupedProducts(grouped);
+    }
+  }, [categories, parentCategories]);
+  
+  // Determine which lists to display (limit to first 10 items)
+  const gamesList = groupedProducts["Games"] ? groupedProducts["Games"].slice(0, 10) : [];
+  const vouchersList = groupedProducts["Voucher"] ? groupedProducts["Voucher"].slice(0, 10) : [];
+  const phonesCreditList = groupedProducts["Phone"] ? groupedProducts["Phone"].slice(0, 10) : [];
+  const eMoneysList = groupedProducts["E-Money"] ? groupedProducts["E-Money"].slice(0, 10) : [];
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="container p-8">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center shadow-lg">
+          <p className="text-red-600 font-semibold mb-2">Gagal memuat data produk.</p>
+          <p className="text-red-500 text-sm">Silakan coba muat ulang halaman.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -184,7 +150,7 @@ const Page = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Cari di Tokogame"
+                placeholder="Cari di Kios Tetta"
                 className="w-full px-4 py-3 pl-12 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
               />
               <svg
@@ -206,8 +172,11 @@ const Page = () => {
 
         <SectionWrapper title="TOP UP GAME" seeAllUrl="/produk/?category=Games">
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
-            {games.map((item) => (
-              <Link href={`/produk/${item.id}`} key={item.id}>
+            {gamesList.map((item) => (
+              <Link href={`/produk/${item.name
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")
+                      .replace(/[^a-z0-9-]/g, "")}`} key={item.id}>
                 <Image
                   className="w-full aspect-square mb-2 rounded-xl"
                   width={100}
@@ -226,8 +195,11 @@ const Page = () => {
 
         <SectionWrapper title="VOUCHER" seeAllUrl="/produk/?category=Voucher">
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
-            {vouchers.map((item) => (
-              <Link href={`/produk/${item.id}`} key={item.id}>
+            {vouchersList.map((item) => (
+              <Link href={`/produk/${item.name
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")
+                      .replace(/[^a-z0-9-]/g, "")}`} key={item.id}>
                 <Image
                   className="w-full aspect-square mb-2 rounded-xl"
                   width={100}
@@ -246,8 +218,11 @@ const Page = () => {
 
         <SectionWrapper title="PULSA" seeAllUrl="/produk/?category=Phone">
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
-            {phonesCredit.map((item) => (
-              <Link href={`/produk/${item.id}`} key={item.id}>
+            {phonesCreditList.map((item) => (
+              <Link href={`/produk/${item.name
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")
+                      .replace(/[^a-z0-9-]/g, "")}`} key={item.id}>
                 <Image
                   className="w-full aspect-square mb-2 rounded-xl"
                   width={100}
@@ -266,8 +241,11 @@ const Page = () => {
 
         <SectionWrapper title="E-MONEY" seeAllUrl="/produk/?category=E-Money">
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-3 sm:gap-x-4 gap-y-5">
-            {eMoneys.map((item) => (
-              <Link href={`/produk/${item.id}`} key={item.id}>
+            {eMoneysList.map((item) => (
+              <Link href={`/produk/${item.name
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")
+                      .replace(/[^a-z0-9-]/g, "")}`} key={item.id}>
                 <Image
                   className="w-full aspect-square mb-2 rounded-xl"
                   width={100}

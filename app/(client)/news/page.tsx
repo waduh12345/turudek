@@ -199,7 +199,7 @@ const NewsPage = () => {
   const promoData: NewsItem[] = [
     {
       id: 19,
-      title: "Tokogame.com Gelar Event Spesial HUT RI ke-80: Belanja Rp170.000 Dapat Voucher Rp17.000!",
+      title: "Kios Tetta.com Gelar Event Spesial HUT RI ke-80: Belanja Rp170.000 Dapat Voucher Rp17.000!",
       image: "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=400&h=250&fit=crop&crop=center",
       date: "2025-01-15",
       category: "Promo",
@@ -209,7 +209,7 @@ const NewsPage = () => {
     },
     {
       id: 20,
-      title: "Nikmati Diskon Rp10.000 di Tokogame dengan Pembayaran QRIS Neobank",
+      title: "Nikmati Diskon Rp10.000 di Kios Tetta dengan Pembayaran QRIS Neobank",
       image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=250&fit=crop&crop=center",
       date: "2025-01-14",
       category: "Promo",
@@ -218,7 +218,7 @@ const NewsPage = () => {
     },
     {
       id: 21,
-      title: "Liburan Seru Bareng Tokogame! Ikuti Giveaway dan Menangkan Voucher 30K!",
+      title: "Liburan Seru Bareng Kios Tetta! Ikuti Giveaway dan Menangkan Voucher 30K!",
       image: "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=400&h=250&fit=crop&crop=center",
       date: "2025-01-13",
       category: "Giveaway",
@@ -237,7 +237,7 @@ const NewsPage = () => {
     },
     {
       id: 23,
-      title: "Ikuti Giveaway Tokogame Spesial Hari Konsumen Nasional 2025",
+      title: "Ikuti Giveaway Kios Tetta Spesial Hari Konsumen Nasional 2025",
       image: "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=400&h=250&fit=crop&crop=center",
       date: "2025-01-11",
       category: "Giveaway",
@@ -246,7 +246,7 @@ const NewsPage = () => {
     },
     {
       id: 24,
-      title: "Ikuti Event Tokogame Bagi-Bagi THR Hingga 900.000",
+      title: "Ikuti Event Kios Tetta Bagi-Bagi THR Hingga 900.000",
       image: "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=400&h=250&fit=crop&crop=center",
       date: "2025-01-10",
       category: "Event",

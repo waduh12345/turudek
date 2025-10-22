@@ -335,7 +335,7 @@ const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) =>
               {/* How to Top Up */}
               <div className="bg-white border border-gray-200 rounded-xl p-6">
                 <h3 className="text-xl font-bold text-gray-800 mb-4">
-                  Cara Melakukan Top Up {category.title} di Tokogame.com
+                  Cara Melakukan Top Up {category.title} di Kios Tetta.com
                 </h3>
                 <ol className="space-y-3 text-gray-700">
                   <li className="flex items-start gap-3">
@@ -389,7 +389,7 @@ const ProductDetailPage = ({ params }: { params: Promise<{ slug: string }> }) =>
                   <p className="text-gray-700 leading-relaxed">
                     {category.title} adalah mata uang dalam game yang digunakan untuk berbagai keperluan seperti 
                     bermain match, menyelesaikan misi, membeli aksesori, dan item premium lainnya. 
-                    Dapatkan {category.title} dengan harga termurah di Tokogame.com.
+                    Dapatkan {category.title} dengan harga termurah di Kios Tetta.com.
                   </p>
                 </div>
               </div>

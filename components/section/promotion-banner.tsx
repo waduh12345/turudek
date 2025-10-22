@@ -15,7 +15,7 @@ const PromotionBanner = () => {
                 <span className="text-white font-bold text-lg">T</span>
               </div>
             </div>
-            <span className="text-4xl font-bold">TOKOGAME.COM</span>
+            <span className="text-4xl font-bold">kiostetta.COM</span>
           </div>
 
           {/* Main Promo Text */}

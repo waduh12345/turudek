@@ -5,9 +5,9 @@ import { ChevronRight } from "lucide-react";
 
 const faqs = [
   {
-    question: "Apakah Diamond/Chip/Paket dari Tokogame.com Legal?",
+    question: "Apakah Diamond/Chip/Paket dari Kios Tetta.com Legal?",
     answer:
-      "Semua Diamonds, in-game items, voucher yang dijual di Tokogame.com 100% legal dan berbadan hukum. Jangan khawatir karena belanja di Tokogame.com dijamin aman.",
+      "Semua Diamonds, in-game items, voucher yang dijual di Kios Tetta.com 100% legal dan berbadan hukum. Jangan khawatir karena belanja di Kios Tetta.com dijamin aman.",
   },
   {
     question: "Bagaimana Cara Top-Up Diamonds atau Beli Voucher?",
@@ -25,7 +25,7 @@ const faqs = [
       "Jika pembayaran berhasil tapi item belum masuk, tunggu maksimal 15 menit. Jika masih belum, segera hubungi CS kami.",
   },
   {
-    question: "Kenapa Harus Beli di Tokogame.com?",
+    question: "Kenapa Harus Beli di Kios Tetta.com?",
     answer:
       "Harga murah, proses cepat, metode pembayaran lengkap, dan 100% legal.",
   },

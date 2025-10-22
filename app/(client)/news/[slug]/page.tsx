@@ -413,8 +413,8 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
                   className="mt-8 p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200"
                 >
                   <p className="text-gray-700 leading-relaxed">
-                    Jangan lupa top-up diamond Mobile Legends: Bang Bang termurah, tercepat, dan terpercaya di Tokogame.com. 
-                    Dapatkan juga informasi terbaru seputar skin, event, dan promo menarik Mobile Legends lainnya hanya di Tokogame!
+                    Jangan lupa top-up diamond Mobile Legends: Bang Bang termurah, tercepat, dan terpercaya di Kios Tetta.com. 
+                    Dapatkan juga informasi terbaru seputar skin, event, dan promo menarik Mobile Legends lainnya hanya di Kios Tetta!
                   </p>
                 </motion.div>
 
@@ -510,7 +510,7 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
               >
                 <div className="text-center">
                   <div className="text-2xl font-bold mb-2">DISKON Rp10.000</div>
-                  <p className="text-sm mb-4">Nikmati Diskon Rp10.000 di Tokogame dengan Pembayaran QRIS Neobank</p>
+                  <p className="text-sm mb-4">Nikmati Diskon Rp10.000 di Kios Tetta dengan Pembayaran QRIS Neobank</p>
                   <button className="bg-white text-orange-500 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
                     Dapatkan Sekarang
                   </button>

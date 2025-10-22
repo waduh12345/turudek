@@ -142,13 +142,13 @@
   },
   "footer": {
     "companyInfo": {
-      "name": "TOKOGAME.COM",
+      "name": "kiostetta.COM",
       "tagline": "Top Up Games & Voucher Murah, Aman, Cepat",
       "logo": {
         "text": "T",
         "color": "bg-green-500"
       },
-      "copyright": "Copyright © 2025 Tokogame All Rights Reserved"
+      "copyright": "Copyright © 2025 Kios Tetta All Rights Reserved"
     },
     "socialMedia": [
       {
@@ -268,7 +268,7 @@
     },
     "chatSupport": {
       "title": "Customer Care",
-      "botName": "Tokogame Customer Care",
+      "botName": "Kios Tetta Customer Care",
       "status": "Online",
       "channels": [
         {

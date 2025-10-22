@@ -41,7 +41,7 @@ const DefaultHeader = ({ showNavigationBars = false }: DefaultHeaderProps) => {
       )}
     >
       {/* Main Header */}
-      <div className="h-16 flex items-center">
+      <div className="h-24 flex items-center">
         <div className="container flex items-center justify-between">
           {/* Left Section - Logo & Tagline */}
           <section className="flex items-center gap-x-2 sm:gap-x-3.5">
@@ -50,15 +50,16 @@ const DefaultHeader = ({ showNavigationBars = false }: DefaultHeaderProps) => {
               href="/"
               className="flex items-center gap-1 sm:gap-2 font-mono"
             >
-              <div className="w-6 h-6 sm:w-7 sm:h-7 bg-green-500 rounded flex items-center justify-center">
-                <span className="text-white font-bold text-sm">T</span>
-              </div>
-              <span className="text-lg sm:text-xl font-bold text-green-500 tracking-wide underline">
-                TOKOGAME
-              </span>
+              <Image
+                src="/images/kios-tetta.png"
+                alt="Kios Tetta Logo"
+                width={60}
+                height={60}
+                className="w-24 h-24 sm:w-24 sm:h-24 mt-2 pb-2"
+              />
             </Link>
 
-            <p className="font-mono text-xs sm:text-sm italic hidden xl:block text-gray-600">
+            <p className="font-mono text-xs sm:text-lg italic hidden xl:block text-gray-600">
               Top Up Games & Voucher Murah, Aman, Cepat
             </p>
           </section>
