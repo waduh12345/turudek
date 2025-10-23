@@ -181,7 +181,7 @@ const AdminLoginPageContent = () => {
 export default function AdminLoginPage() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-emerald-700 to-green-900 p-4">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#C02628] to-red-500 p-4">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-white">Loading...</p>

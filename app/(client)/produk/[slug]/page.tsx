@@ -245,7 +245,7 @@ const ProductDetailPage = ({
                 fetchCategory();
                 fetchProducts();
               }}
-              className="bg-[#C02628] text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors"
+              className="bg-[#C02628] text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-colors"
             >
               Try Again
             </button>
@@ -275,7 +275,7 @@ const ProductDetailPage = ({
           </p>
           <Link
             href="/produk"
-            className="bg-[#C02628] text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors"
+            className="bg-[#C02628] text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-colors"
           >
             Kembali ke Katalog
           </Link>
@@ -292,14 +292,14 @@ const ProductDetailPage = ({
           <nav className="flex items-center space-x-2 text-sm">
             <Link
               href="/"
-              className="text-gray-500 hover:text-green-600 transition-colors"
+              className="text-gray-500 hover:text-[#C02628] transition-colors"
             >
               Home
             </Link>
             <ChevronRight size={16} className="text-gray-400" />
             <Link
               href="/produk"
-              className="text-gray-500 hover:text-green-600 transition-colors"
+              className="text-gray-500 hover:text-[#C02628] transition-colors"
             >
               Search
             </Link>
@@ -332,7 +332,7 @@ const ProductDetailPage = ({
                   </div>
                   <span>{category.parent_title || "Game"}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-green-600">
+                <div className="flex items-center gap-2 text-sm text-[#C02628]">
                   <Clock size={16} />
                   <span>Proses Instan</span>
                 </div>
@@ -474,9 +474,9 @@ const ProductDetailPage = ({
             <div className="sticky top-8">
               <div className="bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden">
                 {/* Form Header */}
-                <div className="bg-gradient-to-r from-[#C02628] to-green-600 p-6 text-white">
+                <div className="bg-gradient-to-r from-[#C02628] to-red-600 p-6 text-white">
                   <h2 className="text-xl font-bold mb-2">Pesan Sekarang</h2>
-                  <p className="text-green-100 text-sm">Proses cepat & aman</p>
+                  <p className="text-red-100 text-sm">Proses cepat & aman</p>
                 </div>
 
                 <div className="p-6 space-y-6">
@@ -575,8 +575,8 @@ const ProductDetailPage = ({
                               onClick={() => setSelectedPackage(product)}
                               className={`p-4 rounded-lg border-2 transition-all duration-200 text-left ${
                                 selectedPackage?.id === product.id
-                                  ? "border-[#C02628] bg-green-50"
-                                  : "border-gray-200 hover:border-green-300 hover:bg-gray-50"
+                                  ? "border-[#C02628] bg-red-50"
+                                  : "border-gray-200 hover:border-red-300 hover:bg-gray-50"
                               }`}
                             >
                               <div className="flex items-center justify-between">
@@ -591,7 +591,7 @@ const ProductDetailPage = ({
                                   )}
                                 </div>
                                 <div className="text-right">
-                                  <div className="font-bold text-green-600">
+                                  <div className="font-bold text-[#C02628]">
                                     {new Intl.NumberFormat("id-ID", {
                                       style: "currency",
                                       currency: "IDR",
@@ -658,8 +658,8 @@ const ProductDetailPage = ({
                           onClick={() => setSelectedPayment(method.name)}
                           className={`p-3 rounded-lg border-2 transition-all duration-200 text-center ${
                             selectedPayment === method.name
-                              ? "border-[#C02628] bg-green-50"
-                              : "border-gray-200 hover:border-green-300"
+                              ? "border-[#C02628] bg-red-50"
+                              : "border-gray-200 hover:border-red-300"
                           }`}
                         >
                           <div className="text-2xl mb-1">{method.logo}</div>
@@ -673,14 +673,14 @@ const ProductDetailPage = ({
 
                   {/* Success Message */}
                   {checkoutSuccess && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                      <div className="flex items-center gap-2 text-green-800">
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-2 text-red-800">
                         <div className="w-5 h-5 bg-[#C02628] rounded-full flex items-center justify-center">
                           <span className="text-white text-xs">✓</span>
                         </div>
                         <span className="font-medium">Checkout berhasil!</span>
                       </div>
-                      <p className="text-green-700 text-sm mt-1">
+                      <p className="text-red-700 text-sm mt-1">
                         {isRedirecting
                           ? "Mengarahkan ke halaman pembayaran..."
                           : "Pesanan berhasil dibuat! Anda akan diarahkan ke halaman pembayaran dalam beberapa detik..."}
@@ -689,9 +689,9 @@ const ProductDetailPage = ({
                         <div className="flex items-center gap-2 mt-2">
                           <Loader2
                             size={16}
-                            className="animate-spin text-green-600"
+                            className="animate-spin text-red-600"
                           />
-                          <span className="text-green-600 text-sm">
+                          <span className="text-red-600 text-sm">
                             Sedang mengalihkan...
                           </span>
                         </div>
@@ -724,7 +724,7 @@ const ProductDetailPage = ({
                     disabled={!isFormValid || isCheckoutLoading}
                     className={`w-full py-4 rounded-lg font-semibold text-lg transition-all duration-200 ${
                       isFormValid && !isCheckoutLoading
-                        ? "bg-[#C02628] text-white hover:bg-green-600 shadow-lg"
+                        ? "bg-[#C02628] text-white hover:bg-red-600 shadow-lg"
                         : "bg-gray-300 text-gray-500 cursor-not-allowed"
                     }`}
                   >
@@ -744,7 +744,7 @@ const ProductDetailPage = ({
                     Dengan menekan tombol diatas anda telah setuju dengan{" "}
                     <Link
                       href="/syarat-ketentuan"
-                      className="text-green-600 hover:underline"
+                      className="text-[#C02628] hover:underline"
                     >
                       Syarat &amp; Ketentuan
                     </Link>{" "}
@@ -785,7 +785,7 @@ const ProductDetailPage = ({
                   </div>
                 </div>
                 <div className="p-4">
-                  <h3 className="font-semibold text-gray-800 group-hover:text-green-600 transition-colors">
+                  <h3 className="font-semibold text-gray-800 group-hover:text-[#C02628] transition-colors">
                     {testimonial.title}
                   </h3>
                   <div className="flex items-center gap-1 mt-2">

@@ -22,7 +22,7 @@ const getStatusInfo = (status: number, statusPayment: number) => {
   if (statusPayment === 2) {
     return {
       label: "Lunas",
-      color: "bg-green-100 text-green-800",
+      color: "bg-red-100 text-red-800",
     };
   }
 
@@ -43,7 +43,7 @@ const getStatusInfo = (status: number, statusPayment: number) => {
   if (status === 2) {
     return {
       label: "Selesai",
-      color: "bg-green-100 text-green-800",
+      color: "bg-red-100 text-red-800",
     };
   }
 
@@ -216,7 +216,7 @@ export default function AdminDashboard() {
               <span
                 className={`ml-2 text-sm font-medium ${
                   stat.changeType === "positive"
-                    ? "text-green-600"
+                    ? "text-[#C02628]"
                     : "text-red-600"
                 }`}
               >
@@ -372,7 +372,7 @@ export default function AdminDashboard() {
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
                           product.status === 1
-                            ? "bg-green-100 text-green-800"
+                            ? "bg-red-100 text-red-800"
                             : "bg-red-100 text-red-800"
                         }`}
                       >
@@ -461,7 +461,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <a
             href="/admin/produk"
-            className="flex items-center space-x-3 rounded-lg bg-white/20 p-4 hover:bg-white/30 transition-colors duration-200"
+            className="flex items-center space-x-3 rounded-lg bg-white/20 p-4 hover:bg白/30 transition-colors duration-200"
           >
             <Package className="h-5 w-5" />
             <span className="text-sm font-medium">Manage Products</span>

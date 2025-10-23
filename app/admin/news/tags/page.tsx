@@ -151,7 +151,7 @@ export default function NewsTagsPage() {
   const getStatusColor = (status: number) => {
     switch (status) {
       case 1:
-        return "bg-green-100 text-green-800";
+        return "bg-red-100 text-red-800";
       case 0:
         return "bg-gray-100 text-gray-800";
       default:
@@ -175,7 +175,7 @@ export default function NewsTagsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-emerald-500" />
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-red-500" />
           <p className="text-gray-600">Loading tags...</p>
         </div>
       </div>
@@ -195,7 +195,7 @@ export default function NewsTagsPage() {
             onClick={() => {
               setRetryTrigger((prev) => prev + 1);
             }}
-            className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
+            className="px-4 py-2 bg-[#C02628] text-white rounded-lg hover:bg-red-600"
           >
             Retry
           </button>
@@ -233,7 +233,7 @@ export default function NewsTagsPage() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowForm(true)}
-            className="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-[#C02628] text-white px-4 py-2 rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200"
+            className="flex items-center space-x-2 bg-gradient-to-r from-red-500 to-[#C02628] text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-600 transition-all duration-200"
           >
             <Plus className="h-5 w-5" />
             <span>Tambah Tag</span>
@@ -249,7 +249,7 @@ export default function NewsTagsPage() {
               placeholder="Cari tag..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
             />
           </div>
           {tagsLoading && (
@@ -275,7 +275,7 @@ export default function NewsTagsPage() {
             {!searchTerm && (
               <button
                 onClick={() => setShowForm(true)}
-                className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
+                className="px-4 py-2 bg-[#C02628] text-white rounded-lg hover:bg-red-600"
               >
                 Tambah Tag Pertama
               </button>
@@ -322,7 +322,7 @@ export default function NewsTagsPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                       placeholder="Masukkan nama tag"
                       required
                     />
@@ -340,7 +340,7 @@ export default function NewsTagsPage() {
                           description: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                       placeholder="Masukkan deskripsi tag"
                       rows={3}
                       required
@@ -359,7 +359,7 @@ export default function NewsTagsPage() {
                           status: parseInt(e.target.value) as 0 | 1,
                         })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                       aria-label="Select status"
                     >
                       <option value={1}>Aktif</option>
@@ -380,7 +380,7 @@ export default function NewsTagsPage() {
                       whileTap={{ scale: 0.95 }}
                       type="submit"
                       disabled={submitLoading || updateLoading}
-                      className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-[#C02628] text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-500 to-[#C02628] text-white rounded-lg hover:from-red-600 hover:to-red-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {submitLoading || updateLoading ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -426,7 +426,7 @@ export default function NewsTagsPage() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setShowForm(true)}
-          className="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-[#C02628] text-white px-4 py-2 rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200"
+          className="flex items-center space-x-2 bg-gradient-to-r from-red-500 to-[#C02628] text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-600 transition-all duration-200"
         >
           <Plus className="h-5 w-5" />
           <span>Tambah Tag</span>
@@ -442,7 +442,7 @@ export default function NewsTagsPage() {
             placeholder="Cari tag..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
           />
         </div>
         {tagsLoading && (
@@ -465,7 +465,7 @@ export default function NewsTagsPage() {
           >
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-emerald-500 to-[#C02628]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-red-500 to-[#C02628]">
                   <Tag className="h-5 w-5 text-white" />
                 </div>
                 <div className="ml-3">
@@ -554,7 +554,7 @@ export default function NewsTagsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                     placeholder="Masukkan nama tag"
                     required
                   />
@@ -569,7 +569,7 @@ export default function NewsTagsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, description: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                     placeholder="Masukkan deskripsi tag"
                     rows={3}
                     required
@@ -588,7 +588,7 @@ export default function NewsTagsPage() {
                         status: parseInt(e.target.value) as 0 | 1,
                       })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                     aria-label="Select status"
                   >
                     <option value={1}>Aktif</option>
@@ -609,7 +609,7 @@ export default function NewsTagsPage() {
                     whileTap={{ scale: 0.95 }}
                     type="submit"
                     disabled={submitLoading || updateLoading}
-                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-[#C02628] text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-red-500 to-[#C02628] text-white rounded-lg hover:from-red-600 hover:to-red-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitLoading || updateLoading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />

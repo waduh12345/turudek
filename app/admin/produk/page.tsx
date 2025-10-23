@@ -353,7 +353,7 @@ export default function ProdukPage() {
   const getStatusColor = (status: number) => {
     switch (status) {
       case 1:
-        return "bg-green-100 text-green-800";
+        return "bg-red-100 text-red-800";
       case 0:
         return "bg-gray-100 text-gray-800";
       default:
@@ -384,7 +384,7 @@ export default function ProdukPage() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setShowForm(true)}
-          className="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-[#C02628] text-white px-4 py-2 rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200"
+          className="flex items-center space-x-2 bg-gradient-to-r from-[#C02628] to-red-500 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-600 transition-all duration-200"
         >
           <Plus className="h-5 w-5" />
           <span>Tambah Produk</span>
@@ -419,7 +419,7 @@ export default function ProdukPage() {
                 placeholder="Cari produk..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
               />
             </div>
             <button
@@ -444,7 +444,7 @@ export default function ProdukPage() {
           {/* Loading State */}
           {productsLoading && (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+              <Loader2 className="h-8 w-8 animate-spin text-[#C02628]" />
               <span className="ml-2 text-gray-600">Memuat produk...</span>
             </div>
           )}
@@ -528,7 +528,7 @@ export default function ProdukPage() {
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-medium ${
                                 subCategory.status === 1
-                                  ? "bg-green-100 text-green-800"
+                                  ? "bg-red-100 text-red-800"
                                   : "bg-red-100 text-red-800"
                               }`}
                             >
@@ -605,7 +605,7 @@ export default function ProdukPage() {
                                     <span
                                       className={`px-2 py-1 rounded-full text-xs font-medium ${
                                         product.status === 1
-                                          ? "bg-green-100 text-green-800"
+                                          ? "bg-red-100 text-red-800"
                                           : "bg-red-100 text-red-800"
                                       }`}
                                     >
@@ -693,7 +693,7 @@ export default function ProdukPage() {
                         <td className="px-4 py-3">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-10 w-10">
-                              <div className="h-10 w-10 rounded-lg bg-gradient-to-r from-emerald-500 to-[#C02628] flex items-center justify-center">
+                              <div className="h-10 w-10 rounded-lg bg-gradient-to-r from-[#C02628] to-red-500 flex items-center justify-center">
                                 <Package className="h-5 w-5 text-white" />
                               </div>
                             </div>
@@ -790,7 +790,7 @@ export default function ProdukPage() {
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-12 w-12">
-                        <div className="h-12 w-12 rounded-lg bg-gradient-to-r from-emerald-500 to-[#C02628] flex items-center justify-center">
+                        <div className="h-12 w-12 rounded-lg bg-gradient-to-r from-[#C02628] to-red-500 flex items-center justify-center">
                           <Package className="h-6 w-6 text-white" />
                         </div>
                       </div>
@@ -916,7 +916,7 @@ export default function ProdukPage() {
                           onChange={(e) =>
                             setFormData({ ...formData, name: e.target.value })
                           }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                           placeholder="Masukkan nama produk"
                           required
                         />
@@ -932,7 +932,7 @@ export default function ProdukPage() {
                           onChange={(e) =>
                             setFormData({ ...formData, sku: e.target.value })
                           }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                           placeholder="Masukkan SKU"
                           required
                         />
@@ -950,7 +950,7 @@ export default function ProdukPage() {
                               product_category_id: parseInt(e.target.value),
                             })
                           }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                           title="Pilih kategori produk"
                           required
                         >
@@ -975,7 +975,7 @@ export default function ProdukPage() {
                               status: parseInt(e.target.value) as 0 | 1,
                             })
                           }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                           title="Pilih status produk"
                           required
                         >
@@ -997,7 +997,7 @@ export default function ProdukPage() {
                               buy_price: e.target.value,
                             })
                           }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                           placeholder="Masukkan harga beli"
                           min="0"
                           step="0.01"
@@ -1018,7 +1018,7 @@ export default function ProdukPage() {
                               sell_price: e.target.value,
                             })
                           }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                           placeholder="Masukkan harga jual"
                           min="0"
                           step="0.01"
@@ -1039,7 +1039,7 @@ export default function ProdukPage() {
                             description: e.target.value,
                           })
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                         placeholder="Masukkan deskripsi produk"
                         rows={3}
                         required
@@ -1074,7 +1074,7 @@ export default function ProdukPage() {
                         )}
 
                         {/* File Input */}
-                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-emerald-500 transition-colors">
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#C02628] transition-colors">
                           <input
                             type="file"
                             accept="image/*"
@@ -1112,7 +1112,7 @@ export default function ProdukPage() {
                         whileTap={{ scale: 0.95 }}
                         type="submit"
                         disabled={submitLoading}
-                        className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-[#C02628] text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#C02628] to-red-500 text-white rounded-lg hover:from-red-600 hover:to-red-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {submitLoading ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -1165,7 +1165,7 @@ export default function ProdukPage() {
                   <div className="space-y-6">
                     {/* Product Image */}
                     <div className="flex justify-center">
-                      <div className="w-48 h-48 bg-gradient-to-r from-emerald-500 to-[#C02628] rounded-lg flex items-center justify-center">
+                      <div className="w-48 h-48 bg-gradient-to-r from-[#C02628] to-red-500 rounded-lg flex items-center justify-center">
                         <Package className="h-24 w-24 text-white" />
                       </div>
                     </div>

@@ -242,7 +242,7 @@ const SideNav = () => {
                             <IconComponent size={14} className="text-white" />
                           </motion.div>
                           <div className="flex-1">
-                            <span className="sidebar-text font-medium text-black text-sm group-hover:text-green-600 transition-colors">
+                            <span className="sidebar-text font-medium text-black text-sm group-hover:text-red-600 transition-colors">
                               {link.label}
                             </span>
                             <p className="sidebar-text text-xs text-gray-500 mt-0.5">
@@ -298,7 +298,7 @@ const SideNav = () => {
                               />
                             </motion.div>
                             <div>
-                              <span className="sidebar-text text-black text-sm group-hover:text-green-600 transition-colors">
+                              <span className="sidebar-text text-black text-sm group-hover:text-red-600 transition-colors">
                                 {contact.value}
                               </span>
                               <p className="sidebar-text text-xs text-gray-500">
@@ -346,7 +346,7 @@ const SideNav = () => {
                               />
                             </motion.div>
                             <div>
-                              <span className="sidebar-text text-black text-sm group-hover:text-green-600 transition-colors">
+                              <span className="sidebar-text text-black text-sm group-hover:text-red-600 transition-colors">
                                 {contact.value}
                               </span>
                               <p className="sidebar-text text-xs text-gray-500">

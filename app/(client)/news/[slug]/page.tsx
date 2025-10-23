@@ -280,7 +280,7 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
       </div>
 
       <div className="p-4">
-        <h3 className="font-bold text-gray-900 text-sm leading-tight mb-2 group-hover:text-green-600 transition-colors line-clamp-2">
+        <h3 className="font-bold text-gray-900 text-sm leading-tight mb-2 group-hover:text-[#C02628] transition-colors line-clamp-2">
           {item.title}
         </h3>
         <div className="flex items-center gap-1 text-xs text-gray-500">
@@ -309,7 +309,7 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
         />
       </div>
       <div className="flex-1 min-w-0">
-        <h4 className="font-semibold text-gray-900 text-sm leading-tight mb-1 group-hover:text-green-600 transition-colors line-clamp-2">
+        <h4 className="font-semibold text-gray-900 text-sm leading-tight mb-1 group-hover:text-[#C02628] transition-colors line-clamp-2">
           {item.title}
         </h4>
         <div className="flex items-center gap-1 text-xs text-gray-500">
@@ -332,13 +332,13 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
         >
           <Link
             href="/"
-            className="flex items-center gap-1 hover:text-green-600 transition-colors"
+            className="flex items-center gap-1 hover:text-[#C02628] transition-colors"
           >
             <Home size={14} />
             <span>Home</span>
           </Link>
           <ChevronRight size={14} />
-          <Link href="/news" className="hover:text-green-600 transition-colors">
+          <Link href="/news" className="hover:text-[#C02628] transition-colors">
             Blog
           </Link>
           <ChevronRight size={14} />
@@ -372,7 +372,7 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
 
                 {/* Category Badge */}
-                <div className="absolute top-4 left-4 bg-green-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                <div className="absolute top-4 left-4 bg-[#C02628] text-white px-3 py-1 rounded-full text-sm font-semibold">
                   {articleData.category}
                 </div>
 
@@ -405,7 +405,7 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
                   className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-6"
                 >
                   <div className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-full">
-                    <Calendar size={14} className="text-green-600" />
+                    <Calendar size={14} className="text-[#C02628]" />
                     <span className="font-medium">
                       {formatDate(articleData.date)}
                     </span>
@@ -420,7 +420,7 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
                       {formatViews(articleData.views)} views
                     </span>
                   </div>
-                  <button className="flex items-center gap-2 bg-green-600 text-white px-3 py-1.5 rounded-full hover:bg-green-700 transition-colors">
+                  <button className="flex items-center gap-2 bg-[#C02628] text-white px-3 py-1.5 rounded-full hover:bg-red-600 transition-colors">
                     <Share2 size={14} />
                     <span>Share</span>
                   </button>
@@ -438,7 +438,7 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
                       return (
                         <h2
                           key={index}
-                          className="text-xl font-bold text-gray-900 mt-8 mb-4 text-green-600"
+                          className="text-xl font-bold text-gray-900 mt-8 mb-4 text-[#C02628]"
                         >
                           {paragraph.replace("## ", "")}
                         </h2>
@@ -461,7 +461,7 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5, duration: 0.5 }}
-                  className="mt-8 p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200"
+                  className="mt-8 p-6 bg-gradient-to-r from-red-50 to-blue-50 rounded-xl border border-red-200"
                 >
                   <p className="text-gray-700 leading-relaxed">
                     Jangan lupa top-up diamond Mobile Legends: Bang Bang
@@ -488,7 +488,7 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.7 + index * 0.1, duration: 0.3 }}
-                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-green-100 hover:text-green-700 transition-colors cursor-pointer"
+                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-red-100 hover:text-red-700 transition-colors cursor-pointer"
                       >
                         {tag}
                       </motion.span>

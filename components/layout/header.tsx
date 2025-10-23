@@ -167,7 +167,7 @@ const NavigationBars = () => {
                     textShadow: "0 0 8px rgba(255,255,255,0.5)",
                   }}
                   whileTap={{ scale: 0.95 }}
-                  className="text-white font-bold text-xs sm:text-sm md:text-base whitespace-nowrap hover:text-green-100 transition-all duration-300 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-white/10 flex-shrink-0 min-w-fit"
+                  className="text-white font-bold text-xs sm:text-sm md:text-base whitespace-nowrap hover:text-red-100 transition-all duration-300 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-white/10 flex-shrink-0 min-w-fit"
                 >
                   {game.name}
                 </motion.button>
@@ -198,7 +198,7 @@ const NavigationBars = () => {
                     textShadow: "0 0 8px rgba(255,255,255,0.3)",
                   }}
                   whileTap={{ scale: 0.95 }}
-                  className="text-white font-bold text-xs sm:text-sm md:text-base whitespace-nowrap hover:text-green-400 transition-all duration-300 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-white/10 flex-shrink-0 min-w-fit"
+                  className="text-white font-bold text-xs sm:text-sm md:text-base whitespace-nowrap hover:text-red-400 transition-all duration-300 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-white/10 flex-shrink-0 min-w-fit"
                 >
                   {category.name}
                 </motion.button>
