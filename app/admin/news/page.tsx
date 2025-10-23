@@ -169,7 +169,7 @@ export default function NewsPage() {
 
   const getStatusColor = (status: 0 | 1) => {
     return status === 1
-      ? "bg-green-100 text-green-800"
+      ? "bg-red-100 text-[#C02628]"
       : "bg-gray-100 text-gray-800";
   };
 
@@ -183,10 +183,12 @@ export default function NewsPage() {
       (sum, article) => sum + article.view_count,
       0
     );
-    const publishedCount = articles.filter((article) => article.status === 1)
-      .length;
-    const draftCount = articles.filter((article) => article.status === 0)
-      .length;
+    const publishedCount = articles.filter(
+      (article) => article.status === 1
+    ).length;
+    const draftCount = articles.filter(
+      (article) => article.status === 0
+    ).length;
 
     return { totalViews, publishedCount, draftCount };
   }, [articles]);
@@ -244,8 +246,8 @@ export default function NewsPage() {
 
       if (editingNews) {
         // Hapus 'image' jika tidak ada file baru dan bukan update
-        if (!formData.image && typeof submitData.image !== 'undefined') {
-            delete submitData.image;
+        if (!formData.image && typeof submitData.image !== "undefined") {
+          delete submitData.image;
         }
         await updateArticle(
           editingNews.slug,
@@ -261,7 +263,11 @@ export default function NewsPage() {
       resetForm();
     } catch (error) {
       console.error("Error submitting news article:", error);
-      alert(`Gagal menyimpan artikel: ${error instanceof Error ? error.message : "Terjadi kesalahan."}`);
+      alert(
+        `Gagal menyimpan artikel: ${
+          error instanceof Error ? error.message : "Terjadi kesalahan."
+        }`
+      );
     }
   };
 
@@ -308,7 +314,11 @@ export default function NewsPage() {
         setRetryTrigger((prev) => prev + 1);
       } catch (error) {
         console.error("Error deleting news article:", error);
-        alert(`Gagal menghapus artikel: ${error instanceof Error ? error.message : "Terjadi kesalahan."}`);
+        alert(
+          `Gagal menghapus artikel: ${
+            error instanceof Error ? error.message : "Terjadi kesalahan."
+          }`
+        );
       }
     }
   };
@@ -348,7 +358,7 @@ export default function NewsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-emerald-500" />
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-[#C02628]" />
           <p className="text-gray-600">Loading articles...</p>
         </div>
       </div>
@@ -369,7 +379,7 @@ export default function NewsPage() {
             onClick={() => {
               setRetryTrigger((prev) => prev + 1);
             }}
-            className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
+            className="px-4 py-2 bg-[#C02628] text-white rounded-lg hover:bg-[#B02122]"
           >
             Retry
           </button>
@@ -385,9 +395,7 @@ export default function NewsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            News & Articles
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900">News & Articles</h1>
           <p className="text-gray-600">
             Kelola artikel dan berita gaming store Anda
             {articlesData && (
@@ -401,7 +409,7 @@ export default function NewsPage() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setShowForm(true)}
-          className="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white px-4 py-2 rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200"
+          className="flex items-center space-x-2 bg-gradient-to-r from-[#C02628] to-[#C02628] text-white px-4 py-2 rounded-lg hover:from-[#B02122] hover:to-[#8F1719] transition-all duration-200"
         >
           <Plus className="h-5 w-5" />
           <span>Tulis Artikel</span>
@@ -435,7 +443,7 @@ export default function NewsPage() {
           className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-6"
         >
           <div className="flex items-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-green-500 to-emerald-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-[#C02628] to-[#C02628]">
               <Globe className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
@@ -473,7 +481,7 @@ export default function NewsPage() {
           className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-6"
         >
           <div className="flex items-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-emerald-500 to-green-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-[#C02628] to-[#C02628]">
               <Eye className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
@@ -495,7 +503,7 @@ export default function NewsPage() {
             placeholder="Cari artikel..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
           />
         </div>
         <div className="relative">
@@ -505,7 +513,7 @@ export default function NewsPage() {
               setCategoryFilter(e.target.value);
               setCurrentPage(1); // Reset to first page when filter changes
             }}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
             aria-label="Filter by category"
           >
             <option value="all">Semua Kategori</option>
@@ -516,7 +524,7 @@ export default function NewsPage() {
             ))}
           </select>
           {categoryFilter !== "all" && (
-            <div className="absolute -top-2 -right-2 bg-emerald-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            <div className="absolute -top-2 -right-2 bg-[#C02628] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
               ✓
             </div>
           )}
@@ -527,7 +535,7 @@ export default function NewsPage() {
             setStatusFilter(e.target.value);
             setCurrentPage(1); // Reset to first page when filter changes
           }}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
           aria-label="Filter by status"
         >
           <option value="all">Semua Status</option>
@@ -574,7 +582,7 @@ export default function NewsPage() {
                   alt={article.title}
                   fill // Menggunakan 'fill' untuk Next.js 13+, parent harus punya dimensi
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Tambahkan sizes
-                  style={{ objectFit: 'cover' }}
+                  style={{ objectFit: "cover" }}
                   className="transition-transform duration-300 hover:scale-[1.03]"
                 />
               ) : (
@@ -596,7 +604,7 @@ export default function NewsPage() {
             {/* Article Content */}
             <div className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-emerald-600">
+                <span className="text-sm font-medium text-[#C02628]">
                   {article.category_name}
                 </span>
                 <div className="flex items-center text-sm text-gray-500">
@@ -622,15 +630,16 @@ export default function NewsPage() {
 
               {/* Tags */}
               <div className="flex flex-wrap gap-2 mb-4">
-                {article.tags && article.tags.map((tag) => (
-                  <span
-                    key={tag.id} // Gunakan ID sebagai key, bukan index
-                    className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
-                  >
-                    <Tag className="h-3 w-3 mr-1" />
-                    {tag.name}
-                  </span>
-                ))}
+                {article.tags &&
+                  article.tags.map((tag) => (
+                    <span
+                      key={tag.id} // Gunakan ID sebagai key, bukan index
+                      className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                    >
+                      <Tag className="h-3 w-3 mr-1" />
+                      {tag.name}
+                    </span>
+                  ))}
               </div>
 
               {/* Article Meta */}
@@ -673,17 +682,19 @@ export default function NewsPage() {
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
-                <span className="text-xs text-gray-500 line-clamp-1">{article.slug}</span>
+                <span className="text-xs text-gray-500 line-clamp-1">
+                  {article.slug}
+                </span>
               </div>
             </div>
           </motion.div>
         ))}
         {articles.length === 0 && !articlesLoading && (
-            <div className="col-span-full text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-xl">
-                <Newspaper className="h-10 w-10 mx-auto mb-3" />
-                <p className="text-lg font-medium">Tidak ada artikel ditemukan</p>
-                <p className="text-sm">Coba ubah kriteria pencarian atau filter.</p>
-            </div>
+          <div className="col-span-full text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-xl">
+            <Newspaper className="h-10 w-10 mx-auto mb-3" />
+            <p className="text-lg font-medium">Tidak ada artikel ditemukan</p>
+            <p className="text-sm">Coba ubah kriteria pencarian atau filter.</p>
+          </div>
         )}
       </div>
 
@@ -727,7 +738,7 @@ export default function NewsPage() {
                       onChange={(e) =>
                         setFormData({ ...formData, title: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                       placeholder="Masukkan judul artikel"
                       required
                     />
@@ -745,7 +756,7 @@ export default function NewsPage() {
                           news_category_id: parseInt(e.target.value),
                         })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                       required
                       aria-label="Select category"
                     >
@@ -769,7 +780,7 @@ export default function NewsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, sub_title: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                     placeholder="Masukkan sub judul artikel"
                   />
                 </div>
@@ -783,7 +794,7 @@ export default function NewsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, content: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                     placeholder="Masukkan konten artikel lengkap"
                     rows={8}
                     required
@@ -804,7 +815,7 @@ export default function NewsPage() {
                           status: parseInt(e.target.value) as 0 | 1,
                         })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                       aria-label="Select status"
                     >
                       <option value={0}>Draft</option>
@@ -825,7 +836,7 @@ export default function NewsPage() {
                           published_at: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                       required
                     />
                   </div>
@@ -856,7 +867,7 @@ export default function NewsPage() {
                               });
                             }
                           }}
-                          className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                          className="h-4 w-4 text-[#C02628] focus:ring-[#C02628] border-gray-300 rounded"
                         />
                         <span className="ml-2 text-sm text-gray-900">
                           {tag.name}
@@ -896,7 +907,7 @@ export default function NewsPage() {
                     )}
 
                     {/* File Input */}
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-emerald-500 transition-colors">
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#C02628] transition-colors">
                       <input
                         type="file"
                         accept="image/*"
@@ -934,7 +945,7 @@ export default function NewsPage() {
                     whileTap={{ scale: 0.95 }}
                     type="submit"
                     disabled={submitLoading || updateLoading}
-                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#C02628] to-[#C02628] text-white rounded-lg hover:from-[#B02122] hover:to-[#8F1719] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitLoading || updateLoading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -1012,7 +1023,7 @@ export default function NewsPage() {
                     </span>
                   </div>
                   <div className="flex items-center justify-center space-x-2">
-                    <span className="text-sm font-medium text-emerald-600">
+                    <span className="text-sm font-medium text-[#C02628]">
                       {selectedArticle.category_name}
                     </span>
                     <span
@@ -1029,14 +1040,14 @@ export default function NewsPage() {
                 <div className="flex justify-center">
                   {selectedArticle.image ? (
                     <div className="relative w-full max-w-md h-48">
-                        <Image
-                          src={getImageUrl(selectedArticle.image)}
-                          alt={selectedArticle.title}
-                          fill
-                          sizes="400px"
-                          style={{ objectFit: 'cover' }}
-                          className="rounded-lg"
-                        />
+                      <Image
+                        src={getImageUrl(selectedArticle.image)}
+                        alt={selectedArticle.title}
+                        fill
+                        sizes="400px"
+                        style={{ objectFit: "cover" }}
+                        className="rounded-lg"
+                      />
                     </div>
                   ) : (
                     <div className="w-full max-w-md h-48 bg-gray-100 rounded-lg flex items-center justify-center">

@@ -22,10 +22,13 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { api } from "@/services/api";
-import { Deposit, CreateDepositRequest, UpdateDepositRequest } from "@/lib/types/deposits";
+import {
+  Deposit,
+  CreateDepositRequest,
+  UpdateDepositRequest,
+} from "@/lib/types/deposits";
 import { useToast } from "@/components/providers/toast-provider";
 import { useApiCall } from "@/hooks";
-
 
 export default function DepositPage() {
   const [deposits, setDeposits] = useState<Deposit[]>([]);
@@ -59,18 +62,21 @@ export default function DepositPage() {
     loading: saldoLoading,
     execute: fetchSaldo,
   } = useApiCall(async () => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}digiflazz/saldo`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`,
-      },
-    });
-    
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}digiflazz/saldo`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("admin_token")}`,
+        },
+      }
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to fetch saldo');
+      throw new Error("Failed to fetch saldo");
     }
-    
+
     return response.json();
   });
 
@@ -81,11 +87,14 @@ export default function DepositPage() {
         page: currentPage,
         limit: pageLimit,
         search: debouncedSearchTerm || undefined,
-        status: statusFilter !== "all" ? statusFilter as 'PENDING' | 'APPROVED' | 'REJECTED' : undefined,
+        status:
+          statusFilter !== "all"
+            ? (statusFilter as "PENDING" | "APPROVED" | "REJECTED")
+            : undefined,
       });
-      
+
       console.log("API Response:", response); // Debug log
-      
+
       // Handle different response structures
       if (response.data && Array.isArray(response.data)) {
         // If response.data is directly an array
@@ -99,12 +108,14 @@ export default function DepositPage() {
       } else if (response.data && response.data.data) {
         // If response.data has nested data and pagination
         setDeposits(response.data.data);
-        setPagination(response.data.pagination || {
-          page: currentPage,
-          limit: pageLimit,
-          total: response.data.data.length,
-          totalPages: Math.ceil(response.data.data.length / pageLimit),
-        });
+        setPagination(
+          response.data.pagination || {
+            page: currentPage,
+            limit: pageLimit,
+            total: response.data.data.length,
+            totalPages: Math.ceil(response.data.data.length / pageLimit),
+          }
+        );
       } else {
         // Fallback
         setDeposits([]);
@@ -152,16 +163,16 @@ export default function DepositPage() {
     if (saldoData?.data !== undefined) {
       return saldoData.data;
     }
-    
+
     // Fallback to calculated deposits if API fails
     return (deposits || [])
-      .filter(d => d.status === "APPROVED")
+      .filter((d) => d.status === "APPROVED")
       .reduce((sum, d) => sum + d.amount, 0);
   };
 
   const getPendingDeposits = () => {
     return (deposits || [])
-      .filter(d => d.status === "PENDING")
+      .filter((d) => d.status === "PENDING")
       .reduce((sum, d) => sum + d.amount, 0);
   };
 
@@ -170,23 +181,23 @@ export default function DepositPage() {
   };
 
   const getCompletedCount = () => {
-    return (deposits || []).filter(d => d.status === "APPROVED").length;
+    return (deposits || []).filter((d) => d.status === "APPROVED").length;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Form validation
     if (!formData.owner_name.trim()) {
       error("Error", "Nama pemilik rekening harus diisi");
       return;
     }
-    
+
     if (!formData.amount || Number(formData.amount) < 200000) {
       error("Error", "Jumlah deposit minimal Rp 200.000");
       return;
     }
-    
+
     setSubmitting(true);
     try {
       if (editingDeposit) {
@@ -212,7 +223,7 @@ export default function DepositPage() {
         await api.deposits.createDeposit(createData);
         success("Success", "Deposit berhasil dibuat");
       }
-      
+
       await fetchDeposits();
       resetForm();
     } catch (err) {
@@ -247,10 +258,22 @@ export default function DepositPage() {
     }
   };
 
-  const handleStatusUpdate = async (id: string, status: 'PENDING' | 'APPROVED' | 'REJECTED') => {
+  const handleStatusUpdate = async (
+    id: string,
+    status: "PENDING" | "APPROVED" | "REJECTED"
+  ) => {
     try {
       await api.deposits.updateDeposit(id, { status });
-      success("Success", `Status deposit berhasil diubah menjadi ${status === 'APPROVED' ? 'Disetujui' : status === 'PENDING' ? 'Menunggu' : 'Ditolak'}`);
+      success(
+        "Success",
+        `Status deposit berhasil diubah menjadi ${
+          status === "APPROVED"
+            ? "Disetujui"
+            : status === "PENDING"
+            ? "Menunggu"
+            : "Ditolak"
+        }`
+      );
       await fetchDeposits();
     } catch (err) {
       console.error("Error updating status:", err);
@@ -259,11 +282,11 @@ export default function DepositPage() {
   };
 
   const resetForm = () => {
-    setFormData({ 
-      bank: "BCA", 
-      owner_name: "", 
-      amount: "", 
-      notes: "" 
+    setFormData({
+      bank: "BCA",
+      owner_name: "",
+      amount: "",
+      notes: "",
     });
     setEditingDeposit(null);
     setShowForm(false);
@@ -281,7 +304,7 @@ export default function DepositPage() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setShowForm(true)}
-          className="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white px-4 py-2 rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200"
+          className="flex items-center space-x-2 bg-gradient-to-r from-[#C02628] to-[#C02628] text-white px-4 py-2 rounded-lg hover:from-[#B02122] hover:to-[#8F1719] transition-all duration-200"
         >
           <Plus className="h-5 w-5" />
           <span>Tambah Deposit</span>
@@ -296,7 +319,7 @@ export default function DepositPage() {
           className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-6"
         >
           <div className="flex items-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-green-500 to-emerald-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-[#C02628] to-[#C02628]">
               <DollarSign className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
@@ -307,7 +330,9 @@ export default function DepositPage() {
                   <span className="text-sm text-gray-500">Loading...</span>
                 </div>
               ) : (
-                <p className="text-2xl font-semibold text-gray-900">{formatPrice(getTotalDeposits())}</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {formatPrice(getTotalDeposits())}
+                </p>
               )}
             </div>
           </div>
@@ -324,8 +349,12 @@ export default function DepositPage() {
               <Clock className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Pending Deposit</p>
-              <p className="text-2xl font-semibold text-gray-900">{formatPrice(getPendingDeposits())}</p>
+              <p className="text-sm font-medium text-gray-600">
+                Pending Deposit
+              </p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {formatPrice(getPendingDeposits())}
+              </p>
             </div>
           </div>
         </motion.div>
@@ -341,8 +370,12 @@ export default function DepositPage() {
               <Coins className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Transaksi</p>
-              <p className="text-2xl font-semibold text-gray-900">{getTotalCount()}</p>
+              <p className="text-sm font-medium text-gray-600">
+                Total Transaksi
+              </p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {getTotalCount()}
+              </p>
             </div>
           </div>
         </motion.div>
@@ -354,12 +387,14 @@ export default function DepositPage() {
           className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-6"
         >
           <div className="flex items-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-emerald-500 to-green-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-[#C02628] to-[#C02628]">
               <CheckCircle className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Berhasil</p>
-              <p className="text-2xl font-semibold text-gray-900">{getCompletedCount()}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {getCompletedCount()}
+              </p>
             </div>
           </div>
         </motion.div>
@@ -374,13 +409,13 @@ export default function DepositPage() {
             placeholder="Cari deposit..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
           title="Filter berdasarkan status"
         >
           <option value="all">Semua Status</option>
@@ -388,14 +423,14 @@ export default function DepositPage() {
           <option value="APPROVED">Disetujui</option>
           <option value="REJECTED">Ditolak</option>
         </select>
-        <button 
+        <button
           onClick={() => fetchDeposits()}
           className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
         >
           <RefreshCw className="h-5 w-5" />
           <span>Refresh</span>
         </button>
-        <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200">
+        <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#C02628] to-[#C02628] text-white rounded-lg hover:from-[#B02122] hover:to-[#8F1719] transition-all duration-200">
           <Download className="h-5 w-5" />
           <span>Export</span>
         </button>
@@ -445,7 +480,6 @@ export default function DepositPage() {
                 </tr>
               ) : (
                 filteredDeposits.map((deposit, index) => {
-                  
                   return (
                     <motion.tr
                       key={deposit.id}
@@ -455,61 +489,81 @@ export default function DepositPage() {
                       className="hover:bg-gray-50 transition-colors duration-200"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{deposit.id}</div>
-                        <div className="text-sm text-gray-500">{deposit.account_number}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {deposit.id}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {deposit.account_number}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">
-                            <div className="h-10 w-10 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 flex items-center justify-center">
+                            <div className="h-10 w-10 rounded-full bg-gradient-to-r from-[#C02628] to-[#C02628] flex items-center justify-center">
                               <User className="h-5 w-5 text-white" />
                             </div>
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{deposit.owner_name}</div>
-                            <div className="text-sm text-gray-500">{deposit.bank}</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {deposit.owner_name}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {deposit.bank}
+                            </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{formatPrice(deposit.amount)}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {formatPrice(deposit.amount)}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <CreditCard className="h-4 w-4 text-gray-400 mr-2" />
-                          <span className="text-sm text-gray-900">{deposit.payment_method}</span>
+                          <span className="text-sm text-gray-900">
+                            {deposit.payment_method}
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {new Date(deposit.created_at).toLocaleDateString('id-ID')}
+                          {new Date(deposit.created_at).toLocaleDateString(
+                            "id-ID"
+                          )}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {new Date(deposit.updated_at).toLocaleDateString('id-ID')}
+                          {new Date(deposit.updated_at).toLocaleDateString(
+                            "id-ID"
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
-                          <button 
+                          <button
                             onClick={() => setSelectedDeposit(deposit)}
                             className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors duration-200"
                             title="Lihat detail"
                           >
                             <Eye className="h-4 w-4" />
                           </button>
-                          
+
                           {/* Status Update Buttons */}
-                          {deposit.status === 'PENDING' && (
+                          {deposit.status === "PENDING" && (
                             <>
                               <button
-                                onClick={() => handleStatusUpdate(deposit.id, 'APPROVED')}
-                                className="text-green-600 hover:text-green-900 p-2 hover:bg-green-50 rounded-lg transition-colors duration-200"
+                                onClick={() =>
+                                  handleStatusUpdate(deposit.id, "APPROVED")
+                                }
+                                className="text-[#C02628] hover:text-[#8F1719] p-2 hover:bg-[#C02628]/10 rounded-lg transition-colors duration-200"
                                 title="Setujui deposit"
                               >
                                 <CheckCircle className="h-4 w-4" />
                               </button>
                               <button
-                                onClick={() => handleStatusUpdate(deposit.id, 'REJECTED')}
+                                onClick={() =>
+                                  handleStatusUpdate(deposit.id, "REJECTED")
+                                }
                                 className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded-lg transition-colors duration-200"
                                 title="Tolak deposit"
                               >
@@ -517,7 +571,7 @@ export default function DepositPage() {
                               </button>
                             </>
                           )}
-                          
+
                           <button
                             onClick={() => handleEdit(deposit)}
                             className="text-indigo-600 hover:text-indigo-900 p-2 hover:bg-indigo-50 rounded-lg transition-colors duration-200"
@@ -541,7 +595,7 @@ export default function DepositPage() {
             </tbody>
           </table>
         </div>
-        
+
         {/* Pagination Controls */}
         {pagination && pagination.totalPages > 1 && (
           <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
@@ -554,7 +608,11 @@ export default function DepositPage() {
                 Previous
               </button>
               <button
-                onClick={() => setCurrentPage(Math.min(pagination.totalPages, currentPage + 1))}
+                onClick={() =>
+                  setCurrentPage(
+                    Math.min(pagination.totalPages, currentPage + 1)
+                  )
+                }
                 disabled={currentPage === pagination.totalPages}
                 className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -564,58 +622,93 @@ export default function DepositPage() {
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-gray-700">
-                  Showing{' '}
+                  Showing{" "}
                   <span className="font-medium">
-                    {Math.min((currentPage - 1) * pageLimit + 1, pagination.total)}
-                  </span>{' '}
-                  to{' '}
+                    {Math.min(
+                      (currentPage - 1) * pageLimit + 1,
+                      pagination.total
+                    )}
+                  </span>{" "}
+                  to{" "}
                   <span className="font-medium">
                     {Math.min(currentPage * pageLimit, pagination.total)}
-                  </span>{' '}
-                  of{' '}
-                  <span className="font-medium">{pagination.total}</span>{' '}
+                  </span>{" "}
+                  of <span className="font-medium">{pagination.total}</span>{" "}
                   results
                 </p>
               </div>
               <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <nav
+                  className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                  aria-label="Pagination"
+                >
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
                     className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span className="sr-only">Previous</span>
-                    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                      <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="h-5 w-5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </button>
-                  
+
                   {/* Page numbers */}
-                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                    const pageNum = Math.max(1, Math.min(pagination.totalPages, currentPage - 2 + i));
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                          pageNum === currentPage
-                            ? 'z-10 bg-emerald-50 border-emerald-500 text-emerald-600'
-                            : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                  
+                  {Array.from(
+                    { length: Math.min(5, pagination.totalPages) },
+                    (_, i) => {
+                      const pageNum = Math.max(
+                        1,
+                        Math.min(pagination.totalPages, currentPage - 2 + i)
+                      );
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                            pageNum === currentPage
+                              ? "z-10 bg-[#C02628]/10 border-[#C02628] text-[#C02628]"
+                              : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    }
+                  )}
+
                   <button
-                    onClick={() => setCurrentPage(Math.min(pagination.totalPages, currentPage + 1))}
+                    onClick={() =>
+                      setCurrentPage(
+                        Math.min(pagination.totalPages, currentPage + 1)
+                      )
+                    }
                     disabled={currentPage === pagination.totalPages}
                     className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span className="sr-only">Next</span>
-                    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="h-5 w-5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </button>
                 </nav>
@@ -661,8 +754,10 @@ export default function DepositPage() {
                   <input
                     type="text"
                     value={formData.owner_name}
-                    onChange={(e) => setFormData({ ...formData, owner_name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    onChange={(e) =>
+                      setFormData({ ...formData, owner_name: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                     placeholder="Masukkan nama pemilik rekening"
                     required
                   />
@@ -674,8 +769,17 @@ export default function DepositPage() {
                   </label>
                   <select
                     value={formData.bank}
-                    onChange={(e) => setFormData({ ...formData, bank: e.target.value as "BCA" | "MANDIRI" | "BRI" | "BNI" })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        bank: e.target.value as
+                          | "BCA"
+                          | "MANDIRI"
+                          | "BRI"
+                          | "BNI",
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                     title="Pilih bank"
                     required
                   >
@@ -693,8 +797,10 @@ export default function DepositPage() {
                   <input
                     type="number"
                     value={formData.amount}
-                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    onChange={(e) =>
+                      setFormData({ ...formData, amount: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                     placeholder="Masukkan jumlah deposit (min. 200,000)"
                     min="200000"
                     required
@@ -707,8 +813,10 @@ export default function DepositPage() {
                   </label>
                   <textarea
                     value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    onChange={(e) =>
+                      setFormData({ ...formData, notes: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                     placeholder="Masukkan catatan (opsional)"
                     rows={3}
                   />
@@ -728,9 +836,9 @@ export default function DepositPage() {
                     type="submit"
                     disabled={submitting}
                     className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
-                      submitting 
-                        ? 'bg-gray-400 cursor-not-allowed' 
-                        : 'bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600'
+                      submitting
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-gradient-to-r from-[#C02628] to-[#C02628] hover:from-[#B02122] hover:to-[#8F1719]"
                     }`}
                   >
                     {submitting ? (
@@ -738,7 +846,13 @@ export default function DepositPage() {
                     ) : (
                       <Save className="h-4 w-4" />
                     )}
-                    <span>{submitting ? "Menyimpan..." : editingDeposit ? "Update" : "Simpan"}</span>
+                    <span>
+                      {submitting
+                        ? "Menyimpan..."
+                        : editingDeposit
+                        ? "Update"
+                        : "Simpan"}
+                    </span>
                   </motion.button>
                 </div>
               </form>
@@ -763,7 +877,9 @@ export default function DepositPage() {
               className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">Detail Deposit</h2>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Detail Deposit
+                </h2>
                 <button
                   onClick={() => setSelectedDeposit(null)}
                   className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
@@ -777,64 +893,95 @@ export default function DepositPage() {
                 {/* Deposit Info */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Informasi Deposit</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">
+                      Informasi Deposit
+                    </h3>
                     <div className="space-y-3">
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">ID Deposit:</span>
-                        <span className="text-sm font-medium text-gray-900">{selectedDeposit.id}</span>
+                        <span className="text-sm text-gray-600">
+                          ID Deposit:
+                        </span>
+                        <span className="text-sm font-medium text-gray-900">
+                          {selectedDeposit.id}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Jumlah:</span>
-                        <span className="text-sm font-bold text-gray-900">{formatPrice(selectedDeposit.amount)}</span>
+                        <span className="text-sm font-bold text-gray-900">
+                          {formatPrice(selectedDeposit.amount)}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Bank:</span>
-                        <span className="text-sm font-medium text-gray-900">{selectedDeposit.bank}</span>
+                        <span className="text-sm font-medium text-gray-900">
+                          {selectedDeposit.bank}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Metode:</span>
-                        <span className="text-sm font-medium text-gray-900">{selectedDeposit.payment_method}</span>
+                        <span className="text-sm font-medium text-gray-900">
+                          {selectedDeposit.payment_method}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Status:</span>
                         <span
                           className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                             selectedDeposit.status === "APPROVED"
-                              ? "bg-green-100 text-green-800"
+                              ? "bg-[#C02628]/10 text-[#C02628]"
                               : selectedDeposit.status === "PENDING"
                               ? "bg-yellow-100 text-yellow-800"
                               : "bg-red-100 text-red-800"
                           }`}
                         >
-                          {selectedDeposit.status === "APPROVED" ? "Disetujui" : 
-                           selectedDeposit.status === "PENDING" ? "Menunggu" : "Ditolak"}
+                          {selectedDeposit.status === "APPROVED"
+                            ? "Disetujui"
+                            : selectedDeposit.status === "PENDING"
+                            ? "Menunggu"
+                            : "Ditolak"}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Tanggal Dibuat:</span>
+                        <span className="text-sm text-gray-600">
+                          Tanggal Dibuat:
+                        </span>
                         <span className="text-sm font-medium text-gray-900">
-                          {new Date(selectedDeposit.created_at).toLocaleDateString('id-ID')}
+                          {new Date(
+                            selectedDeposit.created_at
+                          ).toLocaleDateString("id-ID")}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Tanggal Diperbarui:</span>
+                        <span className="text-sm text-gray-600">
+                          Tanggal Diperbarui:
+                        </span>
                         <span className="text-sm font-medium text-gray-900">
-                          {new Date(selectedDeposit.updated_at).toLocaleDateString('id-ID')}
+                          {new Date(
+                            selectedDeposit.updated_at
+                          ).toLocaleDateString("id-ID")}
                         </span>
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Informasi Pemilik</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">
+                      Informasi Pemilik
+                    </h3>
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Nama:</span>
-                        <span className="text-sm font-medium text-gray-900">{selectedDeposit.owner_name}</span>
+                        <span className="text-sm font-medium text-gray-900">
+                          {selectedDeposit.owner_name}
+                        </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Nomor Rekening:</span>
-                        <span className="text-sm font-medium text-gray-900">{selectedDeposit.account_number}</span>
+                        <span className="text-sm text-gray-600">
+                          Nomor Rekening:
+                        </span>
+                        <span className="text-sm font-medium text-gray-900">
+                          {selectedDeposit.account_number}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -843,9 +990,13 @@ export default function DepositPage() {
                 {/* Notes */}
                 {selectedDeposit.notes && (
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Catatan</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">
+                      Catatan
+                    </h3>
                     <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-sm text-gray-900">{selectedDeposit.notes}</p>
+                      <p className="text-sm text-gray-900">
+                        {selectedDeposit.notes}
+                      </p>
                     </div>
                   </div>
                 )}

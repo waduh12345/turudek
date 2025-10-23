@@ -37,18 +37,18 @@ const FAQ = () => {
       <Accordion.Root
         type="single"
         collapsible
-        className="w-full max-w-3xl mx-auto rounded-lg border border-[#05ce78] overflow-hidden font-mono"
+        className="w-full max-w-3xl mx-auto rounded-lg border border-[#C02628] overflow-hidden font-mono"
       >
         {faqs.map((faq, i) => (
           <Accordion.Item
             key={i}
             value={`item-${i}`}
-            className="border-b border-[#05ce78]/40 last:border-b-0 tracking-wider"
+            className="border-b border-[#C02628]/40 last:border-b-0 tracking-wider"
           >
             <Accordion.Header>
-              <Accordion.Trigger className="group flex w-full items-center justify-between px-5 py-4 text-left text-gray-800 hover:bg-[#05ce78]/5 transition italic duration-500">
+              <Accordion.Trigger className="group flex w-full items-center justify-between px-5 py-4 text-left text-gray-800 hover:bg-[#C02628]/5 transition italic duration-500">
                 <span>{faq.question}</span>
-                <ChevronRight className="h-5 w-5 text-[#05ce78] transition-transform duration-300 group-data-[state=open]:rotate-90" />
+                <ChevronRight className="h-5 w-5 text-[#C02628] transition-transform duration-300 group-data-[state=open]:rotate-90" />
               </Accordion.Trigger>
             </Accordion.Header>
             <Accordion.Content className="px-5 py-4 text-sm text-gray-600 leading-relaxed">

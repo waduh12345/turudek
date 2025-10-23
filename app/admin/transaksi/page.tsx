@@ -18,38 +18,42 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { transactionService, Transaction, TransactionFilters } from "@/services/api";
+import {
+  transactionService,
+  Transaction,
+  TransactionFilters,
+} from "@/services/api";
 import { useApiCall, useTokenSync } from "@/hooks";
 
 // Status mapping based on API response
 const getStatusInfo = (status: number, statusPayment: number) => {
   if (statusPayment === 2) {
     return {
-    icon: CheckCircle,
-    color: "text-green-600",
-    bgColor: "bg-green-100",
+      icon: CheckCircle,
+      color: "text-green-600",
+      bgColor: "bg-green-100",
       label: "Lunas",
     };
   }
-  
+
   if (statusPayment === 1) {
     return {
-    icon: Clock,
-    color: "text-yellow-600",
-    bgColor: "bg-yellow-100",
+      icon: Clock,
+      color: "text-yellow-600",
+      bgColor: "bg-yellow-100",
       label: "Menunggu Pembayaran",
     };
   }
-  
+
   if (status === 1) {
     return {
-    icon: AlertCircle,
-    color: "text-blue-600",
-    bgColor: "bg-blue-100",
-    label: "Diproses",
+      icon: AlertCircle,
+      color: "text-blue-600",
+      bgColor: "bg-blue-100",
+      label: "Diproses",
     };
   }
-  
+
   if (status === 2) {
     return {
       icon: CheckCircle,
@@ -58,7 +62,7 @@ const getStatusInfo = (status: number, statusPayment: number) => {
       label: "Selesai",
     };
   }
-  
+
   return {
     icon: XCircle,
     color: "text-red-600",
@@ -76,7 +80,8 @@ export default function TransaksiPage() {
     endDate: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<Transaction | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
 
@@ -94,7 +99,8 @@ export default function TransaksiPage() {
 
     if (dateRange.startDate) filters.started_at = dateRange.startDate;
     if (dateRange.endDate) filters.ended_at = dateRange.endDate;
-    if (statusPaymentFilter !== "all") filters.status_payment = parseInt(statusPaymentFilter);
+    if (statusPaymentFilter !== "all")
+      filters.status_payment = parseInt(statusPaymentFilter);
 
     return transactionService.getTransactions(filters);
   });
@@ -103,7 +109,15 @@ export default function TransaksiPage() {
     if (isAuthenticated && hasToken) {
       fetchTransactions();
     }
-  }, [isAuthenticated, hasToken, currentPage, statusPaymentFilter, dateRange.startDate, dateRange.endDate, fetchTransactions]);
+  }, [
+    isAuthenticated,
+    hasToken,
+    currentPage,
+    statusPaymentFilter,
+    dateRange.startDate,
+    dateRange.endDate,
+    fetchTransactions,
+  ]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -114,11 +128,11 @@ export default function TransaksiPage() {
     };
 
     if (showExportDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showExportDropdown]);
 
@@ -133,7 +147,7 @@ export default function TransaksiPage() {
   const getTotalRevenue = () => {
     if (!transactionsData?.data?.data) return 0;
     return transactionsData.data.data
-      .filter(t => t.status_payment === 2)
+      .filter((t) => t.status_payment === 2)
       .reduce((sum, t) => sum + t.amount, 0);
   };
 
@@ -143,12 +157,14 @@ export default function TransaksiPage() {
 
   const getCompletedOrders = () => {
     if (!transactionsData?.data?.data) return 0;
-    return transactionsData.data.data.filter(t => t.status_payment === 2).length;
+    return transactionsData.data.data.filter((t) => t.status_payment === 2)
+      .length;
   };
 
   const getPendingOrders = () => {
     if (!transactionsData?.data?.data) return 0;
-    return transactionsData.data.data.filter(t => t.status_payment === 0).length;
+    return transactionsData.data.data.filter((t) => t.status_payment === 0)
+      .length;
   };
 
   const transactions = transactionsData?.data?.data || [];
@@ -157,23 +173,23 @@ export default function TransaksiPage() {
   // Export functions
   const exportToCSV = async () => {
     if (!transactions.length) return;
-    
+
     setIsExporting(true);
     try {
       const headers = [
-        'No',
-        'Reference',
-        'Order ID',
-        'Customer Name',
-        'Customer Phone',
-        'Customer Email',
-        'Product Name',
-        'Product SKU',
-        'Amount',
-        'Status Payment',
-        'Provider',
-        'Created At',
-        'Paid At'
+        "No",
+        "Reference",
+        "Order ID",
+        "Customer Name",
+        "Customer Phone",
+        "Customer Email",
+        "Product Name",
+        "Product SKU",
+        "Amount",
+        "Status Payment",
+        "Provider",
+        "Created At",
+        "Paid At",
       ];
 
       const csvData = transactions.map((transaction, index) => [
@@ -182,31 +198,36 @@ export default function TransaksiPage() {
         transaction.order_id,
         transaction.customer_name,
         transaction.customer_phone,
-        transaction.customer_email || '-',
+        transaction.customer_email || "-",
         transaction.product.name,
         transaction.product.sku,
         transaction.amount,
         getStatusInfo(transaction.status, transaction.status_payment).label,
         transaction.provider,
-        new Date(transaction.created_at).toLocaleString('id-ID'),
-        transaction.paid_at ? new Date(transaction.paid_at).toLocaleString('id-ID') : '-'
+        new Date(transaction.created_at).toLocaleString("id-ID"),
+        transaction.paid_at
+          ? new Date(transaction.paid_at).toLocaleString("id-ID")
+          : "-",
       ]);
 
       const csvContent = [headers, ...csvData]
-        .map(row => row.map(field => `"${field}"`).join(','))
-        .join('\n');
+        .map((row) => row.map((field) => `"${field}"`).join(","))
+        .join("\n");
 
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
       const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `transactions_${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
+      link.setAttribute("href", url);
+      link.setAttribute(
+        "download",
+        `transactions_${new Date().toISOString().split("T")[0]}.csv`
+      );
+      link.style.visibility = "hidden";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error('Export to CSV failed:', error);
+      console.error("Export to CSV failed:", error);
     } finally {
       setIsExporting(false);
     }
@@ -214,7 +235,7 @@ export default function TransaksiPage() {
 
   const exportToJSON = async () => {
     if (!transactions.length) return;
-    
+
     setIsExporting(true);
     try {
       const exportData = transactions.map((transaction, index) => ({
@@ -223,28 +244,38 @@ export default function TransaksiPage() {
         orderId: transaction.order_id,
         customerName: transaction.customer_name,
         customerPhone: transaction.customer_phone,
-        customerEmail: transaction.customer_email || '-',
+        customerEmail: transaction.customer_email || "-",
         productName: transaction.product.name,
         productSku: transaction.product.sku,
         amount: transaction.amount,
-        statusPayment: getStatusInfo(transaction.status, transaction.status_payment).label,
+        statusPayment: getStatusInfo(
+          transaction.status,
+          transaction.status_payment
+        ).label,
         provider: transaction.provider,
-        createdAt: new Date(transaction.created_at).toLocaleString('id-ID'),
-        paidAt: transaction.paid_at ? new Date(transaction.paid_at).toLocaleString('id-ID') : '-'
+        createdAt: new Date(transaction.created_at).toLocaleString("id-ID"),
+        paidAt: transaction.paid_at
+          ? new Date(transaction.paid_at).toLocaleString("id-ID")
+          : "-",
       }));
 
       const jsonContent = JSON.stringify(exportData, null, 2);
-      const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' });
-      const link = document.createElement('a');
+      const blob = new Blob([jsonContent], {
+        type: "application/json;charset=utf-8;",
+      });
+      const link = document.createElement("a");
       const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `transactions_${new Date().toISOString().split('T')[0]}.json`);
-      link.style.visibility = 'hidden';
+      link.setAttribute("href", url);
+      link.setAttribute(
+        "download",
+        `transactions_${new Date().toISOString().split("T")[0]}.json`
+      );
+      link.style.visibility = "hidden";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (error) {
-      console.error('Export to JSON failed:', error);
+      console.error("Export to JSON failed:", error);
     } finally {
       setIsExporting(false);
     }
@@ -257,22 +288,28 @@ export default function TransaksiPage() {
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin text-emerald-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Loading...</h1>
-          <p className="text-gray-600">Please wait while we verify your authentication.</p>
+          <p className="text-gray-600">
+            Please wait while we verify your authentication.
+          </p>
         </div>
       </div>
     );
   }
 
   // Show error state if API call fails due to authentication
-  if (transactionsError && transactionsError.includes('401')) {
+  if (transactionsError && transactionsError.includes("401")) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">🔒</div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Authentication Required</h1>
-          <p className="text-gray-600 mb-6">You need to be logged in as an admin to access this page.</p>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">
+            Authentication Required
+          </h1>
+          <p className="text-gray-600 mb-6">
+            You need to be logged in as an admin to access this page.
+          </p>
           <button
-            onClick={() => window.location.href = '/auth/login'}
+            onClick={() => (window.location.href = "/auth/login")}
             className="bg-emerald-500 text-white px-6 py-3 rounded-lg hover:bg-emerald-600 transition-colors"
           >
             Go to Login
@@ -287,7 +324,9 @@ export default function TransaksiPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Transaksi</h1>
-        <p className="text-gray-600">Kelola dan pantau semua transaksi pelanggan</p>
+        <p className="text-gray-600">
+          Kelola dan pantau semua transaksi pelanggan
+        </p>
       </div>
 
       {/* Stats Cards */}
@@ -298,12 +337,14 @@ export default function TransaksiPage() {
           className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-6"
         >
           <div className="flex items-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-green-500 to-emerald-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-[#C02628] to-emerald-500">
               <DollarSign className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-              <p className="text-2xl font-semibold text-gray-900">{formatPrice(getTotalRevenue())}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {formatPrice(getTotalRevenue())}
+              </p>
             </div>
           </div>
         </motion.div>
@@ -320,7 +361,9 @@ export default function TransaksiPage() {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Orders</p>
-              <p className="text-2xl font-semibold text-gray-900">{getTotalOrders()}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {getTotalOrders()}
+              </p>
             </div>
           </div>
         </motion.div>
@@ -332,12 +375,14 @@ export default function TransaksiPage() {
           className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-6"
         >
           <div className="flex items-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-emerald-500 to-green-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-emerald-500 to-[#C02628]">
               <CheckCircle className="h-6 w-6 text-white" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Completed</p>
-              <p className="text-2xl font-semibold text-gray-900">{getCompletedOrders()}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {getCompletedOrders()}
+              </p>
             </div>
           </div>
         </motion.div>
@@ -367,7 +412,9 @@ export default function TransaksiPage() {
         <div className="flex flex-col lg:flex-row gap-4 items-end">
           {/* Search */}
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Cari Transaksi</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Cari Transaksi
+            </label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
@@ -379,10 +426,12 @@ export default function TransaksiPage() {
               />
             </div>
           </div>
-          
+
           {/* Status Payment Filter */}
           <div className="lg:w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Status Pembayaran</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Status Pembayaran
+            </label>
             <select
               value={statusPaymentFilter}
               onChange={(e) => setStatusPaymentFilter(e.target.value)}
@@ -395,39 +444,50 @@ export default function TransaksiPage() {
               <option value="2">Lunas</option>
             </select>
           </div>
-          
+
           {/* Date Range */}
           <div className="flex gap-2">
             <div className="w-40">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tanggal Mulai
+              </label>
               <input
                 type="date"
                 value={dateRange.startDate}
-                onChange={(e) => setDateRange(prev => ({ ...prev, startDate: e.target.value }))}
+                onChange={(e) =>
+                  setDateRange((prev) => ({
+                    ...prev,
+                    startDate: e.target.value,
+                  }))
+                }
                 className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
                 aria-label="Tanggal mulai filter"
               />
             </div>
-            
+
             <div className="w-40">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Akhir</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tanggal Akhir
+              </label>
               <input
                 type="date"
                 value={dateRange.endDate}
-                onChange={(e) => setDateRange(prev => ({ ...prev, endDate: e.target.value }))}
+                onChange={(e) =>
+                  setDateRange((prev) => ({ ...prev, endDate: e.target.value }))
+                }
                 className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
                 aria-label="Tanggal akhir filter"
               />
             </div>
           </div>
-          
+
           {/* Action Buttons */}
           <div className="flex gap-2">
             <div className="relative hidden">
-              <button 
+              <button
                 onClick={() => setShowExportDropdown(!showExportDropdown)}
                 disabled={isExporting || !transactions.length}
-                className="flex items-center justify-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-[#C02628] text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isExporting ? (
                   <>
@@ -441,7 +501,7 @@ export default function TransaksiPage() {
                   </>
                 )}
               </button>
-              
+
               {/* Export Options Dropdown */}
               {showExportDropdown && !isExporting && (
                 <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
@@ -453,14 +513,20 @@ export default function TransaksiPage() {
                     className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors duration-200 first:rounded-t-lg"
                   >
                     <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                      <span className="text-green-600 font-bold text-sm">C</span>
+                      <span className="text-green-600 font-bold text-sm">
+                        C
+                      </span>
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900">Export to CSV</div>
-                      <div className="text-sm text-gray-500">Download as .csv file</div>
+                      <div className="font-medium text-gray-900">
+                        Export to CSV
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Download as .csv file
+                      </div>
                     </div>
                   </button>
-                  
+
                   <button
                     onClick={() => {
                       setShowExportDropdown(false);
@@ -472,8 +538,12 @@ export default function TransaksiPage() {
                       <span className="text-blue-600 font-bold text-sm">J</span>
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900">Export to JSON</div>
-                      <div className="text-sm text-gray-500">Download as .json file</div>
+                      <div className="font-medium text-gray-900">
+                        Export to JSON
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Download as .json file
+                      </div>
                     </div>
                   </button>
                 </div>
@@ -518,7 +588,9 @@ export default function TransaksiPage() {
                   <td colSpan={7} className="px-6 py-12 text-center">
                     <div className="flex items-center justify-center">
                       <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
-                      <span className="ml-2 text-gray-600">Memuat transaksi...</span>
+                      <span className="ml-2 text-gray-600">
+                        Memuat transaksi...
+                      </span>
                     </div>
                   </td>
                 </tr>
@@ -542,83 +614,105 @@ export default function TransaksiPage() {
                 </tr>
               ) : (
                 transactions.map((transaction, index) => {
-                  const status = getStatusInfo(transaction.status, transaction.status_payment);
-                const StatusIcon = status.icon;
-                
-                return (
-                  <motion.tr
-                    key={transaction.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="hover:bg-gray-50 transition-colors duration-200"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{transaction.reference}</div>
-                        <div className="text-sm text-gray-500">{transaction.order_id}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 flex items-center justify-center">
-                            <User className="h-5 w-5 text-white" />
+                  const status = getStatusInfo(
+                    transaction.status,
+                    transaction.status_payment
+                  );
+                  const StatusIcon = status.icon;
+
+                  return (
+                    <motion.tr
+                      key={transaction.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="hover:bg-gray-50 transition-colors duration-200"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {transaction.reference}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {transaction.order_id}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <div className="h-10 w-10 rounded-full bg-gradient-to-r from-emerald-500 to-[#C02628] flex items-center justify-center">
+                              <User className="h-5 w-5 text-white" />
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {transaction.customer_name}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {transaction.customer_phone}
+                            </div>
                           </div>
                         </div>
-                        <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{transaction.customer_name}</div>
-                            <div className="text-sm text-gray-500">{transaction.customer_phone}</div>
-                          </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{transaction.product.name}</div>
-                      <div className="text-sm text-gray-500">
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {transaction.product.name}
+                        </div>
+                        <div className="text-sm text-gray-500">
                           {transaction.product.sku} • {transaction.provider}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{formatPrice(transaction.amount)}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${status.bgColor} ${status.color}`}
-                      >
-                        <StatusIcon className="h-3 w-3 mr-1" />
-                        {status.label}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {formatPrice(transaction.amount)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${status.bgColor} ${status.color}`}
+                        >
+                          <StatusIcon className="h-3 w-3 mr-1" />
+                          {status.label}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {new Date(transaction.created_at).toLocaleDateString('id-ID')}
+                          {new Date(transaction.created_at).toLocaleDateString(
+                            "id-ID"
+                          )}
                         </div>
                         {transaction.paid_at && (
                           <div className="text-sm text-gray-500">
-                            Lunas: {new Date(transaction.paid_at).toLocaleDateString('id-ID')}
+                            Lunas:{" "}
+                            {new Date(transaction.paid_at).toLocaleDateString(
+                              "id-ID"
+                            )}
                           </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
-                        <button
-                          onClick={() => setSelectedTransaction(transaction)}
-                          className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end space-x-2">
+                          <button
+                            onClick={() => setSelectedTransaction(transaction)}
+                            className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors duration-200"
                             aria-label="View transaction details"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </button>
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
                           {transaction.payment_link && (
-                            <button 
-                              onClick={() => window.open(transaction.payment_link, '_blank')}
+                            <button
+                              onClick={() =>
+                                window.open(transaction.payment_link, "_blank")
+                              }
                               className="text-green-600 hover:text-green-900 p-2 hover:bg-green-50 rounded-lg transition-colors duration-200"
                               aria-label="Open payment link"
                             >
-                            <CheckCircle className="h-4 w-4" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </motion.tr>
-                );
+                              <CheckCircle className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </motion.tr>
+                  );
                 })
               )}
             </tbody>
@@ -631,39 +725,47 @@ export default function TransaksiPage() {
         <div className="bg-white rounded-xl shadow-sm ring-1 ring-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-700">
-              Menampilkan {pagination.from} sampai {pagination.to} dari {pagination.total} transaksi
+              Menampilkan {pagination.from} sampai {pagination.to} dari{" "}
+              {pagination.total} transaksi
             </div>
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
                 className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Previous page"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              
+
               <div className="flex items-center space-x-1">
-                {Array.from({ length: Math.min(5, pagination.last_page) }, (_, i) => {
-                  const page = i + 1;
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`px-3 py-2 text-sm rounded-lg ${
-                        currentPage === page
-                          ? 'bg-emerald-500 text-white'
-                          : 'text-gray-700 hover:bg-gray-100'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  );
-                })}
+                {Array.from(
+                  { length: Math.min(5, pagination.last_page) },
+                  (_, i) => {
+                    const page = i + 1;
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-2 text-sm rounded-lg ${
+                          currentPage === page
+                            ? "bg-emerald-500 text-white"
+                            : "text-gray-700 hover:bg-gray-100"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  }
+                )}
               </div>
-              
+
               <button
-                onClick={() => setCurrentPage(prev => Math.min(pagination.last_page, prev + 1))}
+                onClick={() =>
+                  setCurrentPage((prev) =>
+                    Math.min(pagination.last_page, prev + 1)
+                  )
+                }
                 disabled={currentPage === pagination.last_page}
                 className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Next page"
@@ -680,7 +782,7 @@ export default function TransaksiPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop-strong"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop-strong"
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
@@ -688,7 +790,9 @@ export default function TransaksiPage() {
             className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">Detail Transaksi</h2>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Detail Transaksi
+              </h2>
               <button
                 onClick={() => setSelectedTransaction(null)}
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
@@ -702,61 +806,98 @@ export default function TransaksiPage() {
               {/* Transaction Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Informasi Transaksi</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Informasi Transaksi
+                  </h3>
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Reference:</span>
-                      <span className="text-sm font-medium text-gray-900">{selectedTransaction.reference}</span>
+                      <span className="text-sm font-medium text-gray-900">
+                        {selectedTransaction.reference}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Order ID:</span>
-                      <span className="text-sm font-medium text-gray-900">{selectedTransaction.order_id}</span>
+                      <span className="text-sm font-medium text-gray-900">
+                        {selectedTransaction.order_id}
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Tanggal Order:</span>
+                      <span className="text-sm text-gray-600">
+                        Tanggal Order:
+                      </span>
                       <span className="text-sm font-medium text-gray-900">
-                        {new Date(selectedTransaction.created_at).toLocaleString('id-ID')}
+                        {new Date(
+                          selectedTransaction.created_at
+                        ).toLocaleString("id-ID")}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Provider:</span>
-                      <span className="text-sm font-medium text-gray-900">{selectedTransaction.provider}</span>
+                      <span className="text-sm font-medium text-gray-900">
+                        {selectedTransaction.provider}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Total:</span>
-                      <span className="text-sm font-bold text-gray-900">{formatPrice(selectedTransaction.amount)}</span>
+                      <span className="text-sm font-bold text-gray-900">
+                        {formatPrice(selectedTransaction.amount)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Status:</span>
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        getStatusInfo(selectedTransaction.status, selectedTransaction.status_payment).bgColor
-                      } ${getStatusInfo(selectedTransaction.status, selectedTransaction.status_payment).color}`}>
-                        {getStatusInfo(selectedTransaction.status, selectedTransaction.status_payment).label}
+                      <span
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          getStatusInfo(
+                            selectedTransaction.status,
+                            selectedTransaction.status_payment
+                          ).bgColor
+                        } ${
+                          getStatusInfo(
+                            selectedTransaction.status,
+                            selectedTransaction.status_payment
+                          ).color
+                        }`}
+                      >
+                        {
+                          getStatusInfo(
+                            selectedTransaction.status,
+                            selectedTransaction.status_payment
+                          ).label
+                        }
                       </span>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Informasi Pelanggan</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Informasi Pelanggan
+                  </h3>
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Nama:</span>
-                      <span className="text-sm font-medium text-gray-900">{selectedTransaction.customer_name}</span>
+                      <span className="text-sm font-medium text-gray-900">
+                        {selectedTransaction.customer_name}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Email:</span>
                       <span className="text-sm font-medium text-gray-900">
-                        {selectedTransaction.customer_email || 'Tidak ada'}
+                        {selectedTransaction.customer_email || "Tidak ada"}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Telepon:</span>
-                      <span className="text-sm font-medium text-gray-900">{selectedTransaction.customer_phone}</span>
+                      <span className="text-sm font-medium text-gray-900">
+                        {selectedTransaction.customer_phone}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Game ID:</span>
-                      <span className="text-sm font-medium text-gray-900">{selectedTransaction.customer_no}</span>
+                      <span className="text-sm font-medium text-gray-900">
+                        {selectedTransaction.customer_no}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -764,20 +905,37 @@ export default function TransaksiPage() {
 
               {/* Product Info */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Informasi Produk</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Informasi Produk
+                </h3>
                 <div className="bg-gray-50 rounded-lg p-4">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h4 className="font-medium text-gray-900">{selectedTransaction.product.name}</h4>
-                      <p className="text-sm text-gray-600">SKU: {selectedTransaction.product.sku}</p>
-                      <p className="text-sm text-gray-600">Provider: {selectedTransaction.provider}</p>
+                      <h4 className="font-medium text-gray-900">
+                        {selectedTransaction.product.name}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        SKU: {selectedTransaction.product.sku}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Provider: {selectedTransaction.provider}
+                      </p>
                       {selectedTransaction.product.description && (
-                        <p className="text-sm text-gray-600">Deskripsi: {selectedTransaction.product.description}</p>
+                        <p className="text-sm text-gray-600">
+                          Deskripsi: {selectedTransaction.product.description}
+                        </p>
                       )}
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-gray-900">{formatPrice(selectedTransaction.amount)}</p>
-                      <p className="text-sm text-gray-500">Harga Beli: {formatPrice(parseFloat(selectedTransaction.product.buy_price))}</p>
+                      <p className="font-medium text-gray-900">
+                        {formatPrice(selectedTransaction.amount)}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Harga Beli:{" "}
+                        {formatPrice(
+                          parseFloat(selectedTransaction.product.buy_price)
+                        )}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -785,15 +943,17 @@ export default function TransaksiPage() {
 
               {/* Payment Info */}
               {selectedTransaction.payment_link && (
-              <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Informasi Pembayaran</h3>
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Informasi Pembayaran
+                  </h3>
+                  <div className="bg-gray-50 rounded-lg p-4">
                     <div className="space-y-2">
                       <p className="text-sm text-gray-600">
-                        <strong>Payment Link:</strong> 
-                        <a 
-                          href={selectedTransaction.payment_link} 
-                          target="_blank" 
+                        <strong>Payment Link:</strong>
+                        <a
+                          href={selectedTransaction.payment_link}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:text-blue-800 ml-2"
                         >
@@ -802,12 +962,16 @@ export default function TransaksiPage() {
                       </p>
                       {selectedTransaction.paid_at && (
                         <p className="text-sm text-gray-600">
-                          <strong>Tanggal Lunas:</strong> {new Date(selectedTransaction.paid_at).toLocaleString('id-ID')}
+                          <strong>Tanggal Lunas:</strong>{" "}
+                          {new Date(selectedTransaction.paid_at).toLocaleString(
+                            "id-ID"
+                          )}
                         </p>
                       )}
                       {selectedTransaction.sn && (
                         <p className="text-sm text-gray-600">
-                          <strong>Serial Number:</strong> {selectedTransaction.sn}
+                          <strong>Serial Number:</strong>{" "}
+                          {selectedTransaction.sn}
                         </p>
                       )}
                     </div>

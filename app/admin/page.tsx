@@ -25,28 +25,28 @@ const getStatusInfo = (status: number, statusPayment: number) => {
       color: "bg-green-100 text-green-800",
     };
   }
-  
+
   if (statusPayment === 1) {
     return {
       label: "Menunggu Pembayaran",
       color: "bg-yellow-100 text-yellow-800",
     };
   }
-  
+
   if (status === 1) {
     return {
       label: "Diproses",
       color: "bg-blue-100 text-blue-800",
     };
   }
-  
+
   if (status === 2) {
     return {
       label: "Selesai",
       color: "bg-green-100 text-green-800",
     };
   }
-  
+
   return {
     label: "Gagal",
     color: "bg-red-100 text-red-800",
@@ -55,13 +55,15 @@ const getStatusInfo = (status: number, statusPayment: number) => {
 
 export default function AdminDashboard() {
   const { isAuthenticated, hasToken } = useTokenSync();
-  
+
   // API calls for dashboard data
   const {
     data: transactionsData,
     loading: transactionsLoading,
     execute: fetchTransactions,
-  } = useApiCall(() => api.transactions.getTransactions({ page: 1, paginate: 10 }));
+  } = useApiCall(() =>
+    api.transactions.getTransactions({ page: 1, paginate: 10 })
+  );
 
   const {
     data: productsData,
@@ -73,7 +75,9 @@ export default function AdminDashboard() {
     data: newsData,
     loading: newsLoading,
     execute: fetchNews,
-  } = useApiCall(() => api.newsArticles.getNewsArticles({ page: 1, paginate: 5 }));
+  } = useApiCall(() =>
+    api.newsArticles.getNewsArticles({ page: 1, paginate: 5 })
+  );
 
   // Fetch data on component mount
   useEffect(() => {
@@ -96,7 +100,7 @@ export default function AdminDashboard() {
   const getTotalRevenue = () => {
     if (!transactionsData?.data?.data) return 0;
     return transactionsData.data.data
-      .filter(t => t.status_payment === 2)
+      .filter((t) => t.status_payment === 2)
       .reduce((sum, t) => sum + t.amount, 0);
   };
 
@@ -110,7 +114,8 @@ export default function AdminDashboard() {
 
   const getPendingOrders = () => {
     if (!transactionsData?.data?.data) return 0;
-    return transactionsData.data.data.filter(t => t.status_payment === 0).length;
+    return transactionsData.data.data.filter((t) => t.status_payment === 0)
+      .length;
   };
 
   // Stats data
@@ -121,7 +126,7 @@ export default function AdminDashboard() {
       change: "+12.5%",
       changeType: "positive",
       icon: DollarSign,
-      color: "from-green-500 to-emerald-500",
+      color: "from-[#C02628] to-red-500",
     },
     {
       name: "Total Orders",
@@ -137,7 +142,7 @@ export default function AdminDashboard() {
       change: "+3.1%",
       changeType: "positive",
       icon: Package,
-      color: "from-emerald-500 to-green-500",
+      color: "from-red-500 to-[#C02628]",
     },
     {
       name: "Pending Orders",
@@ -158,9 +163,11 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-emerald-500 mx-auto mb-4" />
+          <Loader2 className="h-12 w-12 animate-spin text-red-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Loading...</h1>
-          <p className="text-gray-600">Please wait while we verify your authentication.</p>
+          <p className="text-gray-600">
+            Please wait while we verify your authentication.
+          </p>
         </div>
       </div>
     );
@@ -171,7 +178,10 @@ export default function AdminDashboard() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">Welcome back! Here&apos;s what&apos;s happening with your gaming store.</p>
+        <p className="text-gray-600">
+          Welcome back! Here&apos;s what&apos;s happening with your gaming
+          store.
+        </p>
       </div>
 
       {/* Stats Grid */}
@@ -185,28 +195,36 @@ export default function AdminDashboard() {
             className="relative overflow-hidden rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200"
           >
             <div className="flex items-center">
-              <div className={`flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r ${stat.color}`}>
+              <div
+                className={`flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r ${stat.color}`}
+              >
                 <stat.icon className="h-6 w-6 text-white" />
               </div>
               <div className="ml-4 flex-1">
                 <p className="text-sm font-medium text-gray-600">{stat.name}</p>
-                <p className="text-2xl font-semibold text-gray-900">{stat.value}</p>
+                <p className="text-2xl font-semibold text-gray-900">
+                  {stat.value}
+                </p>
               </div>
             </div>
             <div className="mt-4 flex items-center">
               {stat.changeType === "positive" ? (
-                <TrendingUp className="h-4 w-4 text-green-500" />
+                <TrendingUp className="h-4 w-4 text-[#C02628]" />
               ) : (
                 <TrendingDown className="h-4 w-4 text-red-500" />
               )}
               <span
                 className={`ml-2 text-sm font-medium ${
-                  stat.changeType === "positive" ? "text-green-600" : "text-red-600"
+                  stat.changeType === "positive"
+                    ? "text-green-600"
+                    : "text-red-600"
                 }`}
               >
                 {stat.change}
               </span>
-              <span className="ml-1 text-sm text-gray-500">from last month</span>
+              <span className="ml-1 text-sm text-gray-500">
+                from last month
+              </span>
             </div>
           </motion.div>
         ))}
@@ -221,16 +239,23 @@ export default function AdminDashboard() {
           className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200"
         >
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-gray-900">Recent Transactions</h2>
-            <a href="/admin/transaksi" className="text-sm font-medium text-emerald-600 hover:text-emerald-500">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Recent Transactions
+            </h2>
+            <a
+              href="/admin/transaksi"
+              className="text-sm font-medium text-red-600 hover:text-red-500"
+            >
               View all
             </a>
           </div>
           <div className="space-y-4">
             {transactionsLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-emerald-500" />
-                <span className="ml-2 text-gray-600">Loading transactions...</span>
+                <Loader2 className="h-6 w-6 animate-spin text-red-500" />
+                <span className="ml-2 text-gray-600">
+                  Loading transactions...
+                </span>
               </div>
             ) : recentTransactions.length === 0 ? (
               <div className="text-center py-8">
@@ -239,7 +264,10 @@ export default function AdminDashboard() {
               </div>
             ) : (
               recentTransactions.map((transaction, index) => {
-                const status = getStatusInfo(transaction.status, transaction.status_payment);
+                const status = getStatusInfo(
+                  transaction.status,
+                  transaction.status_payment
+                );
                 return (
                   <motion.div
                     key={transaction.id}
@@ -249,22 +277,32 @@ export default function AdminDashboard() {
                     className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0"
                   >
                     <div className="flex items-center space-x-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-green-500">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-red-500 to-[#C02628]">
                         <Gamepad2 className="h-5 w-5 text-white" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{transaction.customer_name}</p>
-                        <p className="text-xs text-gray-500">{transaction.product.name}</p>
+                        <p className="text-sm font-medium text-gray-900">
+                          {transaction.customer_name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {transaction.product.name}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900">{formatPrice(transaction.amount)}</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {formatPrice(transaction.amount)}
+                      </p>
                       <div className="flex items-center space-x-2">
-                        <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${status.color}`}>
+                        <span
+                          className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${status.color}`}
+                        >
                           {status.label}
                         </span>
                         <span className="text-xs text-gray-500">
-                          {new Date(transaction.created_at).toLocaleDateString('id-ID')}
+                          {new Date(transaction.created_at).toLocaleDateString(
+                            "id-ID"
+                          )}
                         </span>
                       </div>
                     </div>
@@ -283,15 +321,20 @@ export default function AdminDashboard() {
           className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200"
         >
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-gray-900">Top Products</h2>
-            <a href="/admin/produk" className="text-sm font-medium text-emerald-600 hover:text-emerald-500">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Top Products
+            </h2>
+            <a
+              href="/admin/produk"
+              className="text-sm font-medium text-red-600 hover:text-red-500"
+            >
               View all
             </a>
           </div>
           <div className="space-y-4">
             {productsLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-emerald-500" />
+                <Loader2 className="h-6 w-6 animate-spin text-red-500" />
                 <span className="ml-2 text-gray-600">Loading products...</span>
               </div>
             ) : topProducts.length === 0 ? (
@@ -313,17 +356,27 @@ export default function AdminDashboard() {
                       <Package className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{product.name}</p>
-                      <p className="text-xs text-gray-500">SKU: {product.sku}</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {product.name}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        SKU: {product.sku}
+                      </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">{formatPrice(parseFloat(product.sell_price))}</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {formatPrice(parseFloat(product.sell_price))}
+                    </p>
                     <div className="flex items-center space-x-1">
-                      <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                        product.status === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {product.status === 1 ? 'Active' : 'Inactive'}
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                          product.status === 1
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {product.status === 1 ? "Active" : "Inactive"}
                       </span>
                     </div>
                   </div>
@@ -343,14 +396,17 @@ export default function AdminDashboard() {
       >
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-900">Recent News</h2>
-          <a href="/admin/news" className="text-sm font-medium text-emerald-600 hover:text-emerald-500">
+          <a
+            href="/admin/news"
+            className="text-sm font-medium text-red-600 hover:text-red-500"
+          >
             View all
           </a>
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {newsLoading ? (
             <div className="col-span-3 flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-emerald-500" />
+              <Loader2 className="h-6 w-6 animate-spin text-red-500" />
               <span className="ml-2 text-gray-600">Loading news...</span>
             </div>
           ) : recentNews.length === 0 ? (
@@ -372,12 +428,18 @@ export default function AdminDashboard() {
                     <FileText className="h-4 w-4 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-gray-900 truncate">{article.title}</h3>
-                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">{article.content?.substring(0, 100)}...</p>
+                    <h3 className="text-sm font-medium text-gray-900 truncate">
+                      {article.title}
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                      {article.content?.substring(0, 100)}...
+                    </p>
                     <div className="flex items-center space-x-2 mt-2">
                       <Calendar className="h-3 w-3 text-gray-400" />
                       <span className="text-xs text-gray-500">
-                        {new Date(article.created_at).toLocaleDateString('id-ID')}
+                        {new Date(article.created_at).toLocaleDateString(
+                          "id-ID"
+                        )}
                       </span>
                     </div>
                   </div>
@@ -393,23 +455,35 @@ export default function AdminDashboard() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8 }}
-        className="rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 p-6 text-white"
+        className="rounded-xl bg-gradient-to-r from-red-500 to-[#C02628] p-6 text-white"
       >
         <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <a href="/admin/produk" className="flex items-center space-x-3 rounded-lg bg-white/20 p-4 hover:bg-white/30 transition-colors duration-200">
+          <a
+            href="/admin/produk"
+            className="flex items-center space-x-3 rounded-lg bg-white/20 p-4 hover:bg-white/30 transition-colors duration-200"
+          >
             <Package className="h-5 w-5" />
             <span className="text-sm font-medium">Manage Products</span>
           </a>
-          <a href="/admin/transaksi" className="flex items-center space-x-3 rounded-lg bg-white/20 p-4 hover:bg-white/30 transition-colors duration-200">
+          <a
+            href="/admin/transaksi"
+            className="flex items-center space-x-3 rounded-lg bg-white/20 p-4 hover:bg-white/30 transition-colors duration-200"
+          >
             <ShoppingCart className="h-5 w-5" />
             <span className="text-sm font-medium">View Transactions</span>
           </a>
-          <a href="/admin/news" className="flex items-center space-x-3 rounded-lg bg-white/20 p-4 hover:bg-white/30 transition-colors duration-200">
+          <a
+            href="/admin/news"
+            className="flex items-center space-x-3 rounded-lg bg-white/20 p-4 hover:bg-white/30 transition-colors duration-200"
+          >
             <FileText className="h-5 w-5" />
             <span className="text-sm font-medium">Manage News</span>
           </a>
-          <a href="/admin/deposit" className="flex items-center space-x-3 rounded-lg bg-white/20 p-4 hover:bg-white/30 transition-colors duration-200">
+          <a
+            href="/admin/deposit"
+            className="flex items-center space-x-3 rounded-lg bg-white/20 p-4 hover:bg-white/30 transition-colors duration-200"
+          >
             <DollarSign className="h-5 w-5" />
             <span className="text-sm font-medium">View Deposits</span>
           </a>

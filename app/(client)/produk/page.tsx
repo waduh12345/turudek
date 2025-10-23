@@ -101,7 +101,7 @@ const ProdukPageContent = () => {
   // Filter and Sort products
   useEffect(() => {
     let currentCategories = [...categories];
-    
+
     // 1. Filter by parent category
     if (selectedCategory !== "All") {
       const parentCategory = parentCategories.find(
@@ -117,14 +117,18 @@ const ProdukPageContent = () => {
     // 2. Filter by search term
     if (debouncedSearchTerm.trim() !== "") {
       const lowerCaseSearchTerm = debouncedSearchTerm.toLowerCase();
-      currentCategories = currentCategories.filter(cat =>
-        cat.title.toLowerCase().includes(lowerCaseSearchTerm) ||
-        (cat.sub_title && cat.sub_title.toLowerCase().includes(lowerCaseSearchTerm))
+      currentCategories = currentCategories.filter(
+        (cat) =>
+          cat.title.toLowerCase().includes(lowerCaseSearchTerm) ||
+          (cat.sub_title &&
+            cat.sub_title.toLowerCase().includes(lowerCaseSearchTerm))
       );
     }
 
     // 3. Sort the filtered categories alphabetically by title (ascending A-Z)
-    currentCategories.sort((a, b) => a.title.localeCompare(b.title, 'id', { sensitivity: 'base' }));
+    currentCategories.sort((a, b) =>
+      a.title.localeCompare(b.title, "id", { sensitivity: "base" })
+    );
 
     // 4. Group by first letter
     const grouped: ProductData = {};
@@ -218,7 +222,7 @@ const ProdukPageContent = () => {
               placeholder="Cari di Kios Tetta"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-3 pl-12 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+              className="w-full px-4 py-3 pl-12 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C02628] focus:border-transparent text-sm"
             />
             <svg
               className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"
@@ -249,13 +253,13 @@ const ProdukPageContent = () => {
                 onClick={() => setSelectedCategory("All")}
                 className={`px-4 sm:px-6 py-3 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-300 relative overflow-hidden ${
                   selectedCategory === "All"
-                    ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-200"
+                    ? "bg-gradient-to-r from-[#C02628] to-red-600 text-white shadow-lg shadow-red-200"
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-800"
                 }`}
               >
                 {selectedCategory === "All" && (
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-green-400 to-green-500"
+                    className="absolute inset-0 bg-gradient-to-r from-[#C02628] to-[#C02628]"
                     layoutId="activeCategory"
                     transition={{
                       type: "spring",
@@ -280,13 +284,13 @@ const ProdukPageContent = () => {
                   onClick={() => setSelectedCategory(category.title)}
                   className={`px-4 sm:px-6 py-3 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-300 relative overflow-hidden ${
                     selectedCategory === category.title
-                      ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-200"
+                      ? "bg-gradient-to-r from-[#C02628] to-red-600 text-white shadow-lg shadow-red-200"
                       : "text-gray-600 hover:bg-gray-50 hover:text-gray-800"
                   }`}
                 >
                   {selectedCategory === category.title && (
                     <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-green-400 to-green-500"
+                      className="absolute inset-0 bg-gradient-to-r from-[#C02628] to-[#C02628]"
                       layoutId="activeCategory"
                       transition={{
                         type: "spring",
@@ -320,7 +324,7 @@ const ProdukPageContent = () => {
         <div className="container py-12">
           <div className="flex items-center justify-center">
             <div className="text-center">
-              <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="w-8 h-8 border-4 border-[#C02628] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
               <p className="text-gray-600">Loading products...</p>
             </div>
           </div>
@@ -397,7 +401,7 @@ const ProdukPageContent = () => {
                         </div>
 
                         {/* Game Name */}
-                        <p className="text-center font-mono text-sm sm:text-base group-hover:text-green-600 transition-colors">
+                        <p className="text-center font-mono text-sm sm:text-base group-hover:text-[#C02628] transition-colors">
                           {game.name}
                         </p>
                       </motion.div>
@@ -433,7 +437,7 @@ const ProdukPageContent = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsAlphabetOpen(!isAlphabetOpen)}
-          className="w-12 h-12 bg-green-500 text-white rounded-full shadow-lg flex items-center justify-center font-bold text-sm"
+          className="w-12 h-12 bg-[#C02628] text-white rounded-full shadow-lg flex items-center justify-center font-bold text-sm"
         >
           {isAlphabetOpen ? "✕" : "A-Z"}
         </motion.button>
@@ -466,8 +470,8 @@ const ProdukPageContent = () => {
                     onClick={() => scrollToSection(letter)}
                     className={`w-10 h-10 text-sm font-bold rounded-lg transition-all duration-200 ${
                       selectedLetter === letter
-                        ? "bg-green-500 text-white shadow-lg"
-                        : "bg-gray-100 text-gray-700 hover:bg-green-100 hover:text-green-600"
+                        ? "bg-[#C02628] text-white shadow-lg"
+                        : "bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-[#C02628]"
                     }`}
                   >
                     {letter}
@@ -491,8 +495,8 @@ const ProdukPageContent = () => {
                 onClick={() => scrollToSection(letter)}
                 className={`block w-7 h-7 text-xs font-bold rounded-md transition-all duration-200 ${
                   selectedLetter === letter
-                    ? "bg-green-500 text-white shadow-lg"
-                    : "text-gray-600 hover:bg-green-100 hover:text-green-600"
+                    ? "bg-[#C02628] text-white shadow-lg"
+                    : "text-gray-600 hover:bg-red-100 hover:text-[#C02628]"
                 }`}
               >
                 {letter}
@@ -511,9 +515,9 @@ const ProdukPage = () => {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-green-50 flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-br from-[#C02628] to-red-50 flex items-center justify-center">
           <div className="text-center">
-            <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="w-8 h-8 border-4 border-[#C02628] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-gray-600">Loading...</p>
           </div>
         </div>

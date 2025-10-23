@@ -96,11 +96,11 @@ const Footer = () => {
   useEffect(() => {
     const fetchFooterData = async () => {
       try {
-        const response = await fetch('/dummy/navigation-data.json');
+        const response = await fetch("/dummy/navigation-data.json");
         const data = await response.json();
         setFooterData(data);
       } catch (error) {
-        console.error('Error fetching footer data:', error);
+        console.error("Error fetching footer data:", error);
       }
     };
 
@@ -108,7 +108,9 @@ const Footer = () => {
   }, []);
 
   const getIcon = (iconName: string) => {
-    const icons: { [key: string]: React.ComponentType<{ size?: number; className?: string }> } = {
+    const icons: {
+      [key: string]: React.ComponentType<{ size?: number; className?: string }>;
+    } = {
       Mail,
       Facebook,
       Instagram,
@@ -166,9 +168,11 @@ const Footer = () => {
             {/* Logo Kios Tetta */}
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gray-700 rounded flex items-center justify-center">
-                <div className={`w-4 h-4 ${footerData.footer.companyInfo.logo.color} rounded-sm`}></div>
+                <div
+                  className={`w-4 h-4 ${footerData.footer.companyInfo.logo.color} rounded-sm`}
+                ></div>
               </div>
-              <span className="sidebar-text text-xl font-bold text-green-500">
+              <span className="sidebar-text text-xl font-bold text-[#C02628]">
                 {footerData.footer.companyInfo.name}
               </span>
             </div>
@@ -183,26 +187,31 @@ const Footer = () => {
           <div className="space-y-6">
             {/* Region */}
             <div>
-              <h4 className="font-mono tracking-wider italic mb-3">{footerData.footer.region.title}</h4>
+              <h4 className="font-mono tracking-wider italic mb-3">
+                {footerData.footer.region.title}
+              </h4>
               <div className="flex items-center gap-2">
                 <div className="w-5 h-4 bg-red-500 rounded-sm flex items-center justify-center">
                   <div className="w-4 h-1 bg-white rounded-sm"></div>
                 </div>
                 <span className="sidebar-text text-gray-600">
-                  {footerData.footer.region.current.country} ({footerData.footer.region.current.currency})
+                  {footerData.footer.region.current.country} (
+                  {footerData.footer.region.current.currency})
                 </span>
               </div>
             </div>
 
             {/* Site Map */}
             <div>
-              <h4 className="font-mono tracking-wider italic mb-3">{footerData.footer.siteMap.title}</h4>
+              <h4 className="font-mono tracking-wider italic mb-3">
+                {footerData.footer.siteMap.title}
+              </h4>
               <div className="space-y-2">
                 {footerData.footer.siteMap.links.map((link, index) => (
                   <Link
                     key={index}
                     href={link.href}
-                    className="sidebar-text block text-gray-600 hover:text-green-500 transition-colors"
+                    className="sidebar-text block text-gray-600 hover:text-[#C02628] transition-colors"
                     title={link.description}
                   >
                     {link.name}
@@ -225,13 +234,19 @@ const Footer = () => {
                 return (
                   <motion.a
                     key={index}
-                    href={contact.type === 'email' ? `mailto:${contact.value}` : contact.type === 'phone' ? `tel:${contact.value}` : '#'}
+                    href={
+                      contact.type === "email"
+                        ? `mailto:${contact.value}`
+                        : contact.type === "phone"
+                        ? `tel:${contact.value}`
+                        : "#"
+                    }
                     whileHover={{ x: 3, scale: 1.02 }}
                     className="flex items-center gap-2 group cursor-pointer"
                     title={contact.description}
                   >
-                    <IconComponent size={16} className="text-green-500" />
-                    <span className="sidebar-text text-gray-600 group-hover:text-green-500 transition-colors">
+                    <IconComponent size={16} className="text-[#C02628]" />
+                    <span className="sidebar-text text-gray-600 group-hover:text-[#C02628] transition-colors">
                       {contact.value}
                     </span>
                   </motion.a>
@@ -306,14 +321,16 @@ const Footer = () => {
             >
               {/* Header */}
               <div className="bg-black px-4 py-3 flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center border border-green-400">
+                <div className="w-10 h-10 bg-[#C02628] rounded-full flex items-center justify-center border border-[#C02628]">
                   <Gamepad2 size={20} className="text-white" />
                 </div>
                 <div>
                   <h3 className="text-white font-semibold text-sm">
                     {footerData.footer.chatSupport.botName}
                   </h3>
-                  <p className="text-gray-300 text-xs">{footerData.footer.chatSupport.status}</p>
+                  <p className="text-gray-300 text-xs">
+                    {footerData.footer.chatSupport.status}
+                  </p>
                 </div>
                 <button
                   onClick={() => setIsChatModalOpen(false)}
@@ -332,28 +349,32 @@ const Footer = () => {
                     Chat on your favorite channel
                   </h4>
                   <div className="space-y-2">
-                    {footerData.footer.chatSupport.channels.map((channel, index) => {
-                      const IconComponent = getIcon(channel.icon);
-                      return (
-                        <motion.a
-                          key={index}
-                          href={channel.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          className="w-full flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors group"
-                          title={channel.description}
-                        >
-                          <div className={`w-8 h-8 ${channel.color} rounded-full flex items-center justify-center`}>
-                            <IconComponent size={16} className="text-white" />
-                          </div>
-                          <span className="text-gray-700 text-sm group-hover:text-green-600 transition-colors">
-                            {channel.name}
-                          </span>
-                        </motion.a>
-                      );
-                    })}
+                    {footerData.footer.chatSupport.channels.map(
+                      (channel, index) => {
+                        const IconComponent = getIcon(channel.icon);
+                        return (
+                          <motion.a
+                            key={index}
+                            href={channel.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="w-full flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors group"
+                            title={channel.description}
+                          >
+                            <div
+                              className={`w-8 h-8 ${channel.color} rounded-full flex items-center justify-center`}
+                            >
+                              <IconComponent size={16} className="text-white" />
+                            </div>
+                            <span className="text-gray-700 text-sm group-hover:text-[#C02628] transition-colors">
+                              {channel.name}
+                            </span>
+                          </motion.a>
+                        );
+                      }
+                    )}
                   </div>
                 </div>
               </div>

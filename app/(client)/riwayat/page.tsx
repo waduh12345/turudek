@@ -10,7 +10,7 @@ const RiwayatPage = () => {
             <input
               type="text"
               placeholder="Nomor HP contoh: +628123123123"
-              className="w-full px-4 py-3 pl-12 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+              className="w-full px-4 py-3 pl-12 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C02628] focus:border-transparent text-sm"
             />
             <svg
               className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"

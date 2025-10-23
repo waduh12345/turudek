@@ -23,7 +23,7 @@ const SectionWrapper: React.FC<SectionWrapperProps> = ({
       <div className="flex justify-between items-end gap-4 mb-5 italic">
         <div className="flex items-center gap-x-3">
           <h2 className="text-2xl tracking-wider">{title}</h2>
-          <div className="h-1.5 w-20 bg-green-500 transform -skew-x-12"></div>
+          <div className="h-1.5 w-20 bg-[#C02628] transform -skew-x-12"></div>
         </div>
 
         <Link

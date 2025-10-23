@@ -4,7 +4,15 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { use } from "react";
-import { Calendar, Clock, Eye, TrendingUp, Share2, Home, ChevronRight } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  Eye,
+  TrendingUp,
+  Share2,
+  Home,
+  ChevronRight,
+} from "lucide-react";
 
 interface NewsDetailPageProps {
   params: Promise<{
@@ -31,9 +39,11 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
   // Sample data - in real app, this would come from API based on slug
   const articleData = {
     id: 1,
-    title: "Moonton Rilis Skin Juara M6 ONIC PH untuk Joy dan Skin FMVP Beatrix",
+    title:
+      "Moonton Rilis Skin Juara M6 ONIC PH untuk Joy dan Skin FMVP Beatrix",
     slug: slug,
-    image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&h=400&fit=crop&crop=center",
+    image:
+      "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&h=400&fit=crop&crop=center",
     date: "2025-01-15",
     readTime: "5 min",
     views: 12500,
@@ -58,7 +68,13 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
 
       Kehadiran Skin Juara M6 Joy dan Skin FMVP Beatrix: Sky Force Maverick bukan sekadar kosmetik baru, melainkan simbol perjalanan luar biasa ONIC PH di kancah global. Dengan desain yang bermakna dan sentuhan personal, skin ini diharapkan dapat menginspirasi komunitas MLBB dan mengingatkan semangat juang tim.
     `,
-    tags: ["Mobile Legends", "News & Updates", "Skin", "ONIC PH", "M6 Championship"]
+    tags: [
+      "Mobile Legends",
+      "News & Updates",
+      "Skin",
+      "ONIC PH",
+      "M6 Championship",
+    ],
   };
 
   const latestNews = [
@@ -66,32 +82,35 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
       id: 2,
       title: "Event MLBB x Sanrio Kembali Hadir September 2025 Ini",
       slug: "event-mlbb-x-sanrio-kembali-hadir-september-2025-ini",
-      image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-14",
       readTime: "3 min",
       views: 8500,
-      category: "Mobile Legends"
+      category: "Mobile Legends",
     },
     {
       id: 3,
       title: "PUBG Mobile Versi 4.0 Hadir dengan Tema Spooky Soiree",
       slug: "pubg-mobile-versi-4-0-hadir-dengan-tema-spooky-soiree",
-      image: "https://images.unsplash.com/photo-1556438064-2d7646166914?w=300&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1556438064-2d7646166914?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-13",
       readTime: "4 min",
       views: 9200,
-      category: "PUBG Mobile"
+      category: "PUBG Mobile",
     },
     {
       id: 4,
       title: "PUBG Mobile Umumkan Game Mode Baru Asymmetric PVP UNFAIL",
       slug: "pubg-mobile-umumkan-game-mode-baru-asymmetric-pvp-unfail",
-      image: "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=300&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-12",
       readTime: "5 min",
       views: 7800,
-      category: "PUBG Mobile"
-    }
+      category: "PUBG Mobile",
+    },
   ];
 
   const trendingNews = [
@@ -99,32 +118,35 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
       id: 5,
       title: "Game MMORPG Legendaris Ragnarok Origin Resmi Dirilis",
       slug: "game-mmorpg-legendaris-ragnarok-origin-resmi-dirilis",
-      image: "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=300&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-11",
       readTime: "6 min",
       views: 10500,
-      category: "Ragnarok"
+      category: "Ragnarok",
     },
     {
       id: 6,
       title: "Skin Atomic Pop Miya Telah Hadir, Dapatkan Diskon Hingga 30%",
       slug: "skin-atomic-pop-miya-telah-hadir-dapatkan-diskon-hingga-30",
-      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-10",
       readTime: "4 min",
       views: 12800,
-      category: "Mobile Legends"
+      category: "Mobile Legends",
     },
     {
       id: 7,
       title: "Inilah 18 Tim Peserta DOTA 2 ESL One Berlin Major 2023",
       slug: "inilah-18-tim-peserta-dota-2-esl-one-berlin-major-2023",
-      image: "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=300&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-09",
       readTime: "7 min",
       views: 15600,
-      category: "DOTA 2"
-    }
+      category: "DOTA 2",
+    },
   ];
 
   const relatedPosts = [
@@ -132,90 +154,100 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
       id: 8,
       title: "Cara Dapatkan Skin Aldous Fathom Terror Gratis",
       slug: "cara-dapatkan-skin-aldous-fathom-terror-gratis",
-      image: "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=300&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-08",
       readTime: "5 min",
       views: 9800,
-      category: "Mobile Legends"
+      category: "Mobile Legends",
     },
     {
       id: 9,
       title: "Cara Mendapatkan Skin di Event MLBB x Saint Seiya Phase 2",
       slug: "cara-mendapatkan-skin-di-event-mlbb-x-saint-seiya-phase-2",
-      image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-07",
       readTime: "6 min",
       views: 11200,
-      category: "Mobile Legends"
+      category: "Mobile Legends",
     },
     {
       id: 10,
-      title: "Bocoran Skin Eksklusif Starlight Agustus 2025 MLBB: Kadita Maiden of the Tide",
+      title:
+        "Bocoran Skin Eksklusif Starlight Agustus 2025 MLBB: Kadita Maiden of the Tide",
       slug: "bocoran-skin-eksklusif-starlight-agustus-2025-mlbb-kadita-maiden-of-the-tide",
-      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-06",
       readTime: "4 min",
       views: 13500,
-      category: "Mobile Legends"
+      category: "Mobile Legends",
     },
     {
       id: 11,
       title: "Bocoran Skin Seri Metro Zero MLBB Terbaru",
       slug: "bocoran-skin-seri-metro-zero-mlbb-terbaru",
-      image: "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=300&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-05",
       readTime: "3 min",
       views: 8900,
-      category: "Mobile Legends"
+      category: "Mobile Legends",
     },
     {
       id: 12,
       title: "Event MLBB x Sanrio Kembali Hadir September 2025 Ini",
       slug: "event-mlbb-x-sanrio-kembali-hadir-september-2025-ini-2",
-      image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-04",
       readTime: "5 min",
       views: 10200,
-      category: "Mobile Legends"
+      category: "Mobile Legends",
     },
     {
       id: 13,
       title: "Cara Dapatkan Skin Khufra Cursed Scroll Mobile Legends Gratis",
       slug: "cara-dapatkan-skin-khufra-cursed-scroll-mobile-legends-gratis",
-      image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=300&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-03",
       readTime: "4 min",
       views: 11500,
-      category: "Mobile Legends"
+      category: "Mobile Legends",
     },
     {
       id: 14,
-      title: "Moonton Rilis Skin Juara M6 ONIC PH untuk Joy dan Skin FMVP Beatrix",
+      title:
+        "Moonton Rilis Skin Juara M6 ONIC PH untuk Joy dan Skin FMVP Beatrix",
       slug: "moonton-rilis-skin-juara-m6-onic-ph-untuk-joy-dan-skin-fmvp-beatrix",
-      image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=300&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-02",
       readTime: "6 min",
       views: 14200,
-      category: "Mobile Legends"
+      category: "Mobile Legends",
     },
     {
       id: 15,
       title: "PUBG Mobile Update Terbaru dengan Mode Baru",
       slug: "pubg-mobile-update-terbaru-dengan-mode-baru",
-      image: "https://images.unsplash.com/photo-1556438064-2d7646166914?w=300&h=200&fit=crop&crop=center",
+      image:
+        "https://images.unsplash.com/photo-1556438064-2d7646166914?w=300&h=200&fit=crop&crop=center",
       date: "2025-01-01",
       readTime: "5 min",
       views: 9800,
-      category: "PUBG Mobile"
-    }
+      category: "PUBG Mobile",
+    },
   ];
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return date.toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -246,7 +278,7 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
           {item.category}
         </div>
       </div>
-      
+
       <div className="p-4">
         <h3 className="font-bold text-gray-900 text-sm leading-tight mb-2 group-hover:text-green-600 transition-colors line-clamp-2">
           {item.title}
@@ -298,16 +330,25 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
           transition={{ duration: 0.5 }}
           className="flex items-center gap-2 text-sm text-gray-600 mb-6"
         >
-          <Link href="/" className="flex items-center gap-1 hover:text-green-600 transition-colors">
+          <Link
+            href="/"
+            className="flex items-center gap-1 hover:text-green-600 transition-colors"
+          >
             <Home size={14} />
             <span>Home</span>
           </Link>
           <ChevronRight size={14} />
-          <Link href="/news" className="hover:text-green-600 transition-colors">Blog</Link>
+          <Link href="/news" className="hover:text-green-600 transition-colors">
+            Blog
+          </Link>
           <ChevronRight size={14} />
-          <span className="text-gray-900 font-medium">{articleData.category}</span>
+          <span className="text-gray-900 font-medium">
+            {articleData.category}
+          </span>
           <ChevronRight size={14} />
-          <span className="text-gray-900 font-medium line-clamp-1">{articleData.title}</span>
+          <span className="text-gray-900 font-medium line-clamp-1">
+            {articleData.title}
+          </span>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -329,12 +370,12 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
                   className="w-full h-64 md:h-80 object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                
+
                 {/* Category Badge */}
                 <div className="absolute top-4 left-4 bg-green-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
                   {articleData.category}
                 </div>
-                
+
                 {/* Trending Badge */}
                 {articleData.trending && (
                   <div className="absolute top-4 right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
@@ -365,7 +406,9 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
                 >
                   <div className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-full">
                     <Calendar size={14} className="text-green-600" />
-                    <span className="font-medium">{formatDate(articleData.date)}</span>
+                    <span className="font-medium">
+                      {formatDate(articleData.date)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-full">
                     <Clock size={14} className="text-blue-600" />
@@ -373,7 +416,9 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
                   </div>
                   <div className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-full">
                     <Eye size={14} className="text-purple-600" />
-                    <span className="font-medium">{formatViews(articleData.views)} views</span>
+                    <span className="font-medium">
+                      {formatViews(articleData.views)} views
+                    </span>
                   </div>
                   <button className="flex items-center gap-2 bg-green-600 text-white px-3 py-1.5 rounded-full hover:bg-green-700 transition-colors">
                     <Share2 size={14} />
@@ -388,17 +433,23 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
                   transition={{ delay: 0.4, duration: 0.5 }}
                   className="prose prose-lg max-w-none"
                 >
-                  {articleData.content.split('\n').map((paragraph, index) => {
-                    if (paragraph.startsWith('## ')) {
+                  {articleData.content.split("\n").map((paragraph, index) => {
+                    if (paragraph.startsWith("## ")) {
                       return (
-                        <h2 key={index} className="text-xl font-bold text-gray-900 mt-8 mb-4 text-green-600">
-                          {paragraph.replace('## ', '')}
+                        <h2
+                          key={index}
+                          className="text-xl font-bold text-gray-900 mt-8 mb-4 text-green-600"
+                        >
+                          {paragraph.replace("## ", "")}
                         </h2>
                       );
                     }
-                    if (paragraph.trim() === '') return null;
+                    if (paragraph.trim() === "") return null;
                     return (
-                      <p key={index} className="text-gray-700 leading-relaxed mb-4">
+                      <p
+                        key={index}
+                        className="text-gray-700 leading-relaxed mb-4"
+                      >
                         {paragraph}
                       </p>
                     );
@@ -413,8 +464,10 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
                   className="mt-8 p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200"
                 >
                   <p className="text-gray-700 leading-relaxed">
-                    Jangan lupa top-up diamond Mobile Legends: Bang Bang termurah, tercepat, dan terpercaya di Kios Tetta.com. 
-                    Dapatkan juga informasi terbaru seputar skin, event, dan promo menarik Mobile Legends lainnya hanya di Kios Tetta!
+                    Jangan lupa top-up diamond Mobile Legends: Bang Bang
+                    termurah, tercepat, dan terpercaya di Kios Tetta.com.
+                    Dapatkan juga informasi terbaru seputar skin, event, dan
+                    promo menarik Mobile Legends lainnya hanya di Kios Tetta!
                   </p>
                 </motion.div>
 
@@ -425,7 +478,9 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
                   transition={{ delay: 0.6, duration: 0.5 }}
                   className="mt-8 pt-6 border-t border-gray-200"
                 >
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Tags:</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Tags:
+                  </h3>
                   <div className="flex flex-wrap gap-2">
                     {articleData.tags.map((tag, index) => (
                       <motion.span
@@ -451,8 +506,10 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
               className="mt-12"
             >
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-1 h-8 bg-gradient-to-b from-green-500 to-blue-500 rounded-full"></div>
-                <h2 className="text-2xl font-bold text-gray-900">Related Posts</h2>
+                <div className="w-1 h-8 bg-gradient-to-b from-[#C02628] to-blue-500 rounded-full"></div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Related Posts
+                </h2>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {relatedPosts.map((item, index) => (
@@ -474,7 +531,9 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
               >
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full"></div>
-                  <h3 className="text-lg font-bold text-gray-900">Latest News</h3>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    Latest News
+                  </h3>
                 </div>
                 <div className="space-y-4">
                   {latestNews.map((item, index) => (
@@ -510,7 +569,10 @@ const NewsDetailPage = ({ params }: NewsDetailPageProps) => {
               >
                 <div className="text-center">
                   <div className="text-2xl font-bold mb-2">DISKON Rp10.000</div>
-                  <p className="text-sm mb-4">Nikmati Diskon Rp10.000 di Kios Tetta dengan Pembayaran QRIS Neobank</p>
+                  <p className="text-sm mb-4">
+                    Nikmati Diskon Rp10.000 di Kios Tetta dengan Pembayaran QRIS
+                    Neobank
+                  </p>
                   <button className="bg-white text-orange-500 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
                     Dapatkan Sekarang
                   </button>

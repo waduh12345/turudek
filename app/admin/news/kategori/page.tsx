@@ -15,12 +15,18 @@ import {
 import { useApiCall, useDebounce } from "@/hooks";
 import { useTokenSync } from "@/hooks/use-token-sync";
 import { api } from "@/services/api";
-import { NewsCategory, CreateNewsCategoryRequest, UpdateNewsCategoryRequest } from "@/lib/types";
+import {
+  NewsCategory,
+  CreateNewsCategoryRequest,
+  UpdateNewsCategoryRequest,
+} from "@/lib/types";
 
 export default function NewsKategoriPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<NewsCategory | null>(null);
+  const [editingCategory, setEditingCategory] = useState<NewsCategory | null>(
+    null
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage] = useState(10);
   const [retryTrigger, setRetryTrigger] = useState(0);
@@ -29,36 +35,32 @@ export default function NewsKategoriPage() {
     description: "",
     status: 1 as 0 | 1,
   });
-  
+
   // Debounce search term untuk UX yang lebih baik
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
-  
+
   // Token sync untuk authentication
   const { isAuthenticated, hasToken } = useTokenSync();
 
-
   // API calls
-  const { 
-    data: categoriesData, 
-    loading: categoriesLoading, 
-    error: categoriesError, 
-    execute: fetchCategories 
+  const {
+    data: categoriesData,
+    loading: categoriesLoading,
+    error: categoriesError,
+    execute: fetchCategories,
   } = useApiCall(api.newsCategories.getNewsCategories);
 
-  const { 
-    loading: submitLoading, 
-    execute: submitCategory 
-  } = useApiCall(api.newsCategories.createNewsCategory);
+  const { loading: submitLoading, execute: submitCategory } = useApiCall(
+    api.newsCategories.createNewsCategory
+  );
 
-  const { 
-    loading: updateLoading, 
-    execute: updateCategory 
-  } = useApiCall(api.newsCategories.updateNewsCategory);
+  const { loading: updateLoading, execute: updateCategory } = useApiCall(
+    api.newsCategories.updateNewsCategory
+  );
 
-  const { 
-    loading: deleteLoading, 
-    execute: deleteCategory 
-  } = useApiCall(api.newsCategories.deleteNewsCategory);
+  const { loading: deleteLoading, execute: deleteCategory } = useApiCall(
+    api.newsCategories.deleteNewsCategory
+  );
 
   // Load categories on component mount and when search/page changes
   useEffect(() => {
@@ -68,11 +70,17 @@ export default function NewsKategoriPage() {
         paginate: perPage,
         search: debouncedSearchTerm || undefined,
       }).catch((error) => {
-        console.error('Error in fetchCategories:', error);
+        console.error("Error in fetchCategories:", error);
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, debouncedSearchTerm, isAuthenticated, hasToken, retryTrigger]);
+  }, [
+    currentPage,
+    debouncedSearchTerm,
+    isAuthenticated,
+    hasToken,
+    retryTrigger,
+  ]);
 
   // Get categories from API response
   const categories = categoriesData?.data?.data || [];
@@ -80,38 +88,42 @@ export default function NewsKategoriPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Client-side validation
     if (!formData.name.trim()) {
       console.error("Nama kategori harus diisi");
       return;
     }
-    
+
     if (!formData.description.trim()) {
       console.error("Deskripsi kategori harus diisi");
       return;
     }
 
     try {
-      const submitData: CreateNewsCategoryRequest | UpdateNewsCategoryRequest = {
-        name: formData.name.trim(),
-        description: formData.description.trim(),
-        status: formData.status,
-        ...(editingCategory && { slug: editingCategory.slug })
-      };
+      const submitData: CreateNewsCategoryRequest | UpdateNewsCategoryRequest =
+        {
+          name: formData.name.trim(),
+          description: formData.description.trim(),
+          status: formData.status,
+          ...(editingCategory && { slug: editingCategory.slug }),
+        };
 
       if (editingCategory) {
-        await updateCategory(editingCategory.slug, submitData as UpdateNewsCategoryRequest);
+        await updateCategory(
+          editingCategory.slug,
+          submitData as UpdateNewsCategoryRequest
+        );
       } else {
         await submitCategory(submitData as CreateNewsCategoryRequest);
       }
-      
+
       // Refresh data
-      setRetryTrigger(prev => prev + 1);
-      
+      setRetryTrigger((prev) => prev + 1);
+
       resetForm();
     } catch (error) {
-      console.error('Error submitting news category:', error);
+      console.error("Error submitting news category:", error);
     }
   };
 
@@ -129,11 +141,11 @@ export default function NewsKategoriPage() {
     if (confirm(`Are you sure you want to delete "${category.name}"?`)) {
       try {
         await deleteCategory(category.slug);
-        
+
         // Refresh data
-        setRetryTrigger(prev => prev + 1);
+        setRetryTrigger((prev) => prev + 1);
       } catch (error) {
-        console.error('Error deleting news category:', error);
+        console.error("Error deleting news category:", error);
       }
     }
   };
@@ -147,7 +159,7 @@ export default function NewsKategoriPage() {
   const getStatusColor = (status: number) => {
     switch (status) {
       case 1:
-        return "bg-green-100 text-green-800";
+        return "bg-red-100 text-red-800";
       case 0:
         return "bg-gray-100 text-gray-800";
       default:
@@ -171,7 +183,7 @@ export default function NewsKategoriPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-emerald-500" />
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-[#C02628]" />
           <p className="text-gray-600">Loading categories...</p>
         </div>
       </div>
@@ -184,14 +196,17 @@ export default function NewsKategoriPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <p className="text-red-600 mb-4">
-            Error loading categories: {typeof categoriesError === 'string' ? categoriesError : 'Unknown error'}
+            Error loading categories:{" "}
+            {typeof categoriesError === "string"
+              ? categoriesError
+              : "Unknown error"}
           </p>
           <button
             onClick={() => {
-              console.log('Retrying fetch categories...');
-              setRetryTrigger(prev => prev + 1);
+              console.log("Retrying fetch categories...");
+              setRetryTrigger((prev) => prev + 1);
             }}
-            className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
+            className="px-4 py-2 bg-[#C02628] text-white rounded-lg hover:bg-[#B02122]"
           >
             Retry
           </button>
@@ -205,7 +220,9 @@ export default function NewsKategoriPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Authentication required to access this page.</p>
+          <p className="text-gray-600 mb-4">
+            Authentication required to access this page.
+          </p>
         </div>
       </div>
     );
@@ -219,13 +236,15 @@ export default function NewsKategoriPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Kategori News</h1>
-            <p className="text-gray-600">Kelola kategori untuk artikel dan berita</p>
+            <p className="text-gray-600">
+              Kelola kategori untuk artikel dan berita
+            </p>
           </div>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowForm(true)}
-            className="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white px-4 py-2 rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200"
+            className="flex items-center space-x-2 bg-gradient-to-r from-[#C02628] to-[#C02628] text-white px-4 py-2 rounded-lg hover:from-[#B02122] hover:to-[#8F1719] transition-all duration-200"
           >
             <Plus className="h-5 w-5" />
             <span>Tambah Kategori</span>
@@ -241,7 +260,7 @@ export default function NewsKategoriPage() {
               placeholder="Cari kategori..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
             />
           </div>
           {categoriesLoading && (
@@ -257,18 +276,19 @@ export default function NewsKategoriPage() {
           <div className="text-center">
             <Tag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {searchTerm ? 'Tidak ada kategori yang sesuai' : 'Belum ada kategori'}
+              {searchTerm
+                ? "Tidak ada kategori yang sesuai"
+                : "Belum ada kategori"}
             </h3>
             <p className="text-gray-600 mb-4">
-              {searchTerm 
-                ? 'Coba ubah kata kunci pencarian Anda.' 
-                : 'Mulai dengan menambahkan kategori pertama Anda.'
-              }
+              {searchTerm
+                ? "Coba ubah kata kunci pencarian Anda."
+                : "Mulai dengan menambahkan kategori pertama Anda."}
             </p>
             {!searchTerm && (
               <button
                 onClick={() => setShowForm(true)}
-                className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
+                className="px-4 py-2 bg-[#C02628] text-white rounded-lg hover:bg-[#B02122]"
               >
                 Tambah Kategori Pertama
               </button>
@@ -312,8 +332,10 @@ export default function NewsKategoriPage() {
                     <input
                       type="text"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                       placeholder="Masukkan nama kategori"
                       required
                     />
@@ -325,8 +347,13 @@ export default function NewsKategoriPage() {
                     </label>
                     <textarea
                       value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                       placeholder="Masukkan deskripsi kategori"
                       rows={3}
                       required
@@ -339,8 +366,13 @@ export default function NewsKategoriPage() {
                     </label>
                     <select
                       value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: parseInt(e.target.value) as 0 | 1 })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          status: parseInt(e.target.value) as 0 | 1,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                       aria-label="Select status"
                     >
                       <option value={1}>Aktif</option>
@@ -361,7 +393,7 @@ export default function NewsKategoriPage() {
                       whileTap={{ scale: 0.95 }}
                       type="submit"
                       disabled={submitLoading || updateLoading}
-                      className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#C02628] to-[#C02628] text-white rounded-lg hover:from-[#B02122] hover:to-[#8F1719] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {submitLoading || updateLoading ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -369,10 +401,11 @@ export default function NewsKategoriPage() {
                         <Save className="h-4 w-4" />
                       )}
                       <span>
-                        {submitLoading || updateLoading 
-                          ? "Menyimpan..." 
-                          : editingCategory ? "Update" : "Simpan"
-                        }
+                        {submitLoading || updateLoading
+                          ? "Menyimpan..."
+                          : editingCategory
+                          ? "Update"
+                          : "Simpan"}
                       </span>
                     </motion.button>
                   </div>
@@ -404,7 +437,7 @@ export default function NewsKategoriPage() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setShowForm(true)}
-          className="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white px-4 py-2 rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200"
+          className="flex items-center space-x-2 bg-gradient-to-r from-[#C02628] to-[#C02628] text-white px-4 py-2 rounded-lg hover:from-[#B02122] hover:to-[#8F1719] transition-all duration-200"
         >
           <Plus className="h-5 w-5" />
           <span>Tambah Kategori</span>
@@ -420,7 +453,7 @@ export default function NewsKategoriPage() {
             placeholder="Cari kategori..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
           />
         </div>
         {categoriesLoading && (
@@ -443,11 +476,13 @@ export default function NewsKategoriPage() {
           >
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-emerald-500 to-green-500">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-[#C02628] to-[#C02628]">
                   <Tag className="h-5 w-5 text-white" />
                 </div>
                 <div className="ml-3">
-                  <h3 className="text-lg font-semibold text-gray-900">{category.name}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {category.name}
+                  </h3>
                   <p className="text-sm text-gray-500">/{category.slug}</p>
                 </div>
               </div>
@@ -463,8 +498,14 @@ export default function NewsKategoriPage() {
             <p className="text-gray-600 text-sm mb-4">{category.description}</p>
 
             <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
-              <span>Dibuat: {new Date(category.created_at).toLocaleDateString('id-ID')}</span>
-              <span>Diupdate: {new Date(category.updated_at).toLocaleDateString('id-ID')}</span>
+              <span>
+                Dibuat:{" "}
+                {new Date(category.created_at).toLocaleDateString("id-ID")}
+              </span>
+              <span>
+                Diupdate:{" "}
+                {new Date(category.updated_at).toLocaleDateString("id-ID")}
+              </span>
             </div>
 
             <div className="flex items-center justify-end space-x-2">
@@ -496,7 +537,8 @@ export default function NewsKategoriPage() {
       {pagination && pagination.last_page > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-700">
-            Menampilkan {pagination.from} sampai {pagination.to} dari {pagination.total} kategori
+            Menampilkan {pagination.from} sampai {pagination.to} dari{" "}
+            {pagination.total} kategori
           </div>
           <div className="flex items-center space-x-2">
             <button
@@ -556,8 +598,10 @@ export default function NewsKategoriPage() {
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                     placeholder="Masukkan nama kategori"
                     required
                   />
@@ -569,8 +613,10 @@ export default function NewsKategoriPage() {
                   </label>
                   <textarea
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                     placeholder="Masukkan deskripsi kategori"
                     rows={3}
                     required
@@ -581,12 +627,17 @@ export default function NewsKategoriPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Status
                   </label>
-                    <select
-                      value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: parseInt(e.target.value) as 0 | 1 })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                      aria-label="Select status"
-                    >
+                  <select
+                    value={formData.status}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        status: parseInt(e.target.value) as 0 | 1,
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
+                    aria-label="Select status"
+                  >
                     <option value={1}>Aktif</option>
                     <option value={0}>Tidak Aktif</option>
                   </select>
@@ -605,7 +656,7 @@ export default function NewsKategoriPage() {
                     whileTap={{ scale: 0.95 }}
                     type="submit"
                     disabled={submitLoading || updateLoading}
-                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#C02628] to-[#C02628] text-white rounded-lg hover:from-[#B02122] hover:to-[#8F1719] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitLoading || updateLoading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -613,10 +664,11 @@ export default function NewsKategoriPage() {
                       <Save className="h-4 w-4" />
                     )}
                     <span>
-                      {submitLoading || updateLoading 
-                        ? "Menyimpan..." 
-                        : editingCategory ? "Update" : "Simpan"
-                      }
+                      {submitLoading || updateLoading
+                        ? "Menyimpan..."
+                        : editingCategory
+                        ? "Update"
+                        : "Simpan"}
                     </span>
                   </motion.button>
                 </div>

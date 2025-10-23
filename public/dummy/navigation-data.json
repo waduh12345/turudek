@@ -146,7 +146,7 @@
       "tagline": "Top Up Games & Voucher Murah, Aman, Cepat",
       "logo": {
         "text": "T",
-        "color": "bg-green-500"
+        "color": "bg-[#C02628]"
       },
       "copyright": "Copyright © 2025 Kios Tetta All Rights Reserved"
     },
@@ -155,35 +155,35 @@
         "name": "Facebook",
         "icon": "Facebook",
         "url": "https://facebook.com/tokogame",
-        "color": "bg-green-500",
+        "color": "bg-[#C02628]",
         "description": "Follow kami di Facebook"
       },
       {
         "name": "Instagram",
         "icon": "Instagram",
         "url": "https://instagram.com/tokogame",
-        "color": "bg-green-500",
+        "color": "bg-[#C02628]",
         "description": "Follow kami di Instagram"
       },
       {
         "name": "TikTok",
         "icon": "Music",
         "url": "https://tiktok.com/@tokogame",
-        "color": "bg-green-500",
+        "color": "bg-[#C02628]",
         "description": "Follow kami di TikTok"
       },
       {
         "name": "YouTube",
         "icon": "Youtube",
         "url": "https://youtube.com/@tokogame",
-        "color": "bg-green-500",
+        "color": "bg-[#C02628]",
         "description": "Subscribe channel YouTube kami"
       },
       {
         "name": "Twitter",
         "icon": "Twitter",
         "url": "https://twitter.com/tokogame",
-        "color": "bg-green-500",
+        "color": "bg-[#C02628]",
         "description": "Follow kami di Twitter"
       }
     ],
@@ -275,7 +275,7 @@
           "name": "WhatsApp",
           "icon": "MessageSquare",
           "url": "https://wa.me/6281234567890",
-          "color": "bg-green-500",
+          "color": "bg-[#C02628]",
           "description": "Chat via WhatsApp"
         },
         {

@@ -66,8 +66,8 @@ const getCategoryIcon = (title: string) => {
 const getCategoryColor = (index: number) => {
   const colors = [
     "from-blue-500 to-cyan-500",
-    "from-emerald-500 to-green-500",
-    "from-green-500 to-emerald-500",
+    "from-[#C02628] to-[#C02628]",
+    "from-[#C02628] to-[#C02628]",
     "from-orange-500 to-red-500",
     "from-purple-500 to-pink-500",
     "from-indigo-500 to-blue-500",
@@ -359,7 +359,7 @@ export default function KategoriProdukPage() {
             setFormData((prev) => ({ ...prev, parent_id: null }));
             setShowForm(true);
           }}
-          className="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white px-4 py-2 rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200"
+          className="flex items-center space-x-2 bg-gradient-to-r from-[#C02628] to-[#C02628] text-white px-4 py-2 rounded-lg hover:from-[#B02122] hover:to-[#8F1719] transition-all duration-200"
         >
           <Plus className="h-5 w-5" />
           <span>Kategori Baru</span>
@@ -394,7 +394,7 @@ export default function KategoriProdukPage() {
             placeholder="Cari kategori..."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
           />
         </div>
         <button
@@ -411,7 +411,7 @@ export default function KategoriProdukPage() {
       {/* Loading State */}
       {parentCategoriesLoading && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+          <Loader2 className="h-8 w-8 animate-spin text-[#C02628]" />
           <span className="ml-2 text-gray-600">Loading categories...</span>
         </div>
       )}
@@ -451,7 +451,7 @@ export default function KategoriProdukPage() {
                   setFormData((prev) => ({ ...prev, parent_id: null }));
                   setShowForm(true);
                 }}
-                className="inline-flex items-center px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+                className="inline-flex items-center px-4 py-2 bg-[#C02628] text-white rounded-lg hover:bg-[#B02122] transition-colors"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Buat Kategori Utama
@@ -524,7 +524,7 @@ export default function KategoriProdukPage() {
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
                             parent.status === 1
-                              ? "bg-green-100 text-green-800"
+                              ? "bg-red-100 text-red-800"
                               : "bg-red-100 text-red-800"
                           }`}
                         >
@@ -560,7 +560,7 @@ export default function KategoriProdukPage() {
                     <div className="bg-gray-50">
                       {isLoadingSubCategories ? (
                         <div className="p-4 flex items-center justify-center">
-                          <Loader2 className="h-6 w-6 animate-spin text-emerald-500" />
+                          <Loader2 className="h-6 w-6 animate-spin text-[#C02628]" />
                           <span className="ml-2 text-gray-600">
                             Loading subcategories...
                           </span>
@@ -601,7 +601,7 @@ export default function KategoriProdukPage() {
                                 <span
                                   className={`px-2 py-1 rounded-full text-xs font-medium ${
                                     subCategory.status === 1
-                                      ? "bg-green-100 text-green-800"
+                                      ? "bg-red-100 text-red-800"
                                       : "bg-red-100 text-red-800"
                                   }`}
                                 >
@@ -667,7 +667,7 @@ export default function KategoriProdukPage() {
             {!searchTerm && (
               <button
                 onClick={() => setShowForm(true)}
-                className="inline-flex items-center px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+                className="inline-flex items-center px-4 py-2 bg-[#C02628] text-white rounded-lg hover:bg-[#B02122] transition-colors"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Buat Kategori
@@ -736,7 +736,7 @@ export default function KategoriProdukPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, title: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                     placeholder="Masukkan title kategori"
                     required
                   />
@@ -752,7 +752,7 @@ export default function KategoriProdukPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, sub_title: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                     placeholder="Masukkan sub title (opsional)"
                   />
                 </div>
@@ -765,14 +765,17 @@ export default function KategoriProdukPage() {
                   {editingCategory?.parent_id || selectedParent ? (
                     <div className="border border-gray-300 rounded-lg overflow-hidden">
                       <textarea
-                      value={formData.description || ""}
-                      onChange={(e) =>
-                        setFormData({ ...formData, description: e.target.value })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                      placeholder="Masukkan deskripsi kategori"
-                      rows={3}
-                    />
+                        value={formData.description || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            description: e.target.value,
+                          })
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
+                        placeholder="Masukkan deskripsi kategori"
+                        rows={3}
+                      />
                     </div>
                   ) : (
                     <textarea
@@ -783,7 +786,7 @@ export default function KategoriProdukPage() {
                           description: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                       placeholder="Masukkan deskripsi kategori"
                       rows={3}
                     />
@@ -802,7 +805,7 @@ export default function KategoriProdukPage() {
                         status: parseInt(e.target.value),
                       })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#C02628] focus:border-transparent"
                     title="Pilih status kategori"
                     required
                   >
@@ -839,7 +842,7 @@ export default function KategoriProdukPage() {
                     )}
 
                     {/* File Input */}
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-emerald-500 transition-colors">
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#C02628] transition-colors">
                       <input
                         type="file"
                         accept="image/*"
@@ -877,7 +880,7 @@ export default function KategoriProdukPage() {
                     whileTap={{ scale: 0.95 }}
                     type="submit"
                     disabled={submitLoading}
-                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white rounded-lg hover:from-emerald-600 hover:to-green-600 transition-all duration-200 disabled:opacity-50"
+                    className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#C02628] to-[#C02628] text-white rounded-lg hover:from-[#B02122] hover:to-[#8F1719] transition-all duration-200 disabled:opacity-50"
                   >
                     {submitLoading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -912,7 +915,7 @@ export default function KategoriProdukPage() {
               >
                 Sebelumnya
               </button>
-              <span className="px-3 py-2 text-sm bg-emerald-500 text-white rounded-lg">
+              <span className="px-3 py-2 text-sm bg-[#C02628] text-white rounded-lg">
                 {parentCategoriesData.data.current_page}
               </span>
               <button

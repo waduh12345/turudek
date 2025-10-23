@@ -1,8 +1,8 @@
 const PromotionBanner = () => {
   return (
-    <div className="relative bg-green-500 py-16 overflow-hidden">
+    <div className="relative bg-[#C02628] py-16 overflow-hidden">
       {/* Wave Design - Top */}
-      <div className="absolute top-0 left-0 w-full h-8 bg-green-500 opacity-20">
+      <div className="absolute top-0 left-0 w-full h-8 bg-[#C02628] opacity-20">
         <div className="w-full h-full bg-gradient-to-r from-transparent via-white to-transparent transform rotate-12 scale-150"></div>
       </div>
 
@@ -11,7 +11,7 @@ const PromotionBanner = () => {
           {/* Logo */}
           <div className="flex items-center justify-center gap-2 mb-6">
             <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
-              <div className="w-8 h-8 bg-green-500 rounded flex items-center justify-center">
+              <div className="w-8 h-8 bg-[#C02628] rounded flex items-center justify-center">
                 <span className="text-white font-bold text-lg">T</span>
               </div>
             </div>
@@ -35,7 +35,7 @@ const PromotionBanner = () => {
       </div>
 
       {/* Wave Design - Bottom */}
-      <div className="absolute bottom-0 left-0 w-full h-8 bg-green-500 opacity-20">
+      <div className="absolute bottom-0 left-0 w-full h-8 bg-[#C02628] opacity-20">
         <div className="w-full h-full bg-gradient-to-r from-transparent via-white to-transparent transform -rotate-12 scale-150"></div>
       </div>
     </div>

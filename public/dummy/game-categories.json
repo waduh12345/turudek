@@ -260,7 +260,7 @@
     "slug": "pubg",
     "description": "Berita, tutorial, dan update terbaru tentang PUBG Mobile",
     "icon": "🎯",
-    "color": "from-green-500 to-emerald-600",
+    "color": "from-[#C02628] to-emerald-600",
     "heroContent": [
       {
         "id": 1,

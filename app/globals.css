@@ -3,10 +3,10 @@
 :root {
   --background: #ffffff;
   --foreground: #11181c;
-  --accent: #10b981;
-  --primary: #059669;
-  --primary-dark: #047857;
-  --primary-light: #34d399;
+  --accent: #C02628;
+  --primary: #C02628;
+  --primary-dark: #8F1719;
+  --primary-light: #F1999A;
 }
 
 @theme inline {
@@ -158,27 +158,27 @@ button {
 
 /* Professional Green Theme */
 .gradient-emerald {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #C02628 0%, #8F1719 100%);
 }
 
 .gradient-emerald-hover:hover {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: linear-gradient(135deg, #B02122 0%, #8F1719 100%);
 }
 
 .text-emerald-primary {
-  color: #059669;
+  color: #C02628;
 }
 
 .bg-emerald-primary {
-  background-color: #059669;
+  background-color: #C02628;
 }
 
 .border-emerald-primary {
-  border-color: #059669;
+  border-color: #C02628;
 }
 
 .ring-emerald-primary:focus {
-  --tw-ring-color: #059669;
+  --tw-ring-color: #C02628;
 }
 
 /* Enhanced modal backdrop */
@@ -207,11 +207,11 @@ button {
 
 /* Professional button styles */
 .btn-emerald {
-  @apply bg-gradient-to-r from-emerald-500 to-green-500 text-white font-medium px-4 py-2 rounded-lg transition-all duration-200 hover:from-emerald-600 hover:to-green-600 hover:shadow-lg;
+  @apply bg-gradient-to-r from-[#C02628] to-[#C02628] text-white font-medium px-4 py-2 rounded-lg transition-all duration-200 hover:from-[#B02122] hover:to-[#8F1719] hover:shadow-lg;
 }
 
 .btn-emerald-outline {
-  @apply border-2 border-emerald-500 text-emerald-600 font-medium px-4 py-2 rounded-lg transition-all duration-200 hover:bg-emerald-500 hover:text-white;
+  @apply border-2 border-[#C02628] text-[#C02628] font-medium px-4 py-2 rounded-lg transition-all duration-200 hover:bg-[#C02628] hover:text-white;
 }
 
 /* Toast Animation Optimizations */
@@ -255,11 +255,11 @@ button {
 
 .w-md-editor-toolbar button:hover {
   background: #e5e7eb !important;
-  color: #059669 !important;
+  color: #C02628 !important;
 }
 
 .w-md-editor-toolbar button.active {
-  background: #059669 !important;
+  background: #C02628 !important;
   color: white !important;
 }
 
@@ -273,7 +273,7 @@ button {
 
 .w-md-editor-text:focus {
   outline: none !important;
-  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1) !important;
+  box-shadow: 0 0 0 3px rgba(192, 38, 40, 0.1) !important;
 }
 
 .w-md-editor-text::placeholder {
@@ -302,6 +302,6 @@ button {
 
 /* Focus styles for better UX */
 .w-md-editor:focus-within {
-  border-color: #059669 !important;
-  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1) !important;
+  border-color: #C02628 !important;
+  box-shadow: 0 0 0 3px rgba(192, 38, 40, 0.1) !important;
 }

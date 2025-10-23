@@ -24,12 +24,12 @@ const getToastConfig = (type: ToastType) => {
     case "success":
       return {
         icon: CheckCircle,
-        iconColor: "text-emerald-500",
-        bgColor: "bg-emerald-50",
-        borderColor: "border-emerald-200",
-        titleColor: "text-emerald-900",
-        descriptionColor: "text-emerald-700",
-        iconBg: "bg-emerald-100",
+        iconColor: "text-[#C02628]",
+        bgColor: "bg-[#C02628]/10",
+        borderColor: "border-[#C02628]/30",
+        titleColor: "text-[#C02628]",
+        descriptionColor: "text-[#C02628]/80",
+        iconBg: "bg-[#C02628]/15",
       };
     case "error":
       return {
@@ -242,7 +242,7 @@ export const ToastComponent: React.FC<ToastProps> = ({ toast, onClose }) => {
               h-full rounded-b-xl toast-progress
               ${
                 toast.type === "success"
-                  ? "bg-emerald-500"
+                  ? "bg-[#C02628]"
                   : toast.type === "error"
                   ? "bg-red-500"
                   : toast.type === "warning"

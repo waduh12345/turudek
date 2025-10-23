@@ -20,7 +20,7 @@ const Page = () => {
                   className="rounded-xl"
                   src={data?.user?.image || ""}
                 />
-                <AvatarFallback className="size-20 bg-[#05ce78] text-black flex justify-center items-center rounded-xl font-bold">
+                <AvatarFallback className="size-20 bg-[#C02628] text-black flex justify-center items-center rounded-xl font-bold">
                   <span className="text-3xl">
                     {data?.user?.name ? data.user.name[0].toUpperCase() : "?"}
                   </span>
@@ -35,7 +35,7 @@ const Page = () => {
 
                 <div className="flex items-center gap-x-4 mt-3">
                   <p className="font-mono text-lg">💳 Rp 0</p>
-                  <button className="px-4 py-1.5 rounded-lg bg-[#05ce78] text-black font-bold text-sm transition hover:bg-[#04b36a]">
+                  <button className="px-4 py-1.5 rounded-lg bg-[#C02628] text-black font-bold text-sm transition hover:bg-[#B02122]">
                     + Top Up
                   </button>
                 </div>
@@ -58,13 +58,13 @@ const Page = () => {
               <TabsList className="flex gap-3 mb-6 border-b border-gray-700">
                 <TabsTrigger
                   value="tab1"
-                  className="px-5 py-2 rounded-t-lg text-sm font-semibold data-[state=active]:bg-[#05ce78] data-[state=active]:text-black data-[state=active]:shadow transition hover:bg-[#05ce78]/20"
+                  className="px-5 py-2 rounded-t-lg text-sm font-semibold data-[state=active]:bg-[#C02628] data-[state=active]:text-black data-[state=active]:shadow transition hover:bg-[#C02628]/20"
                 >
                   Recent Order
                 </TabsTrigger>
                 <TabsTrigger
                   value="tab2"
-                  className="px-5 py-2 rounded-t-lg text-sm font-semibold data-[state=active]:bg-[#05ce78] data-[state=active]:text-black data-[state=active]:shadow transition hover:bg-[#05ce78]/20"
+                  className="px-5 py-2 rounded-t-lg text-sm font-semibold data-[state=active]:bg-[#C02628] data-[state=active]:text-black data-[state=active]:shadow transition hover:bg-[#C02628]/20"
                 >
                   Referral Bonus
                 </TabsTrigger>

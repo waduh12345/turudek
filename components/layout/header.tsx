@@ -151,7 +151,7 @@ const NavigationBars = () => {
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="bg-gradient-to-r from-green-500 to-green-600 py-3 sm:py-4 px-4 sm:px-6 shadow-lg"
+        className="bg-gradient-to-r from-[#C02628] to-red-600 py-3 sm:py-4 px-4 sm:px-6 shadow-lg"
       >
         <div className="container mx-auto">
           <div className="flex items-center justify-start sm:justify-center space-x-2 sm:space-x-4 md:space-x-6 lg:space-x-8 overflow-x-auto scrollbar-hide pb-1">
