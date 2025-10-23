@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -36,7 +37,7 @@ const navigation = [
   // { name: "Produk", href: "/admin/produk", icon: Package },
   { name: "Transaksi", href: "/admin/transaksi", icon: ShoppingCart },
   { name: "Deposit", href: "/admin/deposit", icon: Coins },
-  { name: "Debug", href: "/admin/debug", icon: AlertTriangle },
+  // { name: "Debug", href: "/admin/debug", icon: AlertTriangle },
   { 
     name: "News", 
     href: "/admin/news", 
@@ -152,12 +153,16 @@ export default function AdminLayout({
           {/* Logo */}
           <div className="flex h-16 items-center justify-between px-4 border-b border-emerald-700">
             <div className="flex items-center space-x-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-emerald-500 to-green-500">
-                <Gamepad2 className="h-5 w-5 text-white" />
-              </div>
+              <Image
+                src="/images/kios-tetta.png"
+                alt="Kios Tetta Logo"
+                width={60}
+                height={60}
+                className="w-16 h-16 sm:w-16 sm:h-16 mt-2 pb-2"
+              />
               {!sidebarCollapsed && (
                 <div>
-                  <h1 className="text-lg font-bold text-white">Gaming Store</h1>
+                  <h1 className="text-lg font-bold text-white">KIOS TETTA</h1>
                   <p className="text-xs text-gray-400">Admin Panel</p>
                 </div>
               )}
@@ -316,7 +321,7 @@ export default function AdminLayout({
                 <Gamepad2 className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-white">Gaming Store</h1>
+                <h1 className="text-lg font-bold text-white">KIOS TETTA</h1>
                 <p className="text-xs text-gray-400">Admin Panel</p>
               </div>
             </div>

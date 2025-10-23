@@ -77,7 +77,7 @@ const AdminLoginPageContent = () => {
               <Shield className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">Admin Panel</h1>
-            <p className="text-gray-300">Gaming Store Online</p>
+            <p className="text-gray-300">KIOS TETTA</p>
           </motion.div>
 
           {/* Login Form */}
@@ -159,20 +159,6 @@ const AdminLoginPageContent = () => {
             </motion.button>
           </motion.form>
 
-          {/* Demo Credentials */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8, duration: 0.5 }}
-            className="mt-6 p-4 bg-blue-500/20 border border-blue-500/30 rounded-lg"
-          >
-            <p className="text-blue-200 text-sm text-center mb-2">Demo Credentials:</p>
-            <div className="text-center text-blue-100 text-xs space-y-1">
-              <p>Email: superadmin@superadmin.com</p>
-              <p>Password: password</p>
-            </div>
-          </motion.div>
-
           {/* Clean login form */}
         </div>
 
@@ -184,7 +170,7 @@ const AdminLoginPageContent = () => {
           className="text-center mt-6"
         >
           <p className="text-gray-400 text-sm">
-            © 2024 Gaming Store Online. All rights reserved.
+            © 2024 KIOS TETTA. All rights reserved.
           </p>
         </motion.div>
       </motion.div>

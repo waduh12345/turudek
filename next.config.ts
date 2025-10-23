@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
+    domains: ["api-topup.naditechno.id", "images.unsplash.com"],
   },
 };
 

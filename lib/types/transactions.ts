@@ -36,7 +36,7 @@ export interface Transaction {
     description: string;
     product_category_id: number;
   };
-  response: any;
+  response: unknown;
   customer_no: string;
   customer_name: string;
   customer_email: string | null;
@@ -50,7 +50,7 @@ export interface Transaction {
   status: number;
   created_at: string;
   updated_at: string;
-  user: any;
+  user: unknown;
   product: {
     id: number;
     product_category_id: number;
@@ -64,7 +64,7 @@ export interface Transaction {
     created_at: string;
     updated_at: string;
     image: string;
-    media: any[];
+    media: unknown[];
   };
 }
 
