@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface FooterData {
   footer: {
@@ -167,10 +168,14 @@ const Footer = () => {
 
             {/* Logo Kios Tetta */}
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gray-700 rounded flex items-center justify-center">
-                <div
-                  className={`w-4 h-4 ${footerData.footer.companyInfo.logo.color} rounded-sm`}
-                ></div>
+              <div className="w-16 h-16 flex items-center justify-center">
+                <Image
+                  src="/images/kios-tetta.png"
+                  alt="Kios Tetta Logo"
+                  width={60}
+                  height={60}
+                  className="w-16 h-16 sm:w-16 sm:h-16 mt-2 pb-2"
+                />
               </div>
               <span className="sidebar-text text-xl font-bold text-[#C02628]">
                 {footerData.footer.companyInfo.name}

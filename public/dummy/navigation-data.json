@@ -37,7 +37,7 @@
           "type": "email",
           "icon": "Mail",
           "label": "Customer Service",
-          "value": "cs@tokogame.com",
+          "value": "cs@kiostetta.com",
           "description": "Bantuan 24/7 untuk pelanggan"
         }
       ]
@@ -49,7 +49,7 @@
           "type": "email",
           "icon": "Mail",
           "label": "Partnership",
-          "value": "partnerships@tokogame.com",
+          "value": "partnerships@kiostetta.com",
           "description": "Kerjasama bisnis dan kolaborasi"
         }
       ]
@@ -142,7 +142,7 @@
   },
   "footer": {
     "companyInfo": {
-      "name": "kiostetta.COM",
+      "name": "kiostetta.com",
       "tagline": "Top Up Games & Voucher Murah, Aman, Cepat",
       "logo": {
         "text": "T",
@@ -204,16 +204,6 @@
           "name": "Terms",
           "href": "/syarat-ketentuan",
           "description": "Syarat dan ketentuan"
-        },
-        {
-          "name": "Privacy Policy",
-          "href": "/privacy-policy",
-          "description": "Kebijakan privasi"
-        },
-        {
-          "name": "About Us",
-          "href": "/about",
-          "description": "Tentang kami"
         }
       ]
     },
@@ -224,14 +214,14 @@
           "type": "email",
           "icon": "Mail",
           "label": "Customer Service",
-          "value": "cs@tokogame.com",
+          "value": "cs@kiostetta.com",
           "description": "Bantuan 24/7 untuk pelanggan"
         },
         {
           "type": "email",
           "icon": "Mail",
           "label": "Partnership",
-          "value": "partnerships@tokogame.com",
+          "value": "partnerships@kiostetta.com",
           "description": "Kerjasama bisnis dan kolaborasi"
         },
         {
