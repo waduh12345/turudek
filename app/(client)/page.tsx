@@ -12,6 +12,7 @@ import {
   PublicProductCategory,
 } from "@/services/api/public-product-categories";
 import { useApiCall, useDebounce } from "@/hooks";
+import { HeroCarousel } from "@/components/carousel";
 
 type Item = {
   id: number;
@@ -174,8 +175,8 @@ const Page = () => {
 
   return (
     <>
-      <div className="container pt-10">
-        <HotNews />
+      <div className="pt-10 bg-[#37353E]">
+        <HeroCarousel />
 
         <section className="mb-6">
           <Link className="max-w-xl mx-auto block" href="/produk">

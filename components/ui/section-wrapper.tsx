@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ChevronsRightIcon } from "lucide-react";
 import Link from "next/link";
-import Button from "./button";
+import { Button } from "./button";
 
 interface SectionWrapperProps {
   title: string;
