@@ -4,7 +4,7 @@ import * as React from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const SLIDE_INTERVAL = 5000; // 5 detik
+const SLIDE_INTERVAL = 3000; // 3 detik
 
 const SLIDES = [
   {
@@ -68,7 +68,7 @@ export function HeroCarousel() {
   }
 
   return (
-    <section className="w-full h-[80vh] bg-[#37353E] py-4">
+    <section className="w-full h-[60vh] bg-[#37353E] py-4">
       <div
         className="relative mx-auto h-full w-[90%] overflow-hidden rounded-[28px]"
         onMouseEnter={stopAuto}

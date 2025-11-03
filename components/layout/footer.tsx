@@ -2,386 +2,229 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Mail,
-  Facebook,
-  Instagram,
-  Music,
-  Twitter,
-  Youtube,
-  MessageSquare,
-  Gamepad2,
-  Play,
-  X,
-  Phone,
-} from "lucide-react";
-import { useState, useEffect } from "react";
+  IconBrandInstagram,
+  IconBrandTiktok,
+  IconMail,
+  IconBrandYoutube,
+  IconHeadphones,
+  IconChevronRight,
+  IconX,
+} from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
-interface FooterData {
-  footer: {
-    companyInfo: {
-      name: string;
-      tagline: string;
-      logo: {
-        text: string;
-        color: string;
-      };
-      copyright: string;
-    };
-    socialMedia: Array<{
-      name: string;
-      icon: string;
-      url: string;
-      color: string;
-      description: string;
-    }>;
-    siteMap: {
-      title: string;
-      links: Array<{
-        name: string;
-        href: string;
-        description: string;
-      }>;
-    };
-    contactInfo: {
-      title: string;
-      contacts: Array<{
-        type: string;
-        icon: string;
-        label: string;
-        value: string;
-        description: string;
-      }>;
-    };
-    region: {
-      title: string;
-      current: {
-        country: string;
-        currency: string;
-        flag: string;
-        code: string;
-      };
-    };
-    downloadApp: {
-      title: string;
-      apps: Array<{
-        name: string;
-        icon: string;
-        url: string;
-        description: string;
-        buttonText: string;
-        storeName: string;
-        color: string;
-      }>;
-    };
-    chatSupport: {
-      title: string;
-      botName: string;
-      status: string;
-      channels: Array<{
-        name: string;
-        icon: string;
-        url: string;
-        color: string;
-        description: string;
-      }>;
-    };
+type NavLink = { name: string; href: string };
+type FooterModel = {
+  about: {
+    name: string;
+    description: string;
+    logoSrc: string;
+    copyright: string;
   };
-}
+  socials: { name: string; url: string; icon: "ig" | "tt" | "mail" | "yt" }[];
+  sitemap: { title: string; links: NavLink[] };
+  support: { title: string; links: NavLink[] };
+  legal: { title: string; links: NavLink[] };
+  chat: {
+    label: string;
+    hint: string;
+    channels: { name: string; url: string }[];
+  };
+};
 
-const Footer = () => {
-  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
-  const [footerData, setFooterData] = useState<FooterData | null>(null);
+const DEFAULT_DATA: FooterModel = {
+  about: {
+    name: "kios tetta",
+    description:
+      "Kios Tetta adalah tempat top up games murah, cepat, dan terpercaya. Proses 1–3 detik, buka 24 jam, metode pembayaran lengkap. Jika ada kendala klik tombol Chat CS di kanan bawah.",
+    logoSrc: "/images/kios-tetta.png",
+    copyright: "© 2025 Kios Tetta. All rights reserved.",
+  },
+  socials: [
+    { name: "Instagram", url: "#", icon: "ig" },
+    { name: "TikTok", url: "#", icon: "tt" },
+    { name: "Email", url: "mailto:support@kiostetta.com", icon: "mail" },
+    { name: "YouTube", url: "#", icon: "yt" },
+  ],
+  sitemap: {
+    title: "Menu",
+    links: [
+      { name: "Beranda", href: "/" },
+      { name: "Cek Transaksi", href: "/cek-transaksi" },
+      { name: "Hubungi Kami", href: "/kontak" },
+      { name: "Ulasan", href: "/ulasan" },
+      { name: "FAQ", href: "/faq" },
+    ],
+  },
+  support: {
+    title: "Dukungan",
+    links: [
+      { name: "WhatsApp", href: "#" },
+      { name: "Instagram", href: "#" },
+      { name: "Email", href: "mailto:support@kiostetta.com" },
+    ],
+  },
+  legal: {
+    title: "Legalitas",
+    links: [
+      { name: "Kebijakan Pribadi", href: "/privacy" },
+      { name: "Syarat & Ketentuan", href: "/terms" },
+    ],
+  },
+  chat: {
+    label: "CHAT CS",
+    hint: "Butuh bantuan? Kami siap 24/7",
+    channels: [
+      { name: "WhatsApp", url: "#" },
+      { name: "Instagram DM", url: "#" },
+      { name: "Email", url: "mailto:support@kiostetta.com" },
+    ],
+  },
+};
 
+export default function Footer() {
+  const [open, setOpen] = useState(false);
+  const [data, setData] = useState<FooterModel>(DEFAULT_DATA);
+
+  // Optional fetch jika punya JSON sendiri (aman kalau gagal)
   useEffect(() => {
-    const fetchFooterData = async () => {
+    (async () => {
       try {
-        const response = await fetch("/dummy/navigation-data.json");
-        const data = await response.json();
-        setFooterData(data);
-      } catch (error) {
-        console.error("Error fetching footer data:", error);
-      }
-    };
-
-    fetchFooterData();
+        const r = await fetch("/dummy/navigation-data.json");
+        if (r.ok) {
+          const j = await r.json();
+          setData({ ...DEFAULT_DATA, ...j.footerMapped });
+        }
+      } catch {}
+    })();
   }, []);
 
-  const getIcon = (iconName: string) => {
-    const icons: {
-      [key: string]: React.ComponentType<{ size?: number; className?: string }>;
-    } = {
-      Mail,
-      Facebook,
-      Instagram,
-      Music,
-      Twitter,
-      Youtube,
-      MessageSquare,
-      Play,
-      Phone,
-    };
-    return icons[iconName] || Mail;
-  };
-
-  if (!footerData) {
-    return (
-      <footer>
-        <div className="container bg-gray-50 py-12">
-          <div className="text-center text-gray-500">Loading...</div>
-        </div>
-      </footer>
-    );
-  }
-
   return (
-    <footer>
-      <div className="container bg-gray-50 py-12">
-        <div className="grid md:grid-cols-3 gap-8">
-          {/* Kolom 1: Follow Kami */}
-          <div className="space-y-6">
-            <h4 className="text-lg font-mono tracking-wider italic">
-              Follow Kami
-            </h4>
-
-            {/* Social Media Icons */}
-            <div className="flex gap-3 flex-wrap">
-              {footerData.footer.socialMedia.map((social, index) => {
-                const IconComponent = getIcon(social.icon);
-                return (
-                  <motion.a
-                    key={index}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`w-8 h-8 ${social.color} rounded flex items-center justify-center`}
-                    title={social.description}
-                  >
-                    <IconComponent size={16} className="text-white" />
-                  </motion.a>
-                );
-              })}
-            </div>
-
-            {/* Logo Kios Tetta */}
-            <div className="flex items-center gap-2">
-              <div className="w-16 h-16 flex items-center justify-center">
+    <footer className="relative">
+      {/* BG gelap + aksen merah */}
+      <div className="w-full border-t border-white/5 bg-[#1c1c1f]">
+        <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
+          <div className="grid gap-10 lg:grid-cols-12">
+            {/* Kiri: logo + deskripsi + sosmed */}
+            <div className="lg:col-span-5">
+              <div className="flex items-center gap-3">
                 <Image
-                  src="/images/kios-tetta.png"
-                  alt="Kios Tetta Logo"
-                  width={60}
-                  height={60}
-                  className="w-16 h-16 sm:w-16 sm:h-16 mt-2 pb-2"
+                  src={data.about.logoSrc}
+                  alt="kios tetta logo"
+                  width={64}
+                  height={64}
+                  className="h-16 w-16 object-contain"
                 />
-              </div>
-              <span className="sidebar-text text-xl font-bold text-[#C02628]">
-                {footerData.footer.companyInfo.name}
-              </span>
-            </div>
-
-            {/* Copyright */}
-            <p className="sidebar-text text-sm text-gray-500">
-              {footerData.footer.companyInfo.copyright}
-            </p>
-          </div>
-
-          {/* Kolom 2: Region & Site Map */}
-          <div className="space-y-6">
-            {/* Region */}
-            <div>
-              <h4 className="font-mono tracking-wider italic mb-3">
-                {footerData.footer.region.title}
-              </h4>
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-4 bg-red-500 rounded-sm flex items-center justify-center">
-                  <div className="w-4 h-1 bg-white rounded-sm"></div>
-                </div>
-                <span className="sidebar-text text-gray-600">
-                  {footerData.footer.region.current.country} (
-                  {footerData.footer.region.current.currency})
+                <span className="text-2xl font-semibold text-rose-400">
+                  {data.about.name}
                 </span>
               </div>
-            </div>
 
-            {/* Site Map */}
-            <div>
-              <h4 className="font-mono tracking-wider italic mb-3">
-                {footerData.footer.siteMap.title}
-              </h4>
-              <div className="space-y-2">
-                {footerData.footer.siteMap.links.map((link, index) => (
-                  <Link
-                    key={index}
-                    href={link.href}
-                    className="sidebar-text block text-gray-600 hover:text-[#C02628] transition-colors"
-                    title={link.description}
+              <p className="mt-6 max-w-xl text-base leading-relaxed text-white/80">
+                {data.about.description}
+              </p>
+
+              <div className="mt-6 flex items-center gap-3">
+                {data.socials.map((s) => (
+                  <a
+                    key={s.name}
+                    href={s.url}
+                    target="_blank"
+                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-white/90 ring-1 ring-white/10 transition hover:bg-white/10 hover:text-rose-300"
                   >
-                    {link.name}
-                  </Link>
+                    {s.icon === "ig" && <IconBrandInstagram size={18} />}
+                    {s.icon === "tt" && <IconBrandTiktok size={18} />}
+                    {s.icon === "mail" && <IconMail size={18} />}
+                    {s.icon === "yt" && <IconBrandYoutube size={18} />}
+                  </a>
                 ))}
               </div>
             </div>
+
+            {/* Kanan: 3 kolom link */}
+            <div className="lg:col-span-7 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+              <FooterCol
+                title={data.sitemap.title}
+                links={data.sitemap.links}
+              />
+              <FooterCol
+                title={data.support.title}
+                links={data.support.links}
+              />
+              <FooterCol title={data.legal.title} links={data.legal.links} />
+            </div>
           </div>
 
-          {/* Kolom 3: Kontak Kami */}
-          <div className="space-y-6">
-            <h4 className="sidebar-text text-lg font-bold text-black">
-              {footerData.footer.contactInfo.title}
-            </h4>
+          <div className="mt-10 h-px w-full bg-white/5" />
 
-            {/* Contact Info */}
-            <div className="space-y-3">
-              {footerData.footer.contactInfo.contacts.map((contact, index) => {
-                const IconComponent = getIcon(contact.icon);
-                return (
-                  <motion.a
-                    key={index}
-                    href={
-                      contact.type === "email"
-                        ? `mailto:${contact.value}`
-                        : contact.type === "phone"
-                        ? `tel:${contact.value}`
-                        : "#"
-                    }
-                    whileHover={{ x: 3, scale: 1.02 }}
-                    className="flex items-center gap-2 group cursor-pointer"
-                    title={contact.description}
-                  >
-                    <IconComponent size={16} className="text-[#C02628]" />
-                    <span className="sidebar-text text-gray-600 group-hover:text-[#C02628] transition-colors">
-                      {contact.value}
-                    </span>
-                  </motion.a>
-                );
-              })}
-            </div>
-
-            {/* Download App Button */}
-            {footerData.footer.downloadApp.apps.map((app, index) => {
-              const IconComponent = getIcon(app.icon);
-              return (
-                <motion.a
-                  key={index}
-                  href={app.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`${app.color} text-white px-4 py-3 rounded-lg flex items-center gap-3 hover:bg-gray-800 transition-colors`}
-                  title={app.description}
-                >
-                  <div className="w-6 h-6 bg-white rounded flex items-center justify-center">
-                    <IconComponent size={12} className="text-black" />
-                  </div>
-                  <div className="flex flex-col items-start">
-                    <span className="sidebar-text text-xs font-medium">
-                      {app.buttonText}
-                    </span>
-                    <span className="sidebar-text text-sm font-bold">
-                      {app.storeName}
-                    </span>
-                  </div>
-                </motion.a>
-              );
-            })}
+          <div className="flex flex-col items-start justify-between gap-4 py-6 text-sm text-white/60 sm:flex-row">
+            <span>{data.about.copyright}</span>
+            <span>Didesain untuk gamer — nuansa merah Kios Tetta</span>
           </div>
         </div>
       </div>
 
-      {/* Floating Chat Button */}
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setIsChatModalOpen(true)}
-        className="fixed bottom-6 right-6 w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-lg hover:bg-gray-800 transition-colors z-50"
-        aria-label="Chat Support"
+      {/* Chat CS fixed */}
+      <button
+        onClick={() => setOpen(true)}
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-xl bg-rose-500 px-4 py-3 text-white font-semibold shadow-xl hover:bg-rose-600 transition"
+        aria-label="Chat CS"
       >
-        <MessageSquare size={24} className="text-white" />
-      </motion.button>
+        <IconHeadphones size={18} />
+        {data.chat.label}
+      </button>
 
-      {/* Chat Modal */}
+      {/* Modal chat */}
       <AnimatePresence>
-        {isChatModalOpen && (
+        {open && (
           <>
-            {/* Backdrop */}
             <motion.div
+              className="fixed inset-0 z-50 bg-black/40"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/20 z-50"
-              onClick={() => setIsChatModalOpen(false)}
+              onClick={() => setOpen(false)}
             />
-
-            {/* Modal */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="fixed bottom-24 right-6 w-80 bg-white rounded-2xl shadow-2xl z-50 overflow-hidden"
+              className="fixed bottom-24 right-6 z-50 w-80 overflow-hidden rounded-2xl bg-[#111114] text-white ring-1 ring-white/10 shadow-2xl"
+              initial={{ opacity: 0, y: 20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.98 }}
+              transition={{ duration: 0.25 }}
             >
-              {/* Header */}
-              <div className="bg-black px-4 py-3 flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#C02628] rounded-full flex items-center justify-center border border-[#C02628]">
-                  <Gamepad2 size={20} className="text-white" />
+              <div className="flex items-center gap-3 bg-[#1a1a1e] px-4 py-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-rose-500 text-white">
+                  <IconHeadphones size={18} />
                 </div>
-                <div>
-                  <h3 className="text-white font-semibold text-sm">
-                    {footerData.footer.chatSupport.botName}
-                  </h3>
-                  <p className="text-gray-300 text-xs">
-                    {footerData.footer.chatSupport.status}
-                  </p>
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold">Customer Support</div>
+                  <div className="text-xs text-white/70">{data.chat.hint}</div>
                 </div>
                 <button
-                  onClick={() => setIsChatModalOpen(false)}
-                  className="ml-auto p-1 hover:bg-gray-800 rounded transition-colors"
-                  aria-label="Close chat"
+                  onClick={() => setOpen(false)}
+                  className="ml-auto rounded p-1 text-white/70 hover:bg-white/10"
+                  aria-label="Close"
                 >
-                  <X size={16} className="text-white" />
+                  <IconX size={16} />
                 </button>
               </div>
 
-              {/* Content */}
-              <div className="p-4 space-y-4">
-                {/* Chat on your favorite channel */}
-                <div>
-                  <h4 className="font-medium text-gray-800 text-sm mb-3">
-                    Chat on your favorite channel
-                  </h4>
-                  <div className="space-y-2">
-                    {footerData.footer.chatSupport.channels.map(
-                      (channel, index) => {
-                        const IconComponent = getIcon(channel.icon);
-                        return (
-                          <motion.a
-                            key={index}
-                            href={channel.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="w-full flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors group"
-                            title={channel.description}
-                          >
-                            <div
-                              className={`w-8 h-8 ${channel.color} rounded-full flex items-center justify-center`}
-                            >
-                              <IconComponent size={16} className="text-white" />
-                            </div>
-                            <span className="text-gray-700 text-sm group-hover:text-[#C02628] transition-colors">
-                              {channel.name}
-                            </span>
-                          </motion.a>
-                        );
-                      }
-                    )}
-                  </div>
-                </div>
+              <div className="p-3">
+                {data.chat.channels.map((c) => (
+                  <Link
+                    key={c.name}
+                    href={c.url}
+                    target="_blank"
+                    className="group flex items-center justify-between rounded-lg px-3 py-2 text-sm text-white/90 hover:bg-white/5"
+                  >
+                    <span>{c.name}</span>
+                    <IconChevronRight
+                      size={16}
+                      className="text-white/40 transition group-hover:translate-x-0.5"
+                    />
+                  </Link>
+                ))}
               </div>
             </motion.div>
           </>
@@ -389,6 +232,24 @@ const Footer = () => {
       </AnimatePresence>
     </footer>
   );
-};
+}
 
-export default Footer;
+function FooterCol({ title, links }: { title: string; links: NavLink[] }) {
+  return (
+    <div>
+      <h4 className="text-[15px] font-semibold text-rose-400">{title}</h4>
+      <ul className="mt-4 space-y-3 text-white/85">
+        {links.map((l) => (
+          <li key={l.name}>
+            <Link
+              href={l.href}
+              className="inline-flex items-center gap-2 rounded-md px-1 py-0.5 transition hover:text-white hover:underline underline-offset-4"
+            >
+              {l.name}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
