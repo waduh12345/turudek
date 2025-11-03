@@ -52,8 +52,8 @@ const DEFAULT_DATA: FooterModel = {
     links: [
       { name: "Beranda", href: "/" },
       { name: "Cek Transaksi", href: "/cek-transaksi" },
-      { name: "Hubungi Kami", href: "/kontak" },
-      { name: "Ulasan", href: "/ulasan" },
+      { name: "Hubungi Kami", href: "/contact" },
+      { name: "Ulasan", href: "/review" },
       { name: "FAQ", href: "/faq" },
     ],
   },
