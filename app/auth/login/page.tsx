@@ -3,24 +3,34 @@
 import { useState, Suspense } from "react";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
-import { Eye, EyeOff, Shield, Zap } from "lucide-react";
-import { ErrorHandler } from "@/lib/utils";
+import { Eye, EyeOff, Lock, Mail, Zap } from "lucide-react";
+import AuthShell from "@/components/layout/auth-layout";
+import Link from "next/link";
 
-const AdminLoginPageContent = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  
+const IMAGES = [
+  "https://sbclbzad8s.ufs.sh/f/vI07edVR8nim9Ngqsm2QEcgVHXfOJ2jIWpBKYd8hD1lPq3io",
+  "https://sbclbzad8s.ufs.sh/f/vI07edVR8nimlYqtfV3XrjwVi4PSLf6c0GQ2WEMvdhoeTKA3",
+  "https://sbclbzad8s.ufs.sh/f/vI07edVR8nimEOuFH8oPsbtT2hoF87k1RpvmaNWLeiQZ9A4w",
+];
+
+// helper kecil pengganti ErrorHandler
+const getErrorMessage = (e: unknown): string =>
+  e instanceof Error ? e.message : "Terjadi kesalahan tak terduga.";
+
+function LoginContent() {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [show, setShow] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams?.get("callbackUrl") || "/admin";
+  const sp = useSearchParams();
+  const callbackUrl = sp?.get("callbackUrl") || "/admin";
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLoading(true);
     setError("");
 
     try {
@@ -31,164 +41,117 @@ const AdminLoginPageContent = () => {
       });
 
       if (result?.error) {
-        setError("Invalid email or password");
+        setError("Email atau password salah.");
       } else {
-        // Check if user is admin
         const session = await getSession();
-        
         if (session?.user?.role === "admin") {
           router.push(callbackUrl);
         } else {
-          setError("Access denied. Admin privileges required.");
+          setError("Akses ditolak. Butuh hak admin.");
         }
       }
-    } catch (error) {
-      setError(ErrorHandler.getErrorMessage(error));
+    } catch (err) {
+      setError(getErrorMessage(err));
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
-      {/* Background Effects */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute top-40 left-40 w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-      </div>
+    <AuthShell
+      images={IMAGES}
+      title="Masuk ke Admin Panel"
+      brand="Kios Tetta"
+      slideIntervalMs={3000}
+    >
+      <form onSubmit={onSubmit} className="space-y-5">
+        <div>
+          <label className="mb-2 block text-sm text-white/80">Email</label>
+          <div className="relative">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.currentTarget.value)}
+              placeholder="superadmin@superadmin.com"
+              required
+              className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:ring-2 focus:ring-rose-500/60"
+            />
+            <Mail className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
+          </div>
+        </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="relative w-full max-w-md"
-      >
-        {/* Login Card */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-8">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="text-center mb-8"
-          >
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mb-4">
-              <Shield className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold text-white mb-2">Admin Panel</h1>
-            <p className="text-gray-300">KIOS TETTA</p>
-          </motion.div>
-
-          {/* Login Form */}
-          <motion.form
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-            onSubmit={handleSubmit}
-            className="space-y-6"
-          >
-            {/* Email Field */}
-            <div>
-              <label className="block text-sm font-medium text-gray-200 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
-                  placeholder="superadmin@superadmin.com"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Password Field */}
-            <div>
-              <label className="block text-sm font-medium text-gray-200 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 pr-12"
-                  placeholder="Enter your password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors duration-200"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
-
-            {/* Error Message */}
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 text-red-200 text-sm"
-              >
-                {error}
-              </motion.div>
-            )}
-
-            {/* Login Button */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+        <div>
+          <label className="mb-2 block text-sm text-white/80">Password</label>
+          <div className="relative">
+            <input
+              type={show ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.currentTarget.value)}
+              placeholder="••••••••"
+              required
+              className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-3 pr-10 text-sm text-white placeholder:text-white/40 outline-none focus:ring-2 focus:ring-rose-500/60"
+            />
+            <button
+              type="button"
+              onClick={() => setShow((p) => !p)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-white/60 hover:bg-white/10"
+              aria-label="Toggle password"
             >
-              {isLoading ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              {show ? (
+                <EyeOff className="h-4 w-4" />
               ) : (
-                <>
-                  <Zap className="w-5 h-5" />
-                  <span>Sign In</span>
-                </>
+                <Eye className="h-4 w-4" />
               )}
-            </motion.button>
-          </motion.form>
-
-          {/* Clean login form */}
+            </button>
+            <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
+          </div>
         </div>
 
-        {/* Footer */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 0.5 }}
-          className="text-center mt-6"
+        {error && (
+          <div className="rounded-md border border-red-500/40 bg-red-500/15 px-3 py-2 text-sm text-red-200">
+            {error}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-rose-600 to-pink-600 px-4 py-3 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-60"
         >
-          <p className="text-gray-400 text-sm">
-            © 2024 KIOS TETTA. All rights reserved.
-          </p>
-        </motion.div>
-      </motion.div>
-    </div>
-  );
-};
+          {loading ? (
+            <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+          ) : (
+            <>
+              <Zap className="h-4 w-4" />
+              <span>Masuk</span>
+            </>
+          )}
+        </button>
 
-export default function AdminLoginPage() {
+        <p className="text-center text-xs text-white/60">
+          Belum punya akun?{" "}
+          <Link
+            href="/auth/register"
+            className="font-semibold text-rose-300 underline-offset-4 hover:underline"
+          >
+            Daftar sekarang
+          </Link>
+        </p>
+      </form>
+    </AuthShell>
+  );
+}
+
+export default function Page() {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#C02628] to-red-500 p-4">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white">Loading...</p>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-[#141417] text-white">
+          Loading…
         </div>
-      </div>
-    }>
-      <AdminLoginPageContent />
+      }
+    >
+      <LoginContent />
     </Suspense>
   );
 }

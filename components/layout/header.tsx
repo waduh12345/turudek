@@ -239,6 +239,7 @@ export default function GameHeader() {
           <Button
             type="button"
             variant="ghost"
+            onClick={() => router.push("/auth/login")}
             className="hidden items-center gap-1 text-white/80 hover:bg-transparent hover:text-white md:inline-flex"
           >
             <LogIn className="h-4 w-4" />
@@ -246,6 +247,7 @@ export default function GameHeader() {
           </Button>
           <Button
             type="button"
+            onClick={() => router.push("/auth/register")}
             className="hidden gap-1 bg-red-600 text-white hover:bg-red-700 md:inline-flex"
           >
             <UserPlus className="h-4 w-4" />

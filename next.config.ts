@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
     domains: [
       "api-topup.naditechno.id",
       "images.unsplash.com",
+      "sbclbzad8s.ufs.sh",
     ],
   },
 };

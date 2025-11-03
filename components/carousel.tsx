@@ -13,7 +13,8 @@ const SLIDES = [
     subtitle: "Gunakan kode: PROMOROBLOX",
     text: "Diskon 5K tiap jam 12.00 WIB, reset setiap hari",
     badge: "Top Up di Kios Tetta",
-    image: "/images/ml1.jpg",
+    image:
+      "https://sbclbzad8s.ufs.sh/f/vI07edVR8nimhjesnNrfOHsdF5ArRwGp1kiJ8NbcmBPn90h6",
   },
   {
     id: 2,
@@ -29,7 +30,7 @@ const SLIDES = [
     subtitle: "Khusus member",
     text: "Bonus poin setiap transaksi",
     badge: "Gabung Sekarang",
-    image: "/images/ml3.jpg",
+    image: "/images/ml1.jpg",
   },
 ];
 
