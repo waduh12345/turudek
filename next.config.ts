@@ -9,11 +9,15 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "sbclbzad8s.ufs.sh",
+        pathname: "/**",
+      },
     ],
     domains: [
       "api-topup.naditechno.id",
       "images.unsplash.com",
-      "sbclbzad8s.ufs.sh",
     ],
   },
 };

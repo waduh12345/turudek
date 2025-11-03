@@ -25,7 +25,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Button } from "../ui/button";
 import { Oxanium } from "next/font/google";
 
@@ -134,10 +133,17 @@ export default function GameHeader() {
           </div>
         </div>
 
-        {/* SEARCH trigger */}
-        <button
-          type="button"
+        {/* SEARCH trigger — div role="button" (bukan <button>) agar boleh ada <button> di dalamnya */}
+        <div
+          role="button"
+          tabIndex={0}
           onClick={() => setOpenSearch(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setOpenSearch(true);
+            }
+          }}
           className="group hidden flex-1 items-center gap-2 rounded-md bg-[#5a6067] px-4 py-2 text-left text-sm text-white/90 transition hover:bg-[#6a7077] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 md:flex"
         >
           <Search className="h-4 w-4 opacity-80" />
@@ -145,11 +151,14 @@ export default function GameHeader() {
 
           {/* ====== BADGE BAHASA / MATA UANG ====== */}
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               setOpenLocale((p) => !p);
             }}
             className="relative flex items-center gap-2 rounded-md bg-[#101114] px-3 py-1 text-xs font-medium text-white/90"
+            aria-haspopup="menu"
+            aria-expanded={openLocale}
           >
             {/* bendera */}
             <span className="h-4 w-6 overflow-hidden rounded-sm bg-red-600">
@@ -167,8 +176,13 @@ export default function GameHeader() {
 
             {/* dropdown mini */}
             {openLocale ? (
-              <div className="absolute right-0 top-9 z-[80] w-32 rounded-md border border-white/10 bg-[#2b2a30] text-xs shadow-lg">
+              <div
+                role="menu"
+                className="absolute right-0 top-9 z-[80] w-32 rounded-md border border-white/10 bg-[#2b2a30] text-xs shadow-lg"
+              >
                 <button
+                  type="button"
+                  role="menuitem"
                   onClick={() => {
                     setLocale("id-IDR");
                     setOpenLocale(false);
@@ -182,6 +196,8 @@ export default function GameHeader() {
                   ID / IDR
                 </button>
                 <button
+                  type="button"
+                  role="menuitem"
                   onClick={() => {
                     setLocale("en-USD");
                     setOpenLocale(false);
@@ -199,15 +215,21 @@ export default function GameHeader() {
           <kbd className="pointer-events-none hidden select-none items-center gap-1 rounded bg-[#101114] px-2 py-1 text-[10px] text-white/70 md:inline-flex">
             <Keyboard className="mr-1 h-3 w-3 opacity-70" /> Ctrl K
           </kbd>
-        </button>
+        </div>
 
         {/* NAV kanan */}
         <nav className="hidden items-center gap-5 text-sm md:flex">
-          <button className="relative pb-1 text-white/90 transition hover:text-white">
+          <button
+            type="button"
+            className="relative pb-1 text-white/90 transition hover:text-white"
+          >
             Topup
             <span className="absolute -bottom-[14px] left-0 right-0 mx-auto h-[2px] w-8 rounded-full bg-red-500"></span>
           </button>
-          <button className="text-white/70 transition hover:text-white">
+          <button
+            type="button"
+            className="text-white/70 transition hover:text-white"
+          >
             Cek Transaksi
           </button>
         </nav>
@@ -215,24 +237,32 @@ export default function GameHeader() {
         {/* Auth & mobile btns */}
         <div className="ml-auto flex items-center gap-2">
           <Button
+            type="button"
             variant="ghost"
             className="hidden items-center gap-1 text-white/80 hover:bg-transparent hover:text-white md:inline-flex"
           >
             <LogIn className="h-4 w-4" />
             Masuk
           </Button>
-          <Button className="hidden gap-1 bg-red-600 text-white hover:bg-red-700 md:inline-flex">
+          <Button
+            type="button"
+            className="hidden gap-1 bg-red-600 text-white hover:bg-red-700 md:inline-flex"
+          >
             <UserPlus className="h-4 w-4" />
             Daftar
           </Button>
           {/* mobile search */}
           <button
+            type="button"
             onClick={() => setOpenSearch(true)}
             className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-white/5 text-white hover:bg-white/10 md:hidden"
           >
             <Search className="h-5 w-5" />
           </button>
-          <button className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-white/5 text-white hover:bg-white/10 md:hidden">
+          <button
+            type="button"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-white/5 text-white hover:bg-white/10 md:hidden"
+          >
             <Menu className="h-5 w-5" />
           </button>
         </div>
@@ -335,12 +365,13 @@ function SearchDialog({
               placeholder="Cari game, voucher, atau promo…"
               className="flex-1 bg-transparent text-sm text-white/90 outline-none placeholder:text-white/45"
             />
-            <kbd className="hidden select-none rounded bg-white/10 px-2 py-1 text-[10px] text-white/70 md:block">
+            <kbd className="hidden select-none rounded bg:white/10 px-2 py-1 text-[10px] text-white/70 md:block">
               Esc
             </kbd>
             <button
+              type="button"
               onClick={() => onOpenChange(false)}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-white/70 transition hover:bg-white/10 hover:text-white"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-white/70 transition hover:bg-white/10 hover:text:white"
               aria-label="Tutup"
             >
               <X className="h-4 w-4" />
@@ -357,6 +388,7 @@ function SearchDialog({
                   {results.map((it, i) => (
                     <li key={it.id}>
                       <button
+                        type="button"
                         onMouseEnter={() => setCursor(i)}
                         onClick={() => {
                           saveRecent(q);
@@ -402,6 +434,7 @@ function SearchDialog({
                   <div className="flex flex-wrap gap-2">
                     {recents.map((r) => (
                       <button
+                        type="button"
                         key={r}
                         onClick={() => {
                           setQ(r);
