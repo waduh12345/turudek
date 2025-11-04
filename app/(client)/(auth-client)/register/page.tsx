@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import AuthShell from "@/components/layout/auth-layout";
 import Link from "next/link";
 import { Eye, EyeOff, User, Mail, Lock, UserPlus } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const IMAGES = [
   "https://sbclbzad8s.ufs.sh/f/vI07edVR8nimtllao8hYidk98PawCcYsQeGWzDAZKoTE27Uj",
@@ -16,10 +17,12 @@ type RegisterPayload = {
   email: string;
   password: string;
   password_confirmation: string;
-  referral_code?: string; // opsional, hanya dikirim jika diisi
+  referral_code?: string;
 };
 
 function RegisterContent() {
+  const router = useRouter();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [referral, setReferral] = useState("");
@@ -31,12 +34,10 @@ function RegisterContent() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [ok, setOk] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setOk("");
 
     if (!agree) {
       setError("Silakan setujui Syarat & Ketentuan serta Kebijakan Pribadi.");
@@ -61,14 +62,13 @@ function RegisterContent() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
-        // coba baca pesan kesalahan terstruktur dari backend
         type ErrorResponse = {
           message?: string;
           errors?: Record<string, string[] | string>;
@@ -82,13 +82,8 @@ function RegisterContent() {
         throw new Error(merged || "Registrasi gagal.");
       }
 
-      setOk("Registrasi berhasil. Silakan login.");
-      setName("");
-      setEmail("");
-      setReferral("");
-      setPassword("");
-      setConfirm("");
-      setAgree(false);
+      // sukses → arahkan ke halaman login
+      router.push("/login");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registrasi gagal.");
     } finally {
@@ -252,11 +247,6 @@ function RegisterContent() {
             {error}
           </div>
         )}
-        {ok && (
-          <div className="rounded-md border border-emerald-500/40 bg-emerald-500/15 px-3 py-2 text-sm text-emerald-200">
-            {ok}
-          </div>
-        )}
 
         {/* Submit */}
         <button
@@ -277,7 +267,7 @@ function RegisterContent() {
         <p className="text-center text-sm text-white/70">
           Sudah memiliki akun?{" "}
           <Link
-            href="/auth/login"
+            href="/login"
             className="font-semibold text-rose-300 underline-offset-4 hover:underline"
           >
             Masuk
