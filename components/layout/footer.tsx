@@ -51,7 +51,7 @@ const DEFAULT_DATA: FooterModel = {
     title: "Menu",
     links: [
       { name: "Beranda", href: "/" },
-      { name: "Cek Transaksi", href: "/cek-transaksi" },
+      { name: "Cek Transaksi", href: "/riwayat" },
       { name: "Hubungi Kami", href: "/contact" },
       { name: "Ulasan", href: "/review" },
       { name: "FAQ", href: "/faq" },
@@ -87,7 +87,6 @@ export default function Footer() {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<FooterModel>(DEFAULT_DATA);
 
-  // Optional fetch jika punya JSON sendiri (aman kalau gagal)
   useEffect(() => {
     (async () => {
       try {
@@ -103,7 +102,7 @@ export default function Footer() {
   return (
     <footer className="relative">
       {/* BG gelap + aksen merah */}
-      <div className="w-full border-t border-white/5 bg-[#1c1c1f]">
+      <div className="w-full border-top border-white/5 bg-[#1c1c1f]">
         <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
           <div className="grid gap-10 lg:grid-cols-12">
             {/* Kiri: logo + deskripsi + sosmed */}
@@ -165,15 +164,44 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Chat CS fixed */}
-      <button
+      {/* === Chat CS Floating Button (NEW) === */}
+      <motion.button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-xl bg-rose-500 px-4 py-3 text-white font-semibold shadow-xl hover:bg-rose-600 transition"
         aria-label="Chat CS"
+        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        whileTap={{ scale: 0.97 }}
+        whileHover={{ y: -2 }}
+        className="group fixed bottom-6 right-6 z-50 inline-flex items-center gap-3 rounded-2xl p-[2px] shadow-[0_20px_60px_-15px_rgba(239,68,68,.6)]
+                   bg-[conic-gradient(from_180deg_at_50%_50%,#ef4444_0deg,#ef4444_120deg,#fb7185_200deg,#111215_320deg)]
+                   transition"
       >
-        <IconHeadphones size={18} />
-        {data.chat.label}
-      </button>
+        {/* Inner pill */}
+        <span className="relative inline-flex items-center gap-2 rounded-[14px] bg-[#121215] px-4 py-3 text-white ring-1 ring-white/10">
+          {/* Glow halo */}
+          <span className="pointer-events-none absolute -inset-1 rounded-[16px] bg-red-500/10 blur-md opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+          {/* Icon bubble */}
+          <span className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-rose-600 shadow-inner ring-1 ring-white/10">
+            <IconHeadphones size={18} />
+            {/* Online ping */}
+            <span className="absolute -right-0 -top-0">
+              <span className="absolute inline-flex h-2.5 w-2.5 animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-[#121215]" />
+            </span>
+          </span>
+
+          {/* Label + small hint on hover */}
+          <span className="flex flex-col leading-none">
+            <span className="text-[13px] font-bold tracking-wide">
+              {data.chat.label}
+            </span>
+            <span className="mt-0.5 text-[10px] font-medium text-white/70 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+              24/7 online
+            </span>
+          </span>
+        </span>
+      </motion.button>
 
       {/* Modal chat */}
       <AnimatePresence>

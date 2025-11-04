@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Search,
   LogIn,
@@ -22,13 +22,12 @@ import {
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
 import { Oxanium } from "next/font/google";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import Swal from "sweetalert2";
 import { authService } from "@/services/api";
 
 const oxanium = Oxanium({ subsets: ["latin"], weight: ["500", "600", "700"] });
 
-/* ====== Dummy data ====== */
 type Item = {
   id: number;
   title: string;
@@ -127,7 +126,6 @@ function ProfileMenu({
     });
     if (!ask.isConfirmed) return;
 
-    // ⛔️ JANGAN di-await
     Swal.fire({
       title: "Memproses...",
       allowOutsideClick: false,
@@ -135,9 +133,10 @@ function ProfileMenu({
     });
 
     try {
-      await authService.logout(); // hit POST /logout + clear token lokal
-      Swal.close(); // tutup loading
-      await signOut({ callbackUrl: "/" }); // bersihkan session NextAuth + redirect
+      await authService.logout();
+      Swal.close();
+      // next-auth signOut ditrigger dari luar komponen ini (atau tambahkan di sini jika perlu)
+      window.location.href = "/";
     } catch (err) {
       Swal.close();
       await Swal.fire({
@@ -203,6 +202,7 @@ function ProfileMenu({
 /* ===================== Header ===================== */
 export default function GameHeader() {
   const router = useRouter();
+  const pathname = usePathname(); // ⬅️ untuk deteksi route aktif
   const [openSearch, setOpenSearch] = React.useState(false);
   const [openLocale, setOpenLocale] = React.useState(false);
   const [locale, setLocale] = React.useState<"id-IDR" | "en-USD">("id-IDR");
@@ -210,7 +210,12 @@ export default function GameHeader() {
   const { data: session, status } = useSession();
   const isAuthed = status === "authenticated";
 
-  // ctrl+k / /
+  // Rule aktif:
+  // - Bila berada di /riwayat (atau turunannya) ⇒ "Cek Transaksi" aktif
+  // - Selain itu ⇒ "Topup" aktif
+  const isRiwayatActive = pathname?.startsWith("/riwayat") ?? false;
+  const isTopupActive = !isRiwayatActive;
+
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const isK = (e.key === "k" || e.key === "K") && (e.ctrlKey || e.metaKey);
@@ -226,7 +231,6 @@ export default function GameHeader() {
 
   return (
     <>
-      {/* HEADER sticky + backdrop */}
       <header className="sticky top-0 z-50 flex h-20 w-full items-center gap-4 border-b border-white/70 bg-[#37353E]/95 px-4 text-white backdrop-blur md:px-8">
         {/* LEFT: logo */}
         <div className="flex items-center gap-3">
@@ -271,7 +275,7 @@ export default function GameHeader() {
           <Search className="h-4 w-4 opacity-80" />
           <span className="flex-1 truncate">Cari Game atau Voucher</span>
 
-          {/* ====== BADGE BAHASA / MATA UANG ====== */}
+          {/* Badge bahasa */}
           <button
             type="button"
             onClick={(e) => {
@@ -336,26 +340,43 @@ export default function GameHeader() {
           </kbd>
         </div>
 
-        {/* NAV kanan */}
+        {/* NAV kanan — aktif berdasarkan pathname */}
         <nav className="hidden items-center gap-5 text-sm md:flex">
-          <button
-            type="button"
-            className="relative pb-1 text-white/90 transition hover:text-white"
+          <Link
+            href="/"
+            aria-current={isTopupActive ? "page" : undefined}
+            className={`relative pb-1 transition ${
+              isTopupActive ? "text-white" : "text-white/70 hover:text-white"
+            }`}
           >
             Topup
-            <span className="absolute -bottom-[14px] left-0 right-0 mx-auto h-[2px] w-8 rounded-full bg-red-500"></span>
-          </button>
-          <button
-            type="button"
-            className="text-white/70 transition hover:text-white"
+            {isTopupActive && (
+              <span className="absolute -bottom-[14px] left-0 right-0 mx-auto h-[2px] w-8 rounded-full bg-red-500" />
+            )}
+          </Link>
+
+          <Link
+            href="/riwayat"
+            aria-current={isRiwayatActive ? "page" : undefined}
+            className={`relative pb-1 transition ${
+              isRiwayatActive ? "text-white" : "text-white/70 hover:text-white"
+            }`}
           >
             Cek Transaksi
-          </button>
+            {isRiwayatActive && (
+              <span className="absolute -bottom-[14px] left-0 right-0 mx-auto h-[2px] w-8 rounded-full bg-red-500" />
+            )}
+          </Link>
         </nav>
 
         {/* Auth & mobile btns */}
         <div className="ml-auto flex items-center gap-2">
-          {!isAuthed ? (
+          {isAuthed ? (
+            <ProfileMenu
+              name={session?.user?.name}
+              email={session?.user?.email}
+            />
+          ) : (
             <>
               <Button
                 type="button"
@@ -375,11 +396,6 @@ export default function GameHeader() {
                 Daftar
               </Button>
             </>
-          ) : (
-            <ProfileMenu
-              name={session?.user?.name}
-              email={session?.user?.email}
-            />
           )}
 
           {/* mobile search */}
