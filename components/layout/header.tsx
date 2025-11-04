@@ -19,14 +19,12 @@ import {
   Keyboard,
   Globe2,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
 import { Oxanium } from "next/font/google";
+import { useSession, signOut } from "next-auth/react";
+import Swal from "sweetalert2";
+import { authService } from "@/services/api";
 
 const oxanium = Oxanium({ subsets: ["latin"], weight: ["500", "600", "700"] });
 
@@ -82,11 +80,135 @@ const POPULAR: Array<{ label: string; href: string }> = [
 
 const RECENTS_KEY = "__kios_tetta_search_recents__";
 
+/* ===================== Profile Menu ===================== */
+function ProfileMenu({
+  name,
+  email,
+}: {
+  name?: string | null;
+  email?: string | null;
+}) {
+  const router = useRouter();
+  const [open, setOpen] = React.useState(false);
+  const ref = React.useRef<HTMLDivElement | null>(null);
+
+  const initial = (
+    name?.trim()?.charAt(0) ||
+    email?.trim()?.charAt(0) ||
+    "U"
+  )?.toUpperCase();
+
+  React.useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("click", onClick);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("click", onClick);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    const ask = await Swal.fire({
+      title: "Keluar dari akun?",
+      text: "Anda akan keluar dari sesi saat ini.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, logout",
+      cancelButtonText: "Batal",
+      reverseButtons: true,
+      confirmButtonColor: "#ef4444",
+    });
+    if (!ask.isConfirmed) return;
+
+    // ⛔️ JANGAN di-await
+    Swal.fire({
+      title: "Memproses...",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
+
+    try {
+      await authService.logout(); // hit POST /logout + clear token lokal
+      Swal.close(); // tutup loading
+      await signOut({ callbackUrl: "/" }); // bersihkan session NextAuth + redirect
+    } catch (err) {
+      Swal.close();
+      await Swal.fire({
+        icon: "error",
+        title: "Gagal logout",
+        text: err instanceof Error ? err.message : "Terjadi kesalahan.",
+      });
+    }
+  };
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen((p) => !p);
+        }}
+        className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-2 py-1 pr-3 text-sm text-white hover:bg-white/10"
+        aria-haspopup="menu"
+        aria-expanded={open}
+      >
+        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-pink-600 text-xs font-bold ring-1 ring-white/20">
+          {initial}
+        </span>
+        <span className="hidden sm:inline">{name || email || "Profile"}</span>
+      </button>
+
+      {open ? (
+        <div
+          role="menu"
+          className="absolute right-0 top-11 z-[90] w-48 overflow-hidden rounded-lg border border-white/10 bg-[#2b2a30] text-sm text-white shadow-xl"
+        >
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              router.push("/profile");
+            }}
+            className="flex w-full items-center px-3 py-2 text-left hover:bg-white/5"
+          >
+            Profile
+          </button>
+          <div className="my-1 h-px bg-white/10" />
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              void handleLogout();
+            }}
+            className="flex w-full items-center px-3 py-2 text-left text-red-300 hover:bg-white/5"
+          >
+            Logout
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/* ===================== Header ===================== */
 export default function GameHeader() {
   const router = useRouter();
   const [openSearch, setOpenSearch] = React.useState(false);
   const [openLocale, setOpenLocale] = React.useState(false);
   const [locale, setLocale] = React.useState<"id-IDR" | "en-USD">("id-IDR");
+
+  const { data: session, status } = useSession();
+  const isAuthed = status === "authenticated";
 
   // ctrl+k / /
   React.useEffect(() => {
@@ -133,7 +255,7 @@ export default function GameHeader() {
           </div>
         </div>
 
-        {/* SEARCH trigger — div role="button" (bukan <button>) agar boleh ada <button> di dalamnya */}
+        {/* SEARCH trigger */}
         <div
           role="button"
           tabIndex={0}
@@ -160,7 +282,6 @@ export default function GameHeader() {
             aria-haspopup="menu"
             aria-expanded={openLocale}
           >
-            {/* bendera */}
             <span className="h-4 w-6 overflow-hidden rounded-sm bg-red-600">
               {locale === "id-IDR" ? (
                 <>
@@ -174,7 +295,6 @@ export default function GameHeader() {
             {locale === "id-IDR" ? "ID / IDR" : "EN / USD"}
             <Globe2 className="h-3.5 w-3.5 opacity-70" />
 
-            {/* dropdown mini */}
             {openLocale ? (
               <div
                 role="menu"
@@ -211,7 +331,6 @@ export default function GameHeader() {
             ) : null}
           </button>
 
-          {/* shortcut kbd */}
           <kbd className="pointer-events-none hidden select-none items-center gap-1 rounded bg-[#101114] px-2 py-1 text-[10px] text-white/70 md:inline-flex">
             <Keyboard className="mr-1 h-3 w-3 opacity-70" /> Ctrl K
           </kbd>
@@ -236,23 +355,33 @@ export default function GameHeader() {
 
         {/* Auth & mobile btns */}
         <div className="ml-auto flex items-center gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => router.push("/auth/login")}
-            className="hidden items-center gap-1 text-white/80 hover:bg-transparent hover:text-white md:inline-flex"
-          >
-            <LogIn className="h-4 w-4" />
-            Masuk
-          </Button>
-          <Button
-            type="button"
-            onClick={() => router.push("/auth/register")}
-            className="hidden gap-1 bg-red-600 text-white hover:bg-red-700 md:inline-flex"
-          >
-            <UserPlus className="h-4 w-4" />
-            Daftar
-          </Button>
+          {!isAuthed ? (
+            <>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => router.push("/login")}
+                className="hidden items-center gap-1 text-white/80 hover:bg-transparent hover:text-white md:inline-flex"
+              >
+                <LogIn className="h-4 w-4" />
+                Masuk
+              </Button>
+              <Button
+                type="button"
+                onClick={() => router.push("/register")}
+                className="hidden gap-1 bg-red-600 text-white hover:bg-red-700 md:inline-flex"
+              >
+                <UserPlus className="h-4 w-4" />
+                Daftar
+              </Button>
+            </>
+          ) : (
+            <ProfileMenu
+              name={session?.user?.name}
+              email={session?.user?.email}
+            />
+          )}
+
           {/* mobile search */}
           <button
             type="button"
@@ -383,11 +512,11 @@ function SearchDialog({
           <div className="grid gap-4 p-4 md:grid-cols-[2fr_1fr]">
             {/* left */}
             <div className="space-y-2">
-              {results.length === 0 ? (
-                <EmptyState query={q} />
-              ) : (
-                <ul className="max-h-[50vh] overflow-y-auto pr-1">
-                  {results.map((it, i) => (
+              <ul className="max-h-[50vh] overflow-y-auto pr-1">
+                {results.length === 0 ? (
+                  <EmptyState query={q} />
+                ) : (
+                  results.map((it, i) => (
                     <li key={it.id}>
                       <button
                         type="button"
@@ -421,9 +550,9 @@ function SearchDialog({
                         <ArrowRight className="ml-1 h-4 w-4 text-white/40 opacity-0 transition group-hover:opacity-100" />
                       </button>
                     </li>
-                  ))}
-                </ul>
-              )}
+                  ))
+                )}
+              </ul>
             </div>
 
             {/* right */}
@@ -504,9 +633,7 @@ function EmptyState({ query }: { query: string }) {
           : "Mulai ketik untuk mencari."}
       </p>
       {!query && (
-        <p className="text-xs text-white/40">
-          {`Coba: “Roblox”, “ML 86”, atau “Google Play”.`}
-        </p>
+        <p className="text-xs text-white/40">{`Coba: “Roblox”, “ML 86”, atau “Google Play”.`}</p>
       )}
     </div>
   );

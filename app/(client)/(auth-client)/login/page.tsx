@@ -1,38 +1,21 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { signIn, signOut, getSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Lock, Mail, Zap } from "lucide-react";
 import AuthShell from "@/components/layout/auth-layout";
 import Link from "next/link";
+
+// helper kecil pengganti ErrorHandler
+const getErrorMessage = (e: unknown): string =>
+  e instanceof Error ? e.message : "Terjadi kesalahan tak terduga.";
 
 const IMAGES = [
   "https://sbclbzad8s.ufs.sh/f/vI07edVR8nim9Ngqsm2QEcgVHXfOJ2jIWpBKYd8hD1lPq3io",
   "https://sbclbzad8s.ufs.sh/f/vI07edVR8nimlYqtfV3XrjwVi4PSLf6c0GQ2WEMvdhoeTKA3",
   "https://sbclbzad8s.ufs.sh/f/vI07edVR8nimEOuFH8oPsbtT2hoF87k1RpvmaNWLeiQZ9A4w",
 ];
-
-// cek role superadmin tanpa any
-function isSuperadminSession(s: unknown): boolean {
-  if (!s || typeof s !== "object") return false;
-  const user = (s as { user?: unknown }).user;
-  if (!user || typeof user !== "object") return false;
-
-  const u = user as { roles?: unknown; role?: unknown };
-
-  // roles: string[]
-  if (Array.isArray(u.roles)) {
-    return (u.roles as unknown[]).some(
-      (r) => typeof r === "string" && r.toLowerCase() === "superadmin"
-    );
-  }
-  // role: string
-  if (typeof u.role === "string") {
-    return u.role.toLowerCase() === "superadmin";
-  }
-  return false;
-}
 
 function LoginContent() {
   const [email, setEmail] = useState("");
@@ -42,8 +25,6 @@ function LoginContent() {
   const [error, setError] = useState("");
 
   const router = useRouter();
-  const sp = useSearchParams();
-  const callbackUrl = sp?.get("callbackUrl") || "/admin";
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +35,7 @@ function LoginContent() {
       const result = await signIn("credentials", {
         email,
         password,
-        redirect: false,
+        redirect: false, // kita handle redirect manual
       });
 
       if (result?.error) {
@@ -62,21 +43,10 @@ function LoginContent() {
         return;
       }
 
-      // validasi role superadmin dari session
-      const session = await getSession();
-      const allowed = isSuperadminSession(session);
-
-      if (!allowed) {
-        await signOut({ redirect: false }); // bersihkan session yang tidak berhak
-        setError("Akses ditolak. Hanya untuk superadmin.");
-        return;
-      }
-
-      router.push(callbackUrl);
+      // sukses → ke beranda
+      router.push("/");
     } catch (err) {
-      const msg =
-        err instanceof Error ? err.message : "Terjadi kesalahan tak terduga.";
-      setError(msg);
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -85,7 +55,7 @@ function LoginContent() {
   return (
     <AuthShell
       images={IMAGES}
-      title="Masuk ke Admin Panel"
+      title="Masuk"
       brand="Kios Tetta"
       slideIntervalMs={3000}
     >
@@ -97,7 +67,7 @@ function LoginContent() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.currentTarget.value)}
-              placeholder="superadmin@superadmin.com"
+              placeholder="you@example.com"
               required
               className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:ring-2 focus:ring-rose-500/60"
             />

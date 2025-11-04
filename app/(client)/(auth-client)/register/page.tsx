@@ -1,18 +1,9 @@
 "use client";
 
-import { Suspense, useMemo, useState, useEffect, useRef } from "react";
+import { Suspense, useState } from "react";
 import AuthShell from "@/components/layout/auth-layout";
 import Link from "next/link";
-import {
-  Eye,
-  EyeOff,
-  User,
-  Mail,
-  Lock,
-  UserPlus,
-  ChevronDown,
-  RefreshCw,
-} from "lucide-react";
+import { Eye, EyeOff, User, Mail, Lock, UserPlus } from "lucide-react";
 
 const IMAGES = [
   "https://sbclbzad8s.ufs.sh/f/vI07edVR8nimtllao8hYidk98PawCcYsQeGWzDAZKoTE27Uj",
@@ -20,20 +11,18 @@ const IMAGES = [
   "https://sbclbzad8s.ufs.sh/f/vI07edVR8nimgQsYrseQOog5Zk3ISM2KXlYf9umeLx7F0A8q",
 ];
 
-type Country = { code: string; dial: string; label: string; emoji: string };
-
-const COUNTRIES: Country[] = [
-  { code: "ID", dial: "+62", label: "Indonesia", emoji: "🇮🇩" },
-  { code: "MY", dial: "+60", label: "Malaysia", emoji: "🇲🇾" },
-  { code: "SG", dial: "+65", label: "Singapore", emoji: "🇸🇬" },
-];
+type RegisterPayload = {
+  name: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+  referral_code?: string; // opsional, hanya dikirim jika diisi
+};
 
 function RegisterContent() {
-  const [fullName, setFullName] = useState("");
-  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [country, setCountry] = useState<Country>(COUNTRIES[0]);
-  const [wa, setWa] = useState("");
+  const [referral, setReferral] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -43,22 +32,6 @@ function RegisterContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
-
-  const [openC, setOpenC] = useState(false);
-  const ddRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    const onClick = (e: MouseEvent) => {
-      if (!ddRef.current) return;
-      if (!ddRef.current.contains(e.target as Node)) setOpenC(false);
-    };
-    window.addEventListener("click", onClick);
-    return () => window.removeEventListener("click", onClick);
-  }, []);
-
-  const dialWidthClass = useMemo(
-    () => (country.dial.length >= 3 ? "w-28" : "w-24"),
-    [country]
-  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,21 +50,17 @@ function RegisterContent() {
       setError("Konfirmasi kata sandi tidak sama.");
       return;
     }
-    if (!/^[a-z0-9_\.]+$/i.test(username)) {
-      setError("Username hanya boleh huruf, angka, titik, dan underscore.");
-      return;
-    }
+
+    const payload: RegisterPayload = {
+      name: name.trim(),
+      email: email.trim(),
+      password,
+      password_confirmation: confirm,
+      ...(referral.trim() ? { referral_code: referral.trim() } : {}),
+    };
 
     setLoading(true);
     try {
-      const payload = {
-        name: fullName,
-        username,
-        email,
-        whatsapp: `${country.dial}${wa.trim()}`,
-        password,
-      };
-
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -99,15 +68,24 @@ function RegisterContent() {
       });
 
       if (!res.ok) {
-        const j = (await res.json().catch(() => ({}))) as { message?: string };
-        throw new Error(j?.message || "Registrasi gagal.");
+        // coba baca pesan kesalahan terstruktur dari backend
+        type ErrorResponse = {
+          message?: string;
+          errors?: Record<string, string[] | string>;
+        };
+        const j: ErrorResponse = await res
+          .json()
+          .catch(() => ({} as ErrorResponse));
+        const merged = j?.errors
+          ? Object.values(j.errors).flat().join(", ")
+          : j?.message;
+        throw new Error(merged || "Registrasi gagal.");
       }
 
       setOk("Registrasi berhasil. Silakan login.");
-      setFullName("");
-      setUsername("");
+      setName("");
       setEmail("");
-      setWa("");
+      setReferral("");
       setPassword("");
       setConfirm("");
       setAgree(false);
@@ -130,37 +108,21 @@ function RegisterContent() {
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Row: nama & username */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label className="mb-2 block text-sm text-white/80">
-              Nama lengkap
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.currentTarget.value)}
-                placeholder="Nama lengkap"
-                required
-                className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:ring-2 focus:ring-rose-500/60"
-              />
-              <User className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
-            </div>
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm text-white/80">Username</label>
-            <div className="relative">
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.currentTarget.value)}
-                placeholder="Username"
-                required
-                className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:ring-2 focus:ring-rose-500/60"
-              />
-            </div>
+        {/* Nama lengkap */}
+        <div>
+          <label className="mb-2 block text-sm text-white/80">
+            Nama lengkap
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.currentTarget.value)}
+              placeholder="Nama lengkap"
+              required
+              className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:ring-2 focus:ring-rose-500/60"
+            />
+            <User className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/50" />
           </div>
         </div>
 
@@ -182,69 +144,18 @@ function RegisterContent() {
           </div>
         </div>
 
-        {/* Nomor WhatsApp */}
+        {/* Referral code (opsional) */}
         <div>
           <label className="mb-2 block text-sm text-white/80">
-            Nomor whatsapp
+            Kode referral <span className="opacity-60">(opsional)</span>
           </label>
-          <div className="flex gap-2">
-            <div className={`relative ${dialWidthClass}`} ref={ddRef}>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setOpenC((p) => !p);
-                }}
-                className="flex h-[44px] w-full items-center justify-between rounded-lg border border-white/15 bg-white/5 px-3 text-sm text-white"
-                aria-haspopup="listbox"
-                aria-expanded={openC}
-              >
-                <span className="flex items-center gap-2">
-                  <span className="text-lg leading-none">{country.emoji}</span>
-                  <span className="text-white/90">{country.dial}</span>
-                </span>
-                <ChevronDown className="h-4 w-4 text-white/60" />
-              </button>
-
-              {openC && (
-                <ul
-                  className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-white/10 bg-[#1c1c20] p-1 text-sm shadow-xl"
-                  role="listbox"
-                >
-                  {COUNTRIES.map((c) => (
-                    <li key={c.code}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCountry(c);
-                          setOpenC(false);
-                        }}
-                        className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-white/90 hover:bg-white/5"
-                        role="option"
-                        aria-selected={c.code === country.code}
-                      >
-                        <span className="text-lg leading-none">{c.emoji}</span>
-                        <span className="flex-1">{c.label}</span>
-                        <span className="opacity-70">{c.dial}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            <input
-              type="tel"
-              inputMode="numeric"
-              value={wa}
-              onChange={(e) =>
-                setWa(e.currentTarget.value.replace(/[^\d]/g, ""))
-              }
-              placeholder="8xxxxxxxxxx"
-              required
-              className="flex-1 rounded-lg border border-white/15 bg-white/5 px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:ring-2 focus:ring-rose-500/60"
-            />
-          </div>
+          <input
+            type="text"
+            value={referral}
+            onChange={(e) => setReferral(e.currentTarget.value)}
+            placeholder="Contoh: 17569669504B79BFF5C9"
+            className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:ring-2 focus:ring-rose-500/60"
+          />
         </div>
 
         {/* Passwords */}
@@ -258,7 +169,7 @@ function RegisterContent() {
                 type={showPwd ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.currentTarget.value)}
-                placeholder="Kata sandi"
+                placeholder="       Kata sandi"
                 required
                 className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-3 pr-10 text-sm text-white placeholder:text-white/40 outline-none focus:ring-2 focus:ring-rose-500/60"
               />
@@ -287,7 +198,7 @@ function RegisterContent() {
                 type={showConf ? "text" : "password"}
                 value={confirm}
                 onChange={(e) => setConfirm(e.currentTarget.value)}
-                placeholder="Konfirmasi kata sandi"
+                placeholder="      Konfirmasi kata sandi"
                 required
                 className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-3 pr-10 text-sm text-white placeholder:text-white/40 outline-none focus:ring-2 focus:ring-rose-500/60"
               />
@@ -347,7 +258,7 @@ function RegisterContent() {
           </div>
         )}
 
-        {/* Submit — RED THEME */}
+        {/* Submit */}
         <button
           type="submit"
           disabled={loading}
