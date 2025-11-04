@@ -19,7 +19,6 @@ export interface PublicProduct {
   parent_category_title: string;
   parent_category_sub_title: string | null;
   image: string;
-  media: any[];
 }
 
 export interface PublicProductPaginatedResponse {
