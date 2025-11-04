@@ -1,11 +1,15 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Lock, Mail, Zap } from "lucide-react";
 import AuthShell from "@/components/layout/auth-layout";
 import Link from "next/link";
+
+// === sinkron dengan header ===
+const AUTH_BC = "auth-channel";
+const AUTH_LS_KEY = "__auth_event__";
 
 // helper kecil pengganti ErrorHandler
 const getErrorMessage = (e: unknown): string =>
@@ -18,15 +22,16 @@ const IMAGES = [
 ];
 
 function LoginContent() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [show, setShow] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [show, setShow] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
 
   const router = useRouter();
+  const { update } = useSession(); // <-- penting: untuk realtime session
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -35,7 +40,7 @@ function LoginContent() {
       const result = await signIn("credentials", {
         email,
         password,
-        redirect: false, // kita handle redirect manual
+        redirect: false, // handle redirect manual
       });
 
       if (result?.error) {
@@ -43,8 +48,27 @@ function LoginContent() {
         return;
       }
 
-      // sukses → ke beranda
-      router.push("/");
+      // Paksa NextAuth refresh & broadcast session ke seluruh app
+      await update(); // <--- kunci realtime header berubah ke avatar
+
+      // (opsional) tetap kirim sinyal lokal untuk komponen lain yang listen ke BC/LS
+      try {
+        localStorage.setItem(AUTH_LS_KEY, `login:${Date.now()}`);
+      } catch {
+        /* noop */
+      }
+      try {
+        if (typeof BroadcastChannel !== "undefined") {
+          const bc = new BroadcastChannel(AUTH_BC);
+          bc.postMessage("login");
+          bc.close();
+        }
+      } catch {
+        /* noop */
+      }
+
+      router.replace("/");
+      router.refresh(); // kalau ada Server Components yang baca session server-side
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
