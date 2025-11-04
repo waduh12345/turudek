@@ -1,3 +1,4 @@
+// middleware.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
@@ -11,25 +12,48 @@ function redirectToLogin(req: NextRequest) {
   return NextResponse.redirect(url);
 }
 
+type AppToken = {
+  role?: unknown;
+  roles?: unknown;
+  [k: string]: unknown;
+};
+
+function isSuperadminFromToken(tok: AppToken | null): boolean {
+  if (!tok) return false;
+
+  // role: string
+  if (typeof tok.role === "string" && tok.role.toLowerCase() === "superadmin") {
+    return true;
+  }
+
+  // roles: string[]
+  if (Array.isArray(tok.roles)) {
+    return tok.roles.some(
+      (r) => typeof r === "string" && r.toLowerCase() === "superadmin"
+    );
+  }
+
+  return false;
+}
+
 export async function middleware(req: NextRequest) {
   try {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    const raw = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    const token = (raw ?? null) as AppToken | null;
 
-    // Check if accessing admin routes
+    // proteksi hanya untuk /admin/*
     if (req.nextUrl.pathname.startsWith("/admin")) {
-      if (!token) {
-        return redirectToLogin(req);
-      }
-      
-      // Check if user is admin
-      if (token.role !== "admin") {
+      if (!token) return redirectToLogin(req);
+      if (!isSuperadminFromToken(token)) {
+        // login ada, tapi bukan superadmin → lempar ke beranda
         return NextResponse.redirect(new URL("/", req.url));
       }
     }
 
     return NextResponse.next();
   } catch (err) {
-    console.error("Middleware auth error:", err);
+    // token gagal di-parse → paksa login
+    console.error(err);
     return redirectToLogin(req);
   }
 }
