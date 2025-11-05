@@ -129,20 +129,6 @@ const Page = () => {
     }
   }, [categories, parentCategories]);
 
-  // Determine which lists to display (limit to first 10 items)
-  const gamesList = groupedProducts["Games"]
-    ? groupedProducts["Games"].slice(0, 10)
-    : [];
-  const vouchersList = groupedProducts["Voucher"]
-    ? groupedProducts["Voucher"].slice(0, 10)
-    : [];
-  const phonesCreditList = groupedProducts["Phone"]
-    ? groupedProducts["Phone"].slice(0, 10)
-    : [];
-  const eMoneysList = groupedProducts["E-Money"]
-    ? groupedProducts["E-Money"].slice(0, 10)
-    : [];
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
