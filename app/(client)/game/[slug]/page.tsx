@@ -272,10 +272,6 @@ export default function GamePage({
               Home
             </Link>
             <ChevronRight size={16} className="text-white/30" />
-            <Link href="/produk" className="hover:text-rose-400">
-              Search
-            </Link>
-            <ChevronRight size={16} className="text-white/30" />
             <span className="text-white">{category.title}</span>
           </nav>
         </div>
@@ -615,7 +611,7 @@ export default function GamePage({
                   <p className="text-xs text-white/60 text-center">
                     Dengan menekan tombol di atas, Anda setuju dengan{" "}
                     <Link
-                      href="/syarat-ketentuan"
+                      href="/terms"
                       className="text-rose-400 hover:underline"
                     >
                       Syarat &amp; Ketentuan
