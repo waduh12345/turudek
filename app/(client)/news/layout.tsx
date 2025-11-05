@@ -1,5 +1,3 @@
-import DefaultHeader from "@/components/layout/header";
-
 export default function NewsLayout({
   children,
 }: {
@@ -7,8 +5,7 @@ export default function NewsLayout({
 }) {
   return (
     <>
-      <DefaultHeader showNavigationBars={true} />
-      <main className="pt-26 md:pt-40 min-h-screen flex flex-col font-sans">
+      <main className="min-h-screen flex flex-col font-sans">
         <div className="flex-1">{children}</div>
       </main>
     </>
