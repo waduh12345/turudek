@@ -532,7 +532,6 @@ export default function GamePage({
                         Bank Transfer (VA)
                       </button>
                     </div>
-
                     {paymentType === "qris" ? (
                       <div className="grid grid-cols-1">
                         <label className="inline-flex items-center gap-3 p-3 rounded-lg bg-[#0F0E12] ring-1 ring-white/10 cursor-pointer">
