@@ -167,6 +167,8 @@ const ProductDetailPage = ({
         customer_name: customerName.trim() || undefined,
         customer_email: customerEmail.trim() || undefined,
         customer_phone: customerPhone,
+        midtrans_payment_type: "qris", // or set based on your payment selection logic
+        midtrans_channel: "qris", // or set based on your payment selection logic
       };
 
       const response = await checkoutService.checkout(checkoutData);
@@ -189,11 +191,15 @@ const ProductDetailPage = ({
           setTimeout(() => {
             setIsRedirecting(true);
             try {
-              window.location.href = response.data.payment_link;
+              if (typeof response.data.payment_link === "string") {
+                window.location.href = response.data.payment_link;
+              }
             } catch (error) {
               console.error("Redirect failed:", error);
               // Fallback: open in new tab if redirect fails
-              window.open(response.data.payment_link, "_blank");
+              if (typeof response.data.payment_link === "string" && response.data.payment_link) {
+                window.open(response.data.payment_link, "_blank");
+              }
             }
           }, 1500); // 1.5 second delay to show success message
         }

@@ -19,7 +19,7 @@ export const useAuth = () => {
     });
   };
 
-  const isAdmin = session?.user?.role === "admin";
+  const isAdmin = session?.user?.roles.includes("admin") ?? false;
   const isAuthenticated = status === "authenticated";
   const isLoading = status === "loading";
 
