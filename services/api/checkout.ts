@@ -1,17 +1,20 @@
-import BaseApiService from './base';
-import { ApiResponse } from '@/lib/types';
+import BaseApiService from "./base";
+import { ApiResponse } from "@/lib/types";
 
-// Checkout request interface
+export type MidtransPaymentType = "bank_transfer" | "qris";
+export type MidtransChannel = "bca" | "bni" | "bri" | "cimb" | "qris";
+
 export interface CheckoutRequest {
-  user_id?: number; // Optional - only if user is logged in
+  user_id?: number;
   product_id: number;
-  customer_no: string; // Game ID or customer number
-  customer_name?: string; // Optional customer name
-  customer_email?: string; // Optional customer email
-  customer_phone: string; // WhatsApp number for notifications
+  customer_no: string;
+  customer_name?: string;
+  customer_email?: string;
+  customer_phone: string;
+  midtrans_payment_type: MidtransPaymentType;
+  midtrans_channel: MidtransChannel;
 }
 
-// Checkout response interface
 export interface CheckoutResponse {
   id: number;
   user_id: number | null;
@@ -35,12 +38,20 @@ export interface CheckoutResponse {
   };
   response: any;
   customer_no: string;
-  customer_name: string;
+  customer_name: string | null;
   customer_email: string | null;
   customer_phone: string;
   sn: string | null;
   amount: number;
-  payment_link: string;
+  payment_link: string | null;
+
+  // Midtrans fields
+  midtrans_payment_type?: MidtransPaymentType;
+  midtrans_transaction_id?: string | null;
+  midtrans_account_number?: string | null; // URL QR (qris) atau nomor VA (VA)
+  midtrans_account_code?: string | null; // kode tambahan jika ada
+  midtrans_channel?: MidtransChannel;
+
   expires_at: string | null;
   paid_at: string | null;
   status_payment: number;
@@ -65,12 +76,18 @@ export interface CheckoutResponse {
 class CheckoutService extends BaseApiService {
   constructor() {
     super();
-    // Override base URL for public API
-    this.baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api-topup.naditechno.id/api/v1';
+    this.baseURL =
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      "https://api-topup.naditechno.id/api/v1";
   }
 
-  async checkout(data: CheckoutRequest): Promise<ApiResponse<CheckoutResponse>> {
-    return this.post<ApiResponse<CheckoutResponse>>('transaction/checkout', data);
+  async checkout(
+    data: CheckoutRequest
+  ): Promise<ApiResponse<CheckoutResponse>> {
+    return this.post<ApiResponse<CheckoutResponse>>(
+      "transaction/checkout",
+      data
+    );
   }
 }
 

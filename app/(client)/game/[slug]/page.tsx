@@ -12,7 +12,9 @@ import {
   Loader2,
   Star,
   Play,
-  Youtube,
+  ClipboardCopy,
+  Check,
+  ExternalLink,
 } from "lucide-react";
 
 import {
@@ -23,13 +25,18 @@ import {
   publicProductsService,
   PublicProduct,
 } from "@/services/api/public-products";
-import { checkoutService, CheckoutRequest } from "@/services/api/checkout";
+import {
+  checkoutService,
+  CheckoutRequest,
+  CheckoutResponse,
+  MidtransPaymentType,
+  MidtransChannel,
+} from "@/services/api/checkout";
 import { useApiCall, useAuth } from "@/hooks";
 
 const DUMMY_IMG =
   "https://sbclbzad8s.ufs.sh/f/vI07edVR8nimBHyqimTrX8OM2IxYqlGKDH6TeJ5faC7mvZAn";
 
-/* ====== UI helpers ====== */
 const currency = (n: string | number) =>
   new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -37,7 +44,6 @@ const currency = (n: string | number) =>
     minimumFractionDigits: 0,
   }).format(typeof n === "string" ? parseFloat(n) : n);
 
-/* ====== Dummy review & payment list (UI only) ====== */
 const testimonials = [
   {
     id: 1,
@@ -70,17 +76,10 @@ const testimonials = [
 
 const paymentMethods = [
   { name: "QRIS", logo: "📱" },
-  { name: "DANA", logo: "💜" },
-  { name: "OVO", logo: "💙" },
-  { name: "GoPay", logo: "💚" },
-  { name: "ShopeePay", logo: "🛍️" },
   { name: "BCA VA", logo: "🏦" },
   { name: "BNI VA", logo: "🏦" },
   { name: "BRI VA", logo: "🏦" },
-  { name: "Mandiri", logo: "🏦" },
-  { name: "Indomaret", logo: "🏪" },
-  { name: "Alfamart", logo: "🏪" },
-  { name: "VISA/MC", logo: "💳" },
+  { name: "CIMB VA", logo: "🏦" },
 ];
 
 export default function GamePage({
@@ -102,13 +101,19 @@ export default function GamePage({
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
 
+  // pembayaran
+  const [paymentType, setPaymentType] = useState<MidtransPaymentType>("qris");
+  const [paymentChannel, setPaymentChannel] = useState<MidtransChannel>("qris");
+
   const [isFormValid, setIsFormValid] = useState(false);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
-  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
-  const [isRedirecting, setIsRedirecting] = useState(false);
 
-  // fetch category
+  // modal pembayaran
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentData, setPaymentData] = useState<CheckoutResponse | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
+
   const {
     data: categoryData,
     loading: categoryLoading,
@@ -118,7 +123,6 @@ export default function GamePage({
     publicProductCategoriesService.getProductCategory(resolvedParams.slug)
   );
 
-  // fetch products for category
   const {
     data: productsData,
     loading: productsLoading,
@@ -151,20 +155,33 @@ export default function GamePage({
     if (productsData?.data?.data) setProducts(productsData.data.data);
   }, [productsData]);
 
+  // sinkron channel saat type berubah
+  useEffect(() => {
+    if (paymentType === "qris") {
+      setPaymentChannel("qris");
+    } else if (paymentType === "bank_transfer") {
+      if (!["bca", "bni", "bri", "cimb"].includes(paymentChannel)) {
+        setPaymentChannel("bca");
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paymentType]);
+
   useEffect(() => {
     const valid =
-      customerNo.trim() !== "" &&
+      Boolean(customerNo.trim()) &&
       selectedPackage !== null &&
-      customerPhone.trim() !== "";
+      Boolean(customerPhone.trim()) &&
+      !!paymentType &&
+      !!paymentChannel;
     setIsFormValid(valid);
-  }, [customerNo, selectedPackage, customerPhone]);
+  }, [customerNo, selectedPackage, customerPhone, paymentType, paymentChannel]);
 
   const handleCheckout = async () => {
     if (!selectedPackage || !isFormValid) return;
 
     setIsCheckoutLoading(true);
     setCheckoutError(null);
-    setCheckoutSuccess(false);
 
     try {
       const payload: CheckoutRequest = {
@@ -174,37 +191,27 @@ export default function GamePage({
         customer_name: customerName.trim() || undefined,
         customer_email: customerEmail.trim() || undefined,
         customer_phone: customerPhone,
+        midtrans_payment_type: paymentType,
+        midtrans_channel: paymentChannel,
       };
 
       const resp = await checkoutService.checkout(payload);
 
       if (resp.data) {
-        // reset form
+        setPaymentData(resp.data);
+        setShowPayment(true);
+
+        // reset input
         setCustomerNo("");
         setCustomerName("");
         setCustomerEmail("");
         setCustomerPhone("");
         setSelectedPackage(null);
-
-        setCheckoutSuccess(true);
-
-        if (resp.data.payment_link) {
-          setTimeout(() => {
-            setIsRedirecting(true);
-            try {
-              window.location.href = resp.data.payment_link;
-            } catch {
-              window.open(resp.data.payment_link, "_blank");
-            }
-          }, 1500);
-        }
       }
     } catch (e: unknown) {
-      setCheckoutError(
-        e instanceof Error
-          ? e.message
-          : "Terjadi kesalahan saat memproses checkout"
-      );
+      const message =
+        e instanceof Error ? e.message : "Terjadi kesalahan saat checkout.";
+      setCheckoutError(message);
     } finally {
       setIsCheckoutLoading(false);
     }
@@ -213,16 +220,21 @@ export default function GamePage({
   const onWatch = (id: string) =>
     window.open(`https://www.youtube.com/watch?v=${id}`, "_blank");
 
-  /* ====== loading / error ====== */
+  const copy = async (text: string, tag: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(tag);
+      setTimeout(() => setCopied(null), 1500);
+    } catch {
+      // noop
+    }
+  };
+
   if (categoryLoading || productsLoading) {
     return (
       <div className="min-h-screen bg-[#141316] flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin text-rose-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-white mb-1">Memuat produk…</h1>
-          <p className="text-white/70">
-            Mohon tunggu, kami mengambil data kategori & paket.
-          </p>
         </div>
       </div>
     );
@@ -236,9 +248,6 @@ export default function GamePage({
           <h1 className="text-2xl font-bold text-white mb-2">
             Gagal memuat produk
           </h1>
-          <p className="text-white/70 mb-6">
-            Ada masalah saat memuat detail produk.
-          </p>
           <div className="space-x-4">
             <button
               onClick={() => {
@@ -261,7 +270,6 @@ export default function GamePage({
     );
   }
 
-  /* ====== page ====== */
   return (
     <main className="min-h-screen bg-[#0F0E12] text-white">
       {/* Breadcrumb */}
@@ -281,7 +289,7 @@ export default function GamePage({
         <div className="grid lg:grid-cols-3 gap-8">
           {/* LEFT */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Hero Card */}
+            {/* Hero */}
             <div className="overflow-hidden rounded-2xl ring-1 ring-white/10 bg-gradient-to-br from-[#17151A] to-[#0F0E12]">
               <div className="relative w-full aspect-[16/7]">
                 <Image
@@ -313,29 +321,10 @@ export default function GamePage({
               </div>
             </div>
 
-            {/* Description */}
-            {(category.description || true) && (
-              <section className="rounded-2xl bg-[#141316] ring-1 ring-white/10 p-6">
-                <h2 className="text-xl font-bold mb-3">Deskripsi</h2>
-                {category.description ? (
-                  <div
-                    className="prose prose-invert max-w-none prose-p:leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: category.description }}
-                  />
-                ) : (
-                  <p className="text-white/80">
-                    Nikmati kemudahan top up dengan metode pembayaran lengkap,
-                    proses cepat, dan layanan pelanggan yang siap membantu
-                    kapanpun.
-                  </p>
-                )}
-              </section>
-            )}
-
-            {/* Payment Methods */}
+            {/* Payment Methods (display) */}
             <section className="rounded-2xl bg-[#141316] ring-1 ring-white/10 p-6">
               <h2 className="text-xl font-bold mb-4">Metode Pembayaran</h2>
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                 {paymentMethods.map((m, i) => (
                   <div
                     key={i}
@@ -346,29 +335,6 @@ export default function GamePage({
                   </div>
                 ))}
               </div>
-            </section>
-
-            {/* How to Pay */}
-            <section className="rounded-2xl bg-[#141316] ring-1 ring-white/10 p-6">
-              <h2 className="text-xl font-bold mb-4">Tata Cara Pembayaran</h2>
-              <ol className="space-y-3 text-white/85">
-                {[
-                  "Masukkan Game ID / Customer Number dengan benar.",
-                  "Pilih paket yang diinginkan.",
-                  "Isi kontak (WA wajib, email opsional).",
-                  "Tekan “Buat Pesanan” untuk membuat invoice.",
-                  "Pilih metode pembayaran (QRIS/VA/e-wallet/minimarket).",
-                  "Selesaikan pembayaran sesuai instruksi pada halaman payment.",
-                  "Order diproses otomatis setelah pembayaran terkonfirmasi.",
-                ].map((txt, idx) => (
-                  <li key={idx} className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-rose-600 text-white text-sm font-bold grid place-items-center">
-                      {idx + 1}
-                    </span>
-                    <span>{txt}</span>
-                  </li>
-                ))}
-              </ol>
             </section>
 
             {/* Reviews */}
@@ -437,7 +403,7 @@ export default function GamePage({
                 </div>
 
                 <div className="p-6 space-y-6">
-                  {/* 1. Akun */}
+                  {/* 1) Akun */}
                   <div>
                     <h3 className="text-lg font-semibold mb-2">
                       1) Informasi Akun
@@ -451,7 +417,7 @@ export default function GamePage({
                     />
                   </div>
 
-                  {/* 2. Kontak */}
+                  {/* 2) Kontak */}
                   <div>
                     <h3 className="text-lg font-semibold mb-2">
                       2) Informasi Kontak
@@ -481,12 +447,11 @@ export default function GamePage({
                     </div>
                   </div>
 
-                  {/* 3. Paket */}
+                  {/* 3) Paket */}
                   <div>
                     <h3 className="text-lg font-semibold mb-2">
                       3) Pilih Paket
                     </h3>
-
                     {products.length ? (
                       <div className="grid grid-cols-1 gap-2">
                         {products.map((p) => (
@@ -496,8 +461,7 @@ export default function GamePage({
                             whileTap={{ scale: 0.98 }}
                             onClick={() => setSelectedPackage(p)}
                             className={[
-                              "p-4 rounded-lg text-left transition-all",
-                              "ring-1",
+                              "p-4 rounded-lg text-left transition-all ring-1",
                               selectedPackage?.id === p.id
                                 ? "bg-rose-950/40 ring-rose-600"
                                 : "bg-[#0F0E12] ring-white/10 hover:ring-rose-500/40",
@@ -537,36 +501,77 @@ export default function GamePage({
                     )}
                   </div>
 
-                  {/* success / error */}
-                  {checkoutSuccess && (
-                    <div className="rounded-lg p-4 bg-rose-950/30 ring-1 ring-rose-600/40">
-                      <div className="flex items-center gap-2 text-rose-300">
-                        <div className="w-5 h-5 bg-rose-600 rounded-full grid place-items-center">
-                          <span className="text-white text-xs">✓</span>
-                        </div>
-                        <span className="font-semibold">
-                          Checkout berhasil!
-                        </span>
-                      </div>
-                      <p className="text-rose-200/90 text-sm mt-1">
-                        {isRedirecting
-                          ? "Mengarahkan ke halaman pembayaran…"
-                          : "Anda akan diarahkan ke halaman pembayaran dalam beberapa detik…"}
-                      </p>
-                      {isRedirecting && (
-                        <div className="flex items-center gap-2 mt-2">
-                          <Loader2
-                            size={16}
-                            className="animate-spin text-rose-400"
-                          />
-                          <span className="text-rose-300 text-sm">
-                            Sedang mengalihkan…
-                          </span>
-                        </div>
-                      )}
+                  {/* 4) Metode Pembayaran */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">
+                      4) Metode Pembayaran
+                    </h3>
+                    <div className="flex gap-3 mb-3">
+                      <button
+                        type="button"
+                        onClick={() => setPaymentType("qris")}
+                        className={[
+                          "px-4 py-2 rounded-lg ring-1 transition",
+                          paymentType === "qris"
+                            ? "bg-rose-600 ring-rose-500 text-white"
+                            : "bg-[#0F0E12] ring-white/10 text-white/80 hover:ring-rose-500/40",
+                        ].join(" ")}
+                      >
+                        QRIS
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPaymentType("bank_transfer")}
+                        className={[
+                          "px-4 py-2 rounded-lg ring-1 transition",
+                          paymentType === "bank_transfer"
+                            ? "bg-rose-600 ring-rose-500 text-white"
+                            : "bg-[#0F0E12] ring-white/10 text-white/80 hover:ring-rose-500/40",
+                        ].join(" ")}
+                      >
+                        Bank Transfer (VA)
+                      </button>
                     </div>
-                  )}
 
+                    {paymentType === "qris" ? (
+                      <div className="grid grid-cols-1">
+                        <label className="inline-flex items-center gap-3 p-3 rounded-lg bg-[#0F0E12] ring-1 ring-white/10 cursor-pointer">
+                          <input
+                            type="radio"
+                            checked={paymentChannel === "qris"}
+                            onChange={() => setPaymentChannel("qris")}
+                          />
+                          <span>QRIS (semua e-wallet & mobile banking)</span>
+                        </label>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-3">
+                        {(
+                          ["bca", "bni", "bri", "cimb"] as MidtransChannel[]
+                        ).map((ch) => (
+                          <label
+                            key={ch}
+                            className={[
+                              "p-3 rounded-lg ring-1 cursor-pointer text-center",
+                              paymentChannel === ch
+                                ? "bg-rose-950/40 ring-rose-600"
+                                : "bg-[#0F0E12] ring-white/10 hover:ring-rose-500/40",
+                            ].join(" ")}
+                          >
+                            <input
+                              className="mr-2"
+                              type="radio"
+                              checked={paymentChannel === ch}
+                              onChange={() => setPaymentChannel(ch)}
+                            />
+                            <span className="uppercase">{ch}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Error */}
                   {checkoutError && (
                     <div className="rounded-lg p-4 bg-rose-950/30 ring-1 ring-rose-600/40">
                       <div className="flex items-center gap-2 text-rose-300">
@@ -601,10 +606,8 @@ export default function GamePage({
                         <Loader2 size={20} className="animate-spin" />
                         <span>Memproses…</span>
                       </div>
-                    ) : isFormValid ? (
-                      "Buat Pesanan"
                     ) : (
-                      "Mohon Lengkapi Form"
+                      "Buat Pesanan"
                     )}
                   </motion.button>
 
@@ -624,53 +627,174 @@ export default function GamePage({
           </div>
           {/* /RIGHT */}
         </div>
+      </div>
 
-        {/* Review videos CTA (opsional) */}
-        <section className="mt-12">
-          <h2 className="text-2xl font-bold mb-4">Tonton Review Pengguna</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {testimonials.map((t) => (
-              <motion.div
-                key={t.id}
-                whileHover={{ scale: 1.02 }}
-                className="bg-[#141316] rounded-2xl overflow-hidden ring-1 ring-white/10"
-              >
-                <div className="relative h-44">
-                  <Image
-                    src={t.thumbnail}
-                    alt={t.title}
-                    fill
-                    className="object-cover"
-                  />
-                  <button
-                    onClick={() => onWatch(t.youtubeId)}
-                    className="absolute inset-0 grid place-items-center bg-black/30 hover:bg-black/40 transition"
-                  >
-                    <span className="w-12 h-12 rounded-full bg-rose-600 grid place-items-center">
-                      <Play className="text-white ml-0.5" size={22} />
+      {/* ===== MODAL PEMBAYARAN ===== */}
+      {showPayment && paymentData && (
+        <div className="fixed inset-0 z-50">
+          <div
+            className="absolute inset-0 bg-black/70"
+            onClick={() => setShowPayment(false)}
+          />
+          <div className="relative z-50 max-w-xl mx-auto mt-20 rounded-2xl overflow-hidden ring-1 ring-rose-600/30 bg-[#141316]">
+            <div className="bg-gradient-to-r from-rose-700 via-rose-600 to-rose-500 p-5">
+              <h3 className="text-lg font-bold">
+                Pembayaran {paymentData.midtrans_payment_type?.toUpperCase()}
+              </h3>
+              <p className="text-white/90 text-sm">
+                Order: {paymentData.order_id} • Ref: {paymentData.reference}
+              </p>
+            </div>
+
+            <div className="p-6 space-y-5">
+              {/* Amount + Produk */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="rounded-xl bg-[#0F0E12] ring-1 ring-white/10 p-4">
+                  <div className="text-white/70 text-sm">Total Bayar</div>
+                  <div className="text-2xl font-extrabold text-rose-400">
+                    {currency(paymentData.amount)}
+                  </div>
+                </div>
+                <div className="rounded-xl bg-[#0F0E12] ring-1 ring-white/10 p-4">
+                  <div className="text-white/70 text-sm">Produk</div>
+                  <div className="font-semibold">
+                    {paymentData.product_details?.name}
+                  </div>
+                  <div className="text-white/60 text-xs mt-1">
+                    Customer: {paymentData.customer_no}
+                  </div>
+                </div>
+              </div>
+
+              {/* Konten QR atau VA */}
+              {paymentData.midtrans_payment_type === "qris" ? (
+                <div className="rounded-2xl bg-[#0F0E12] ring-1 ring-white/10 p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="font-semibold">Scan QRIS</div>
+                    <a
+                      href={paymentData.midtrans_account_number || "#"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-rose-400 text-sm inline-flex items-center gap-1 hover:underline"
+                    >
+                      Buka QR <ExternalLink size={14} />
+                    </a>
+                  </div>
+                  <div className="grid place-items-center">
+                    {paymentData.midtrans_account_number ? (
+                      <img
+                        src={paymentData.midtrans_account_number}
+                        alt="QRIS"
+                        className="w-64 h-64 rounded-xl ring-1 ring-white/10 bg-white p-2 object-contain"
+                      />
+                    ) : (
+                      <div className="text-white/70">QR tidak tersedia.</div>
+                    )}
+                  </div>
+                  <div className="mt-4 flex items-center gap-2">
+                    <button
+                      onClick={() =>
+                        paymentData.midtrans_account_number &&
+                        copy(paymentData.midtrans_account_number, "qr")
+                      }
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700"
+                    >
+                      <ClipboardCopy size={16} />
+                      Salin Link QR
+                    </button>
+                    {copied === "qr" && (
+                      <span className="text-emerald-400 inline-flex items-center gap-1 text-sm">
+                        <Check size={14} /> Tersalin
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-white/60 text-xs mt-3">
+                    Bayar via e-wallet atau mobile banking yang mendukung QRIS.
+                    Pastikan nominal sesuai.
+                  </p>
+                </div>
+              ) : (
+                <div className="rounded-2xl bg-[#0F0E12] ring-1 ring-white/10 p-5">
+                  <div className="font-semibold mb-3">
+                    Virtual Account (
+                    {paymentData.midtrans_channel?.toUpperCase()})
+                  </div>
+                  <div className="rounded-lg bg-[#141316] ring-1 ring-white/10 p-4 flex items-center justify-between">
+                    <div>
+                      <div className="text-white/60 text-xs">Nomor VA</div>
+                      <div className="text-xl font-mono">
+                        {paymentData.midtrans_account_number ?? "-"}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() =>
+                        paymentData.midtrans_account_number &&
+                        copy(paymentData.midtrans_account_number, "va")
+                      }
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-700"
+                    >
+                      <ClipboardCopy size={16} />
+                      Salin
+                    </button>
+                  </div>
+                  {copied === "va" && (
+                    <span className="text-emerald-400 inline-flex items-center gap-1 text-sm mt-2">
+                      <Check size={14} /> Tersalin
                     </span>
+                  )}
+                  {paymentData.midtrans_account_code && (
+                    <div className="mt-3 rounded-lg bg-[#141316] ring-1 ring-white/10 p-3">
+                      <div className="text-white/60 text-xs">Kode</div>
+                      <div className="font-mono">
+                        {paymentData.midtrans_account_code}
+                      </div>
+                    </div>
+                  )}
+                  <ol className="mt-4 list-decimal list-inside text-white/70 text-sm space-y-1">
+                    <li>
+                      Buka aplikasi bank{" "}
+                      {paymentData.midtrans_channel?.toUpperCase()}.
+                    </li>
+                    <li>Pilih Bayar Virtual Account.</li>
+                    <li>Masukkan nomor VA di atas dan konfirmasi.</li>
+                    <li>Selesaikan pembayaran sesuai instruksi.</li>
+                  </ol>
+                </div>
+              )}
+
+              {/* Footer modal */}
+              <div className="flex items-center justify-between">
+                <div className="text-white/60 text-xs">
+                  {paymentData.expires_at
+                    ? `Batas bayar: ${new Date(
+                        paymentData.expires_at
+                      ).toLocaleString("id-ID")}`
+                    : "Segera selesaikan pembayaran sebelum batas waktu berakhir."}
+                </div>
+                <div className="flex gap-3">
+                  {paymentData.payment_link && (
+                    <a
+                      href={paymentData.payment_link}
+                      className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Buka Halaman Payment
+                    </a>
+                  )}
+                  <button
+                    onClick={() => setShowPayment(false)}
+                    className="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700"
+                  >
+                    Selesai
                   </button>
                 </div>
-                <div className="p-4">
-                  <div className="flex items-center gap-1 text-amber-400 mb-1">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        size={16}
-                        fill={i < t.rating ? "currentColor" : "none"}
-                      />
-                    ))}
-                  </div>
-                  <div className="font-semibold">{t.title}</div>
-                  <div className="text-sm text-white/70 mt-1">
-                    oleh {t.name}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+              </div>
+            </div>
           </div>
-        </section>
-      </div>
+        </div>
+      )}
+      {/* ===== /MODAL ===== */}
     </main>
   );
 }
