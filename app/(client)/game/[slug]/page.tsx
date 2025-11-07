@@ -15,6 +15,11 @@ import {
   ClipboardCopy,
   Check,
   ExternalLink,
+  ThumbsUp,
+  MessageSquare,
+  Info,
+  Timer,
+  CheckCircle2,
 } from "lucide-react";
 
 import {
@@ -48,29 +53,32 @@ const testimonials = [
   {
     id: 1,
     title: "Top up instan, aman, mantap!",
-    name: "Reza",
+    name: "Reza Mahendra",
     rating: 5,
     thumbnail:
       "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=640&q=70&auto=format&fit=crop",
     youtubeId: "dQw4w9WgXcQ",
+    text: "Pembayaran QRIS langsung kebaca, 1 menit sudah masuk. Harga juga paling oke dibanding toko lain.",
   },
   {
     id: 2,
     title: "Harga bersaing, CS responsif",
-    name: "Nadia",
+    name: "Nadia Aulia",
     rating: 5,
     thumbnail:
       "https://images.unsplash.com/photo-1522125670776-3c7abb882bc2?w=640&q=70&auto=format&fit=crop",
     youtubeId: "dQw4w9WgXcQ",
+    text: "WA dibalas cepat, ada kendala salah ID dibantu refund. Recommended!",
   },
   {
     id: 3,
     title: "Pembayaran banyak pilihan",
-    name: "Bagus",
+    name: "Bagus Pratama",
     rating: 4,
     thumbnail:
       "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=640&q=70&auto=format&fit=crop",
     youtubeId: "dQw4w9WgXcQ",
+    text: "Support VA semua bank, enak tinggal pilih. Proses juga cepat.",
   },
 ];
 
@@ -81,6 +89,86 @@ const paymentMethods = [
   { name: "BRI VA", logo: "🏦" },
   { name: "CIMB VA", logo: "🏦" },
 ];
+
+// untuk tab tata cara; pakai MidtransChannel biar “qris” + bank ada semua
+const HOW_TO_TABS: MidtransChannel[] = ["qris", "bca", "bni", "bri", "cimb"];
+
+// data langkah per metode
+const HOW_TO_STEPS: Record<MidtransChannel, string[]> = {
+  qris: [
+    "Buka aplikasi e-wallet / mobile banking yang mendukung QRIS.",
+    "Pilih menu Scan / QR Payment.",
+    "Arahkan kamera ke QR atau unggah gambar QR dari galeri.",
+    "Pastikan nominal pembayaran sesuai tagihan.",
+    "Konfirmasi pembayaran dan tunggu status BERHASIL.",
+  ],
+  bca: [
+    "Buka myBCA / KlikBCA / ATM BCA.",
+    "Pilih menu Pembayaran > Virtual Account.",
+    "Masukkan Nomor VA yang tertera.",
+    "Periksa nama penerima & nominal, lalu konfirmasi.",
+    "Selesaikan pembayaran hingga status BERHASIL.",
+  ],
+  bni: [
+    "Buka BNI Mobile / iBanking / ATM BNI.",
+    "Pilih Pembayaran > Virtual Account Billing.",
+    "Masukkan Nomor VA sesuai tagihan.",
+    "Cek detail tagihan & konfirmasi.",
+    "Selesaikan pembayaran.",
+  ],
+  bri: [
+    "Buka BRImo / iBanking / ATM BRI.",
+    "Pilih Pembayaran > BRIVA / Virtual Account.",
+    "Masukkan Nomor VA yang diberikan.",
+    "Konfirmasi detail & nominal.",
+    "Selesaikan pembayaran.",
+  ],
+  cimb: [
+    "Buka OCTO Mobile / OCTO Clicks / ATM CIMB Niaga.",
+    "Pilih Pembayaran > Virtual Account.",
+    "Masukkan Nomor VA tagihan.",
+    "Periksa detail & konfirmasi.",
+    "Selesaikan pembayaran.",
+  ],
+};
+
+const HOW_TO_TIPS: Record<MidtransChannel, string[]> = {
+  qris: [
+    "Jika QR tidak terbaca, gunakan tombol “Buka QR” lalu screenshot/zoom.",
+    "Hindari pembayaran parsial; nominal harus sama persis.",
+    "Saat traffic tinggi, tunggu ±1–3 menit hingga status update otomatis.",
+  ],
+  bca: [
+    "VA memiliki masa berlaku. Lakukan pembayaran sebelum kadaluarsa.",
+    "Jika nama penerima berbeda, batalkan & hubungi CS.",
+    "Simpan bukti transaksi (screenshot/struk) untuk percepatan pengecekan.",
+  ],
+  bni: [
+    "Pastikan koneksi stabil saat konfirmasi.",
+    "Jika transaksi gagal namun saldo terpotong, tunggu auto-reversal atau hubungi bank.",
+  ],
+  bri: [
+    "Gunakan BRIVA untuk proses lebih cepat.",
+    "Jika nominal tidak sesuai, buat pesanan baru agar VA terbit ulang.",
+  ],
+  cimb: [
+    "Beberapa jam sibuk (malam hari) dapat menunda notifikasi; sistem tetap auto-check.",
+    "Cek limit harian agar transaksi tidak ditolak.",
+  ],
+};
+
+// dummy agregasi rating untuk visual
+const ratingSummary = {
+  average: 4.8,
+  total: 1287,
+  breakdown: {
+    5: 74,
+    4: 18,
+    3: 6,
+    2: 1,
+    1: 1,
+  },
+};
 
 export default function GamePage({
   params,
@@ -113,6 +201,9 @@ export default function GamePage({
   const [showPayment, setShowPayment] = useState(false);
   const [paymentData, setPaymentData] = useState<CheckoutResponse | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+
+  // tab tata cara
+  const [howToTab, setHowToTab] = useState<MidtransChannel>("qris");
 
   const {
     data: categoryData,
@@ -159,9 +250,11 @@ export default function GamePage({
   useEffect(() => {
     if (paymentType === "qris") {
       setPaymentChannel("qris");
+      setHowToTab("qris");
     } else if (paymentType === "bank_transfer") {
       if (!["bca", "bni", "bri", "cimb"].includes(paymentChannel)) {
         setPaymentChannel("bca");
+        setHowToTab("bca");
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -270,6 +363,20 @@ export default function GamePage({
     );
   }
 
+  // helper rating bar
+  const RatingBar = ({ label, pct }: { label: string; pct: number }) => (
+    <div className="flex items-center gap-3">
+      <span className="w-8 text-sm text-white/70">{label}</span>
+      <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
+        <div
+          className="h-full bg-gradient-to-r from-rose-500 to-rose-400"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className="w-10 text-right text-sm text-white/70">{pct}%</span>
+    </div>
+  );
+
   return (
     <main className="min-h-screen bg-[#0F0E12] text-white">
       {/* Breadcrumb */}
@@ -337,20 +444,166 @@ export default function GamePage({
               </div>
             </section>
 
-            {/* Reviews */}
+            {/* Tata Cara Pembayaran LENGKAP */}
             <section className="rounded-2xl bg-[#141316] ring-1 ring-white/10 p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold">Review & Testimoni</h2>
-                <div className="text-sm text-white/70">
-                  Rating rata-rata:{" "}
-                  <span className="text-rose-400 font-semibold">4.8/5</span>
+                <h2 className="text-xl font-bold">Tata Cara Pembayaran</h2>
+                <div className="flex items-center gap-2 text-white/70 text-sm">
+                  <Timer size={16} />
+                  <span>Panduan lengkap per metode</span>
                 </div>
               </div>
+
+              {/* Tabs */}
+              <div className="flex flex-wrap gap-2 mb-5">
+                {HOW_TO_TABS.map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setHowToTab(t)}
+                    className={[
+                      "px-4 py-2 rounded-xl border transition",
+                      howToTab === t
+                        ? "bg-rose-600 border-rose-500"
+                        : "bg-[#0F0E12] border-white/10 hover:border-rose-500/50",
+                    ].join(" ")}
+                  >
+                    {t === "qris" ? "QRIS" : t.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+
+              {/* Steps & Tips */}
+              <div className="grid md:grid-cols-5 gap-5">
+                <div className="md:col-span-3">
+                  <div className="rounded-xl bg-[#0F0E12] ring-1 ring-white/10 p-4">
+                    <h3 className="font-semibold mb-3">
+                      Langkah Pembayaran{" "}
+                      {howToTab === "qris" ? "QRIS" : howToTab.toUpperCase()}
+                    </h3>
+                    <ol className="space-y-3">
+                      {HOW_TO_STEPS[howToTab].map((s, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-rose-600 text-white text-sm font-bold grid place-items-center">
+                            {idx + 1}
+                          </span>
+                          <span className="text-white/90">{s}</span>
+                        </li>
+                      ))}
+                    </ol>
+                    <div className="mt-4 rounded-lg bg-[#141316] ring-1 ring-white/10 p-3 text-sm text-white/80 flex items-start gap-2">
+                      <Info size={16} className="mt-0.5 text-rose-400" />
+                      <span>
+                        Gunakan nomor VA/QR yang tampil di halaman pembayaran
+                        atau pop-up setelah checkout. Nomor bersifat unik untuk
+                        satu pesanan.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="md:col-span-2">
+                  <div className="rounded-xl bg-[#0F0E12] ring-1 ring-white/10 p-4">
+                    <h3 className="font-semibold mb-3">
+                      Tips & Troubleshooting
+                    </h3>
+                    <ul className="space-y-2">
+                      {HOW_TO_TIPS[howToTab].map((tip, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-2 text-white/85"
+                        >
+                          <CheckCircle2
+                            size={18}
+                            className="text-emerald-400 mt-0.5"
+                          />
+                          <span>{tip}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="mt-4 rounded-lg bg-[#141316] ring-1 ring-white/10 p-3 text-xs text-white/70">
+                      <b>S&K:</b> Pembayaran yang melewati batas waktu akan
+                      otomatis kadaluarsa. Jika saldo terpotong namun status
+                      belum masuk, sistem akan melakukan auto-check &
+                      auto-reversal sesuai kebijakan bank.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Reviews — KEREN */}
+            <section className="rounded-2xl bg-[#141316] ring-1 ring-white/10 p-6">
+              <div className="grid md:grid-cols-3 gap-6 mb-6">
+                {/* left: summary */}
+                <div className="md:col-span-1 rounded-2xl bg-[#0F0E12] ring-1 ring-white/10 p-5 text-center">
+                  <div className="text-sm text-white/70">Rating Rata-rata</div>
+                  <div className="mt-1 text-5xl font-extrabold text-rose-400">
+                    {ratingSummary.average.toFixed(1)}
+                  </div>
+                  <div className="mt-1 text-white/60 text-xs">
+                    dari {ratingSummary.total.toLocaleString("id-ID")} ulasan
+                  </div>
+                  <div className="mt-4 flex items-center justify-center gap-1 text-amber-400">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        size={18}
+                        fill={
+                          i < Math.round(ratingSummary.average)
+                            ? "currentColor"
+                            : "none"
+                        }
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* middle: breakdown */}
+                <div className="md:col-span-1 space-y-2">
+                  <RatingBar label="5★" pct={ratingSummary.breakdown[5]} />
+                  <RatingBar label="4★" pct={ratingSummary.breakdown[4]} />
+                  <RatingBar label="3★" pct={ratingSummary.breakdown[3]} />
+                  <RatingBar label="2★" pct={ratingSummary.breakdown[2]} />
+                  <RatingBar label="1★" pct={ratingSummary.breakdown[1]} />
+                </div>
+
+                {/* right: filter chips */}
+                <div className="md:col-span-1">
+                  <div className="text-sm text-white/70 mb-2">Filter cepat</div>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      "Semua",
+                      "Pembayaran cepat",
+                      "CS ramah",
+                      "Harga murah",
+                      "Proses instan",
+                    ].map((chip, idx) => (
+                      <button
+                        key={idx}
+                        className={[
+                          "px-3 py-1.5 rounded-full text-sm border",
+                          idx === 0
+                            ? "bg-rose-600 border-rose-500"
+                            : "bg-[#0F0E12] border-white/10 hover:border-rose-500/50",
+                        ].join(" ")}
+                      >
+                        {chip}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-4 text-xs text-white/60 flex items-center gap-2">
+                    <ThumbsUp size={14} />
+                    <span>Ulasan terverifikasi oleh sistem transaksi.</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* cards */}
               <div className="grid md:grid-cols-3 gap-4">
                 {testimonials.map((t) => (
                   <motion.div
                     key={t.id}
-                    whileHover={{ scale: 1.02 }}
+                    whileHover={{ y: -2, scale: 1.01 }}
                     className="overflow-hidden rounded-xl bg-[#0F0E12] ring-1 ring-white/10"
                   >
                     <div className="relative h-40">
@@ -360,9 +613,14 @@ export default function GamePage({
                         fill
                         className="object-cover"
                       />
+                      <div className="absolute top-3 left-3 px-2 py-1 rounded-md text-xs bg-black/60 backdrop-blur">
+                        <span className="inline-flex items-center gap-1 text-emerald-300">
+                          <CheckCircle2 size={14} /> Verified Purchase
+                        </span>
+                      </div>
                       <button
                         onClick={() => onWatch(t.youtubeId)}
-                        className="absolute inset-0 grid place-items-center bg-black/40 hover:bg-black/50 transition"
+                        className="absolute inset-0 grid place-items-center bg-black/30 hover:bg-black/40 transition"
                         aria-label="Tonton di YouTube"
                       >
                         <span className="w-12 h-12 rounded-full bg-rose-600 grid place-items-center">
@@ -381,8 +639,12 @@ export default function GamePage({
                         ))}
                       </div>
                       <div className="font-semibold">{t.title}</div>
-                      <div className="text-sm text-white/70 mt-1">
-                        oleh {t.name}
+                      <p className="text-sm text-white/80 mt-1 leading-relaxed">
+                        {t.text}
+                      </p>
+                      <div className="mt-2 text-xs text-white/60 flex items-center gap-2">
+                        <MessageSquare size={14} />
+                        <span>oleh {t.name}</span>
                       </div>
                     </div>
                   </motion.div>
@@ -754,7 +1016,7 @@ export default function GamePage({
                       Buka aplikasi bank{" "}
                       {paymentData.midtrans_channel?.toUpperCase()}.
                     </li>
-                    <li>Pilih Bayar Virtual Account.</li>
+                    <li>Pilih Pembayaran &gt; Virtual Account.</li>
                     <li>Masukkan nomor VA di atas dan konfirmasi.</li>
                     <li>Selesaikan pembayaran sesuai instruksi.</li>
                   </ol>
