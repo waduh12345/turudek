@@ -1,212 +1,952 @@
-// app/profile/page.tsx (atau path yang sesuai)
 "use client";
 
-import { signOut, useSession } from "next-auth/react";
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs";
-import PromotionBanner from "@/components/section/promotion-banner";
+import { useState, useEffect, useMemo } from "react";
+import { useSession } from "next-auth/react";
+import { motion } from "framer-motion";
 import {
-  LogOut,
-  Plus,
-  Wallet,
-  Mail,
-  User2,
-  Sparkles,
-  Receipt,
-  Gift,
+  Search,
+  Eye,
+  User,
+  Package,
+  DollarSign,
+  CheckCircle,
+  Clock,
+  XCircle,
+  AlertCircle,
+  X,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+  RefreshCw,
+  Download,
+  Calendar,
+  Filter,
 } from "lucide-react";
+import { extractErrorMessage } from "@/lib/http-error";
 
-const Page = () => {
-  const { data } = useSession();
-  const initial = (
-    data?.user?.name?.trim()?.charAt(0) ||
-    data?.user?.email?.trim()?.charAt(0) ||
-    "U"
-  )?.toUpperCase();
+// ==================== TIPE-DATA ====================
+type TransactionProduct = {
+  id: number;
+  name: string;
+  sku: string;
+  description?: string | null;
+  buy_price: string;
+};
 
-  return (
-    <>
-      {/* BACKDROP: diubah ke aksen kuning */}
-      <div className="relative">
-        <div className="pointer-events-none absolute inset-0 -z-20 bg-black" />
-        {/* [DIUBAH] Glow merah diubah jadi kuning */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-56 bg-[radial-gradient(60%_60%_at_50%_0%,rgba(250,204,21,0.25),rgba(250,204,21,0)_60%)]" />
-        <div className="pointer-events-none absolute left-1/2 top-28 -z-10 h-64 w-64 -translate-x-1/2 rounded-full bg-yellow-600/20 blur-[90px]" />
-      </div>
+type Transaction = {
+  id: number;
+  reference: string;
+  order_id: string;
+  customer_name: string;
+  customer_email: string | null;
+  customer_phone: string;
+  customer_no: string;
+  product: TransactionProduct;
+  provider: string;
+  amount: number;
+  status: number;
+  status_payment: number;
+  payment_link?: string | null;
+  sn?: string | null;
+  created_at: string;
+  paid_at?: string | null;
+};
 
-      <div className="container relative pb-24 pt-10">
-        {/* HEADER STRIP */}
-        <div className="mb-8 flex items-center gap-3">
-          {/* [DIUBAH] Garis aksen */}
-          <div className="h-9 w-1 rounded-full bg-gradient-to-b from-yellow-400 to-yellow-500" />
-          <h1 className="text-xl font-semibold tracking-wide">
-            {/* [DIUBAH] Badge aksen */}
-            <span className="mr-2 inline-flex items-center gap-1 rounded-md bg-yellow-400/10 px-2 py-0.5 text-xs font-medium text-yellow-300 ring-1 ring-yellow-400/30">
-              <Sparkles className="h-3.5 w-3.5" />
-              Live
-            </span>
-            Profil Pengguna
+type ApiLink = {
+  url: string | null;
+  label: string;
+  page: number | null;
+  active: boolean;
+};
+
+type ApiPagination<T> = {
+  current_page: number;
+  data: T[];
+  first_page_url: string;
+  from: number;
+  last_page: number;
+  last_page_url: string;
+  links: ApiLink[];
+  next_page_url: string | null;
+  path: string;
+  per_page: number;
+  prev_page_url: string | null;
+  to: number;
+  total: number;
+};
+
+type ApiEnvelope<T> = {
+  code: number;
+  message: string;
+  data: T;
+};
+
+// ==================== STATUS MAPPING (NUANSA KUNING) ====================
+const getStatusInfo = (status: number, statusPayment: number) => {
+  if (statusPayment === 2) {
+    return {
+      icon: CheckCircle,
+      color: "text-amber-400",
+      bgColor: "bg-amber-500/10 ring-1 ring-amber-500/30",
+      label: "Lunas",
+    };
+  }
+  if (statusPayment === 1) {
+    return {
+      icon: Clock,
+      color: "text-yellow-300",
+      bgColor: "bg-yellow-500/10 ring-1 ring-yellow-500/30",
+      label: "Menunggu Pembayaran",
+    };
+  }
+  if (status === 1) {
+    return {
+      icon: AlertCircle,
+      color: "text-sky-300",
+      bgColor: "bg-sky-500/10 ring-1 ring-sky-500/30",
+      label: "Diproses",
+    };
+  }
+  if (status === 2) {
+    return {
+      icon: CheckCircle,
+      color: "text-amber-400",
+      bgColor: "bg-amber-500/10 ring-1 ring-amber-500/30",
+      label: "Selesai",
+    };
+  }
+  return {
+    icon: XCircle,
+    color: "text-rose-400",
+    bgColor: "bg-rose-500/10 ring-1 ring-rose-500/30",
+    label: "Gagal",
+  };
+};
+
+// ==================== COMPONENT ====================
+export default function ProfilePage() {
+  const { data: session, status } = useSession();
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusPaymentFilter, setStatusPaymentFilter] = useState<
+    "all" | "0" | "1" | "2"
+  >("all");
+  const [dateRange, setDateRange] = useState<{
+    startDate: string;
+    endDate: string;
+  }>({
+    startDate: "",
+    endDate: "",
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<Transaction | null>(null);
+
+  const [transactionsData, setTransactionsData] = useState<ApiEnvelope<
+    ApiPagination<Transaction>
+  > | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  // ========== TOKEN & USER DARI SESSION ==========
+  const accessToken =
+    typeof session?.accessToken === "string" ? session.accessToken : null;
+  const userId = typeof session?.user?.id === "string" ? session.user.id : null;
+
+  // ========== FETCH ==========
+  const fetchTransactions = async () => {
+    if (!accessToken || !userId) return;
+    setLoading(true);
+    setLoadError(null);
+
+    const filters = new URLSearchParams();
+    filters.append("page", String(currentPage));
+    filters.append("paginate", "10");
+    filters.append("user_id", userId);
+    if (dateRange.startDate) filters.append("started_at", dateRange.startDate);
+    if (dateRange.endDate) filters.append("ended_at", dateRange.endDate);
+    if (statusPaymentFilter !== "all")
+      filters.append("status_payment", statusPaymentFilter);
+
+    const base = (
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api/v1"
+    ).replace(/\/+$/, "");
+    const url = `${base}/transaction/topups${
+      filters.toString() ? `?${filters.toString()}` : ""
+    }`;
+
+    try {
+      const res = await fetch(url, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!res.ok) {
+        let parsed: unknown = null;
+        try {
+          parsed = await res.json();
+          const msg = extractErrorMessage({
+            response: {
+              data: parsed as {
+                message?: string;
+                errors?: Record<string, string[]>;
+              },
+            },
+            message:
+              (parsed as { message?: string })?.message ?? res.statusText,
+          });
+          throw new Error(msg);
+        } catch (e) {
+          if (parsed === null)
+            throw new Error(`HTTP ${res.status} ${res.statusText}`);
+          throw e;
+        }
+      }
+
+      const json = (await res.json()) as ApiEnvelope<
+        ApiPagination<Transaction>
+      >;
+
+      if (searchTerm.trim() && Array.isArray(json.data?.data)) {
+        const q = searchTerm.trim().toLowerCase();
+        json.data.data = json.data.data.filter((t) => {
+          const ref = t.reference?.toLowerCase() ?? "";
+          const name = t.customer_name?.toLowerCase() ?? "";
+          const oid = t.order_id?.toLowerCase() ?? "";
+          return ref.includes(q) || name.includes(q) || oid.includes(q);
+        });
+      }
+
+      setTransactionsData(json);
+    } catch (err: unknown) {
+      setLoadError(extractErrorMessage(err));
+      setTransactionsData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (status === "authenticated" && accessToken && userId) {
+      void fetchTransactions();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    status,
+    accessToken,
+    userId,
+    currentPage,
+    statusPaymentFilter,
+    dateRange.startDate,
+    dateRange.endDate,
+    searchTerm,
+  ]);
+
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(price);
+
+  const transactions = transactionsData?.data?.data ?? [];
+  const pagination = transactionsData?.data;
+
+  const totalRevenue = useMemo(
+    () =>
+      transactions
+        .filter((t) => t.status_payment === 2)
+        .reduce((sum, t) => sum + t.amount, 0),
+    [transactions]
+  );
+  const totalOrders = transactionsData?.data?.total ?? 0;
+  const completedOrders = transactions.filter(
+    (t) => t.status_payment === 2
+  ).length;
+  const pendingOrders = transactions.filter(
+    (t) => t.status_payment === 0
+  ).length;
+
+  const exportCSV = () => {
+    const rows = [
+      [
+        "Reference",
+        "OrderID",
+        "Produk",
+        "SKU",
+        "Provider",
+        "Total",
+        "Status",
+        "Tanggal",
+        "PaidAt",
+      ],
+      ...transactions.map((t) => [
+        t.reference,
+        t.order_id,
+        t.product.name,
+        t.product.sku,
+        t.provider,
+        t.amount,
+        getStatusInfo(t.status, t.status_payment).label,
+        new Date(t.created_at).toLocaleString("id-ID"),
+        t.paid_at ? new Date(t.paid_at).toLocaleString("id-ID") : "",
+      ]),
+    ];
+    const csv = rows
+      .map((r) =>
+        r.map((c) => `"${String(c).replaceAll(`"`, `""`)}"`).join(",")
+      )
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `transactions_${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // ========== UI STATES ==========
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-[#0B0B0B] flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-amber-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-semibold text-amber-200">
+            Memuat profil...
           </h1>
         </div>
+      </div>
+    );
+  }
 
-        <div className="grid grid-cols-12 gap-8">
-          {/* PROFILE CARD */}
-          <section className="col-span-12 rounded-2xl border border-zinc-800 bg-zinc-950/90 p-6 text-white shadow-[0_15px_40px_-20px_rgba(0,0,0,.8)] backdrop-blur md:col-span-5">
-            <div className="mb-6 flex items-center gap-5">
-              {/* Avatar dengan cincin conic gradient */}
-              <div className="relative">
-                {/* [DIUBAH] Gradient cincin avatar (Yellow-Cyan) */}
-                <div className="absolute -inset-1 rounded-2xl bg-[conic-gradient(from_180deg_at_50%_50%,#facc15_0deg,#22d3ee_120deg,transparent_200deg,transparent_360deg)] opacity-90 blur-[6px]" />
-                <div className="relative rounded-2xl bg-zinc-900 p-1">
-                  <Avatar className="h-20 w-20">
-                    <AvatarImage
-                      className="h-20 w-20 rounded-xl object-cover"
-                      src={data?.user?.image || ""}
-                    />
-                    {/* [DIUBAH] Fallback avatar */}
-                    <AvatarFallback className="flex h-20 w-20 items-center justify-center rounded-xl bg-gradient-to-br from-yellow-400 to-amber-500 text-3xl font-bold text-slate-900">
-                      {initial}
-                    </AvatarFallback>
-                  </Avatar>
+  if (status === "unauthenticated" || !session) {
+    return (
+      <div className="min-h-screen bg-[#0B0B0B] flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🔒</div>
+          <h1 className="text-2xl font-semibold text-amber-200 mb-2">
+            Harus login dulu
+          </h1>
+          <p className="text-amber-300/70 mb-6">
+            Masuk dulu supaya bisa lihat transaksi kamu.
+          </p>
+          <button
+            onClick={() => (window.location.href = "/auth/login")}
+            className="px-6 py-3 rounded-xl bg-amber-400 text-black font-semibold shadow-[0_0_0_2px_rgba(250,204,21,0.2)] hover:shadow-[0_0_0_4px_rgba(250,204,21,0.25)] hover:bg-amber-300 transition-all"
+          >
+            Ke halaman login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ========== RENDER ==========
+  return (
+    <div className="min-h-screen bg-[#0B0B0B]">
+      {/* Glow accents */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-amber-400/10 to-transparent blur-2xl" />
+
+      <div className="mx-auto max-w-7xl px-4 py-8 space-y-8">
+        {/* HEADER */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center ring-2 ring-amber-300/30">
+              <User className="h-6 w-6 text-black" />
+            </div>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-amber-100 tracking-tight">
+                Halo, {session.user?.name ?? "Pengguna"} 👋
+              </h1>
+              <p className="text-amber-300/70 text-sm">{session.user?.email}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => void fetchTransactions()}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#111111] text-amber-200 ring-1 ring-amber-400/20 hover:bg-amber-400 hover:text-black transition-colors"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        {/* MAIN LAYOUT: Sidebar kiri + Konten kanan */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* SIDEBAR */}
+          <aside className="lg:col-span-4 space-y-6">
+            {/* Kartu Profile */}
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl bg-[#111111] ring-1 ring-amber-400/20 p-6 shadow-[0_8px_30px_rgba(250,204,21,0.08)]"
+            >
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center">
+                  <User className="h-7 w-7 text-black" />
+                </div>
+                <div>
+                  <p className="text-amber-100 font-semibold leading-tight">
+                    {session.user?.name ?? "Pengguna"}
+                  </p>
+                  <p className="text-amber-300/70 text-sm truncate max-w-[16rem]">
+                    {session.user?.email}
+                  </p>
                 </div>
               </div>
 
-              <section className="min-w-0 space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <User2 className="h-4 w-4 text-zinc-300" />
-                  <h2 className="truncate text-lg font-semibold">
-                    {data?.user?.name || "User"}
-                  </h2>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-zinc-300">
-                  <Mail className="h-4 w-4" />
-                  <span className="truncate">{data?.user?.email}</span>
-                </div>
+              <div className="mt-5 grid grid-cols-3 gap-3">
+                <MiniMetric label="Pesanan" value={String(totalOrders)} />
+                <MiniMetric label="Lunas" value={String(completedOrders)} />
+                <MiniMetric label="Belum" value={String(pendingOrders)} />
+              </div>
+            </motion.div>
 
-                {/* Saldo + Aksi */}
-                <div className="mt-3 flex flex-wrap items-center gap-3">
-                  <span className="inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-3 py-1.5 text-sm text-white ring-1 ring-zinc-800">
-                    {/* [DIUBAH] Ikon saldo */}
-                    <Wallet className="h-4 w-4 text-yellow-400" />
-                    <span className="font-medium">Saldo</span>
-                    <span className="ml-1 font-mono">Rp 0</span>
-                  </span>
-                  {/* [DIUBAH] Tombol Top Up (CTA Utama) */}
-                  <button className="inline-flex items-center gap-2 rounded-lg bg-yellow-400 px-3 py-1.5 text-sm font-semibold text-slate-900 shadow-[0_10px_20px_-10px_rgba(250,204,21,.5)] ring-1 ring-yellow-500/30 transition hover:bg-yellow-500 active:scale-[0.99]">
-                    <Plus className="h-4 w-4" />
-                    Top Up
+            {/* Filter Cepat */}
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl bg-[#111111] ring-1 ring-amber-400/20 p-6 shadow-[0_8px_30px_rgba(250,204,21,0.08)] space-y-4"
+            >
+              <div className="flex items-center gap-2 text-amber-200">
+                <Filter className="h-4 w-4" />
+                <span className="text-sm font-medium">Filter</span>
+              </div>
+
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-amber-300/60" />
+                <input
+                  type="text"
+                  placeholder="Cari reference / order id…"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-[#0E0E0E] text-amber-100 placeholder:text-amber-300/40 ring-1 ring-amber-400/20 focus:ring-2 focus:ring-amber-400/40 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-amber-200 mb-2">
+                  Status pembayaran
+                </label>
+                <select
+                  value={statusPaymentFilter}
+                  onChange={(e) =>
+                    setStatusPaymentFilter(
+                      e.target.value as "all" | "0" | "1" | "2"
+                    )
+                  }
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#0E0E0E] text-amber-100 ring-1 ring-amber-400/20 focus:ring-2 focus:ring-amber-400/40 outline-none"
+                >
+                  <option className="bg-[#0E0E0E]" value="all">
+                    Semua
+                  </option>
+                  <option className="bg-[#0E0E0E]" value="0">
+                    Belum bayar
+                  </option>
+                  <option className="bg-[#0E0E0E]" value="1">
+                    Menunggu
+                  </option>
+                  <option className="bg-[#0E0E0E]" value="2">
+                    Lunas
+                  </option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-amber-200 mb-2">
+                    <span className="inline-flex items-center gap-1">
+                      <Calendar className="h-3.5 w-3.5" /> Mulai
+                    </span>
+                  </label>
+                  <input
+                    type="date"
+                    value={dateRange.startDate}
+                    onChange={(e) =>
+                      setDateRange((p) => ({ ...p, startDate: e.target.value }))
+                    }
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#0E0E0E] text-amber-100 ring-1 ring-amber-400/20 focus:ring-2 focus:ring-amber-400/40 outline-none text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-amber-200 mb-2">
+                    Sampai
+                  </label>
+                  <input
+                    type="date"
+                    value={dateRange.endDate}
+                    onChange={(e) =>
+                      setDateRange((p) => ({ ...p, endDate: e.target.value }))
+                    }
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#0E0E0E] text-amber-100 ring-1 ring-amber-400/20 focus:ring-2 focus:ring-amber-400/40 outline-none text-sm"
+                  />
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Stats ringkas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <StatCard
+                icon={<DollarSign className="h-6 w-6 text-black" />}
+                title="Total dibayar"
+                value={formatPrice(totalRevenue)}
+                gradient="from-amber-400 to-yellow-500"
+              />
+              <StatCard
+                icon={<Package className="h-6 w-6 text-black" />}
+                title="Total pesanan"
+                value={String(totalOrders)}
+                gradient="from-yellow-300 to-amber-400"
+              />
+            </div>
+          </aside>
+
+          {/* KONTEN */}
+          <section className="lg:col-span-8 space-y-6">
+            {/* Tabel */}
+            <div className="rounded-2xl overflow-hidden ring-1 ring-amber-400/20 bg-[#0E0E0E] shadow-[0_8px_30px_rgba(250,204,21,0.06)]">
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead className="bg-[#121212]/80 backdrop-blur">
+                    <tr>
+                      {[
+                        "Ref / Order",
+                        "Produk",
+                        "Total",
+                        "Status",
+                        "Tanggal",
+                        "Aksi",
+                      ].map((h) => (
+                        <th
+                          key={h}
+                          className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-amber-300/70"
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-amber-400/10">
+                    {loading ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center">
+                          <div className="flex items-center justify-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-amber-400" />
+                            <span className="ml-2 text-amber-200/80">
+                              Memuat transaksi...
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : loadError ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center">
+                          <div className="text-rose-300">
+                            <AlertCircle className="h-8 w-8 mx-auto mb-2" />
+                            <p>{loadError}</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : transactions.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center">
+                          <div className="text-amber-300/70">
+                            <Package className="h-8 w-8 mx-auto mb-2" />
+                            <p>Belum ada transaksi.</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      transactions.map((t, index) => {
+                        const statusInfo = getStatusInfo(
+                          t.status,
+                          t.status_payment
+                        );
+                        const StatusIcon = statusInfo.icon;
+                        return (
+                          <motion.tr
+                            key={t.id}
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.03 }}
+                            className="hover:bg-amber-400/5"
+                          >
+                            <td className="px-6 py-4 align-top">
+                              <div className="text-sm font-medium text-amber-100">
+                                {t.reference}
+                              </div>
+                              <div className="text-sm text-amber-300/60">
+                                {t.order_id}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 align-top">
+                              <div className="text-sm font-medium text-amber-100">
+                                {t.product.name}
+                              </div>
+                              <div className="text-sm text-amber-300/60">
+                                {t.product.sku} • {t.provider}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 align-top">
+                              <div className="text-sm font-semibold text-amber-200">
+                                {formatPrice(t.amount)}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 align-top">
+                              <span
+                                className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusInfo.bgColor} ${statusInfo.color}`}
+                              >
+                                <StatusIcon className="h-3.5 w-3.5 mr-1.5" />
+                                {statusInfo.label}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 align-top">
+                              <div className="text-sm text-amber-200">
+                                {new Date(t.created_at).toLocaleDateString(
+                                  "id-ID"
+                                )}
+                              </div>
+                              {t.paid_at && (
+                                <div className="text-xs text-amber-300/60">
+                                  Lunas:{" "}
+                                  {new Date(t.paid_at).toLocaleDateString(
+                                    "id-ID"
+                                  )}
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 align-top text-right">
+                              <button
+                                onClick={() => setSelectedTransaction(t)}
+                                className="p-2 rounded-lg text-amber-300 hover:text-black hover:bg-amber-400 transition-colors"
+                                aria-label="Lihat detail"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </button>
+                            </td>
+                          </motion.tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* PAGINATION */}
+            {pagination && pagination.last_page > 1 && (
+              <div className="rounded-2xl bg-[#111111] ring-1 ring-amber-400/20 p-4 flex items-center justify-between shadow-[0_8px_30px_rgba(250,204,21,0.08)]">
+                <div className="text-sm text-amber-200/80">
+                  Menampilkan {pagination.from} sampai {pagination.to} dari{" "}
+                  {pagination.total} transaksi
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="p-2 rounded-xl ring-1 ring-amber-400/20 text-amber-200 hover:bg-amber-400/10 disabled:opacity-40"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+
+                  <div className="flex items-center space-x-1">
+                    {Array.from(
+                      { length: Math.min(5, pagination.last_page) },
+                      (_, i) => {
+                        const page = i + 1;
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`px-3 py-2 text-sm rounded-xl ring-1 ring-amber-400/20 ${
+                              currentPage === page
+                                ? "bg-amber-400 text-black"
+                                : "text-amber-200 hover:bg-amber-400/10"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        );
+                      }
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() =>
+                      setCurrentPage((p) =>
+                        Math.min(pagination.last_page, p + 1)
+                      )
+                    }
+                    disabled={currentPage === pagination.last_page}
+                    className="p-2 rounded-xl ring-1 ring-amber-400/20 text-amber-200 hover:bg-amber-400/10 disabled:opacity-40"
+                  >
+                    <ChevronRight className="h-4 w-4" />
                   </button>
                 </div>
-              </section>
-            </div>
-
-            {/* STATS (Netral, tidak perlu diubah) */}
-            <div className="grid grid-cols-3 gap-3">
-              <StatCard label="Order" value="0" />
-              <StatCard label="Voucher" value="0" />
-              <StatCard label="Level" value="Starter" />
-            </div>
-
-            {/* [TETAP] Tombol Logout tetap merah (Aksi Destruktif) */}
-            <button
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-600/60 bg-red-600/10 px-4 py-2 text-sm font-semibold text-red-200 transition hover:bg-red-600/20"
-            >
-              <LogOut className="h-4 w-4" />
-              Keluar
-            </button>
+              </div>
+            )}
           </section>
-
-          {/* TABS */}
-          <div className="col-span-12 rounded-2xl border border-zinc-800 bg-zinc-950/90 p-6 text-white shadow-[0_15px_40px_-20px_rgba(0,0,0,.8)] backdrop-blur md:col-span-7">
-            <Tabs defaultValue="orders">
-              <TabsList className="mb-6 flex gap-2 rounded-xl bg-black/40 p-1 ring-1 ring-zinc-800">
-                <TabsTrigger
-                  value="orders"
-                  className="group relative flex-1 rounded-lg px-4 py-2 text-sm font-semibold text-zinc-300 transition data-[state=active]:text-slate-900" // [DIUBAH] Teks aktif
-                >
-                  <span className="relative z-10 inline-flex items-center gap-2">
-                    {/* [DIUBAH] Ikon non-aktif dan aktif */}
-                    <Receipt className="h-4 w-4 text-yellow-400 group-data-[state=active]:text-slate-900" />
-                    Recent Order
-                  </span>
-                  {/* [DIUBAH] Background tab aktif */}
-                  <span className="absolute inset-0 -z-10 rounded-lg bg-transparent transition group-data-[state=active]:bg-yellow-400" />
-                </TabsTrigger>
-                <TabsTrigger
-                  value="referral"
-                  className="group relative flex-1 rounded-lg px-4 py-2 text-sm font-semibold text-zinc-300 transition data-[state=active]:text-slate-900" // [DIUBAH] Teks aktif
-                >
-                  <span className="relative z-10 inline-flex items-center gap-2">
-                    {/* [DIUBAH] Ikon non-aktif dan aktif */}
-                    <Gift className="h-4 w-4 text-yellow-400 group-data-[state=active]:text-slate-900" />
-                    Referral Bonus
-                  </span>
-                  {/* [DIUBAH] Background tab aktif */}
-                  <span className="absolute inset-0 -z-10 rounded-lg bg-transparent transition group-data-[state=active]:bg-yellow-400" />
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="orders" className="mt-2">
-                <EmptyCard
-                  title="Riwayat orderan masih kosong. zZz"
-                  desc="Gas top up dulu, nanti riwayatnya muncul di sini."
-                  ctaLabel="Top Up Sekarang"
-                />
-              </TabsContent>
-
-              <TabsContent value="referral" className="mt-2">
-                <EmptyCard
-                  title="Referral masih kosong"
-                  desc="Coba ajak temen lo top up di sini biar dapet bonus."
-                  ctaLabel="Lihat Program Referral"
-                />
-              </TabsContent>
-            </Tabs>
-          </div>
         </div>
       </div>
 
-      <PromotionBanner />
-    </>
-  );
-};
+      {/* MODAL DETAIL */}
+      {selectedTransaction && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+        >
+          <motion.div
+            initial={{ scale: 0.96, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="rounded-2xl bg-[#0F0F0F] ring-1 ring-amber-400/20 max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto shadow-[0_20px_60px_rgba(250,204,21,0.10)]"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-amber-100">
+                Detail Transaksi
+              </h2>
+              <button
+                onClick={() => setSelectedTransaction(null)}
+                className="p-2 rounded-xl text-amber-300/70 hover:text-black hover:bg-amber-400 transition-colors"
+                aria-label="Tutup"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
 
-function StatCard({ label, value }: { label: string; value: string }) {
-  // [TETAP] Style netral ini sudah bagus
-  return (
-    <div className="rounded-xl border border-zinc-800 bg-black/60 px-4 py-3 text-center">
-      <p className="text-[11px] uppercase tracking-wider text-zinc-400">
-        {label}
-      </p>
-      <p className="mt-1 text-lg font-semibold text-white">{value}</p>
+            <div className="space-y-6">
+              {/* Info Transaksi */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-lg font-medium text-amber-100 mb-4">
+                    Informasi Transaksi
+                  </h3>
+                  <InfoRow
+                    label="Reference"
+                    value={selectedTransaction.reference}
+                  />
+                  <InfoRow
+                    label="Order ID"
+                    value={selectedTransaction.order_id}
+                  />
+                  <InfoRow
+                    label="Tanggal Order"
+                    value={new Date(
+                      selectedTransaction.created_at
+                    ).toLocaleString("id-ID")}
+                  />
+                  <InfoRow
+                    label="Provider"
+                    value={selectedTransaction.provider}
+                  />
+                  <InfoRow
+                    label="Total"
+                    value={formatPrice(selectedTransaction.amount)}
+                    strong
+                  />
+                  <div className="flex justify-between mt-2">
+                    <span className="text-sm text-amber-300/70">Status:</span>
+                    <span
+                      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                        getStatusInfo(
+                          selectedTransaction.status,
+                          selectedTransaction.status_payment
+                        ).bgColor
+                      } ${
+                        getStatusInfo(
+                          selectedTransaction.status,
+                          selectedTransaction.status_payment
+                        ).color
+                      }`}
+                    >
+                      {
+                        getStatusInfo(
+                          selectedTransaction.status,
+                          selectedTransaction.status_payment
+                        ).label
+                      }
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-medium text-amber-100 mb-4">
+                    Informasi Pelanggan
+                  </h3>
+                  <InfoRow
+                    label="Nama"
+                    value={selectedTransaction.customer_name}
+                  />
+                  <InfoRow
+                    label="Email"
+                    value={selectedTransaction.customer_email || "Tidak ada"}
+                  />
+                  <InfoRow
+                    label="Telepon"
+                    value={selectedTransaction.customer_phone}
+                  />
+                  <InfoRow
+                    label="Game ID"
+                    value={selectedTransaction.customer_no}
+                  />
+                </div>
+              </div>
+
+              {/* Produk */}
+              <div>
+                <h3 className="text-lg font-medium text-amber-100 mb-4">
+                  Informasi Produk
+                </h3>
+                <div className="rounded-xl bg-[#101010] ring-1 ring-amber-400/10 p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-medium text-amber-100">
+                        {selectedTransaction.product.name}
+                      </h4>
+                      <p className="text-sm text-amber-300/70">
+                        SKU: {selectedTransaction.product.sku}
+                      </p>
+                      <p className="text-sm text-amber-300/70">
+                        Provider: {selectedTransaction.provider}
+                      </p>
+                      {selectedTransaction.product.description && (
+                        <p className="text-sm text-amber-300/70">
+                          Deskripsi: {selectedTransaction.product.description}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-amber-100">
+                        {formatPrice(selectedTransaction.amount)}
+                      </p>
+                      <p className="text-sm text-amber-300/60">
+                        Harga Beli:{" "}
+                        {formatPrice(
+                          parseFloat(selectedTransaction.product.buy_price)
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pembayaran */}
+              {selectedTransaction.payment_link && (
+                <div>
+                  <h3 className="text-lg font-medium text-amber-100 mb-4">
+                    Informasi Pembayaran
+                  </h3>
+                  <div className="rounded-xl bg-[#101010] ring-1 ring-amber-400/10 p-4 space-y-2">
+                    <p className="text-sm text-amber-300/80">
+                      <strong className="text-amber-200">
+                        Link Pembayaran:
+                      </strong>{" "}
+                      <a
+                        href={selectedTransaction.payment_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-amber-300 underline-offset-4 hover:underline"
+                      >
+                        Buka
+                      </a>
+                    </p>
+                    {selectedTransaction.paid_at && (
+                      <p className="text-sm text-amber-300/80">
+                        <strong className="text-amber-200">
+                          Tanggal Lunas:
+                        </strong>{" "}
+                        {new Date(selectedTransaction.paid_at).toLocaleString(
+                          "id-ID"
+                        )}
+                      </p>
+                    )}
+                    {selectedTransaction.sn && (
+                      <p className="text-sm text-amber-300/80">
+                        <strong className="text-amber-200">
+                          Serial Number:
+                        </strong>{" "}
+                        {selectedTransaction.sn}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 }
 
-function EmptyCard({
+// ==================== SUB-COMPONENTS ====================
+function StatCard({
+  icon,
   title,
-  desc,
-  ctaLabel,
+  value,
+  gradient,
 }: {
+  icon: React.ReactNode;
   title: string;
-  desc: string;
-  ctaLabel: string;
+  value: string;
+  gradient: string;
 }) {
   return (
-    <div className="rounded-xl border border-dashed border-zinc-700 bg-black/50 p-5 ring-1 ring-black/20">
-      {/* [DIUBAH] Badge disesuaikan */}
-      <div className="mb-3 inline-flex items-center gap-2 rounded-lg border border-yellow-400/40 bg-yellow-400/10 px-2 py-1 text-xs font-medium text-yellow-300">
-        Status
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-2xl bg-[#111111] ring-1 ring-amber-400/20 p-6 shadow-[0_8px_30px_rgba(250,204,21,0.08)]"
+    >
+      <div className="flex items-center">
+        <div
+          className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} shadow-[0_0_0_2px_rgba(0,0,0,0.4)]`}
+        >
+          {icon}
+        </div>
+        <div className="ml-4">
+          <p className="text-sm font-medium text-amber-300/80">{title}</p>
+          <p className="text-2xl font-semibold text-amber-100">{value}</p>
+        </div>
       </div>
-      <h3 className="text-base font-semibold text-white">{title}</h3>
-      <p className="mt-1 text-sm text-zinc-300">{desc}</p>
-      {/* [DIUBAH] Tombol CTA disesuaikan */}
-      <button className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-yellow-400 px-3 py-1.5 text-sm font-semibold text-slate-900 shadow-[0_10px_20px_-10px_rgba(250,204,21,.5)] ring-1 ring-yellow-500/30 transition hover:bg-yellow-500">
-        {ctaLabel}
-      </button>
+    </motion.div>
+  );
+}
+
+function MiniMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl bg-[#0E0E0E] ring-1 ring-amber-400/10 p-3">
+      <p className="text-xs text-amber-300/70">{label}</p>
+      <p className="text-lg font-semibold text-amber-100">{value}</p>
     </div>
   );
 }
 
-export default Page;
+function InfoRow({
+  label,
+  value,
+  strong = false,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+}) {
+  return (
+    <div className="flex justify-between mb-2">
+      <span className="text-sm text-amber-300/70">{label}:</span>
+      <span
+        className={`text-sm ${
+          strong ? "font-bold text-amber-100" : "font-medium text-amber-100"
+        }`}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}

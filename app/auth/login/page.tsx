@@ -156,7 +156,7 @@ function LoginContent() {
         <p className="text-center text-xs text-white/60">
           Belum punya akun?{" "}
           <Link
-            href="/auth/register"
+            href="/register"
             className="font-semibold text-rose-300 underline-offset-4 hover:underline"
           >
             Daftar sekarang
