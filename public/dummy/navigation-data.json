@@ -37,7 +37,7 @@
           "type": "email",
           "icon": "Mail",
           "label": "Customer Service",
-          "value": "cs@kiostetta.com",
+          "value": "cs@turustore.com",
           "description": "Bantuan 24/7 untuk pelanggan"
         }
       ]
@@ -49,7 +49,7 @@
           "type": "email",
           "icon": "Mail",
           "label": "Partnership",
-          "value": "partnerships@kiostetta.com",
+          "value": "partnerships@turustore.com",
           "description": "Kerjasama bisnis dan kolaborasi"
         }
       ]
@@ -142,13 +142,13 @@
   },
   "footer": {
     "companyInfo": {
-      "name": "kiostetta.com",
+      "name": "turustore.com",
       "tagline": "Top Up Games & Voucher Murah, Aman, Cepat",
       "logo": {
         "text": "T",
         "color": "bg-[#C02628]"
       },
-      "copyright": "Copyright © 2025 Kios Tetta All Rights Reserved"
+      "copyright": "Copyright © 2025 Turu Store All Rights Reserved"
     },
     "socialMedia": [
       {
@@ -214,14 +214,14 @@
           "type": "email",
           "icon": "Mail",
           "label": "Customer Service",
-          "value": "cs@kiostetta.com",
+          "value": "cs@turustore.com",
           "description": "Bantuan 24/7 untuk pelanggan"
         },
         {
           "type": "email",
           "icon": "Mail",
           "label": "Partnership",
-          "value": "partnerships@kiostetta.com",
+          "value": "partnerships@turustore.com",
           "description": "Kerjasama bisnis dan kolaborasi"
         },
         {
@@ -258,7 +258,7 @@
     },
     "chatSupport": {
       "title": "Customer Care",
-      "botName": "Kios Tetta Customer Care",
+      "botName": "Turu Store Customer Care",
       "status": "Online",
       "channels": [
         {

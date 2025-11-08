@@ -49,36 +49,37 @@ const currency = (n: string | number) =>
     minimumFractionDigits: 0,
   }).format(typeof n === "string" ? parseFloat(n) : n);
 
+// [DIUBAH] Teks testimoni disesuaikan dengan voice 'Turu Store'
 const testimonials = [
   {
     id: 1,
-    title: "Top up instan, aman, mantap!",
+    title: "Sambil turu, beneran instan.",
     name: "Reza Mahendra",
     rating: 5,
     thumbnail:
       "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=640&q=70&auto=format&fit=crop",
     youtubeId: "dQw4w9WgXcQ",
-    text: "Pembayaran QRIS langsung kebaca, 1 menit sudah masuk. Harga juga paling oke dibanding toko lain.",
+    text: "Pake QRIS, belum sempet melek udah masuk diamond-nya. Harga rebahan, mantap.",
   },
   {
     id: 2,
-    title: "Harga bersaing, CS responsif",
+    title: "Adminnya melek terus, fast respon.",
     name: "Nadia Aulia",
     rating: 5,
     thumbnail:
       "https://images.unsplash.com/photo-1522125670776-3c7abb882bc2?w=640&q=70&auto=format&fit=crop",
     youtubeId: "dQw4w9WgXcQ",
-    text: "WA dibalas cepat, ada kendala salah ID dibantu refund. Recommended!",
+    text: "Kemarin salah ID, dibantu refund. Adminnya nolep 24/7, recommended!",
   },
   {
     id: 3,
-    title: "Pembayaran banyak pilihan",
+    title: "Banyak pilihan bayar, gak ribet.",
     name: "Bagus Pratama",
     rating: 4,
     thumbnail:
       "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=640&q=70&auto=format&fit=crop",
     youtubeId: "dQw4w9WgXcQ",
-    text: "Support VA semua bank, enak tinggal pilih. Proses juga cepat.",
+    text: "Bisa pake VA apa aja. Proses gampang, tinggal lanjut turu.",
   },
 ];
 
@@ -90,24 +91,23 @@ const paymentMethods = [
   { name: "CIMB VA", logo: "🏦" },
 ];
 
-// untuk tab tata cara; pakai MidtransChannel biar “qris” + bank ada semua
 const HOW_TO_TABS: MidtransChannel[] = ["qris", "bca", "bni", "bri", "cimb"];
 
-// data langkah per metode
+// [DIUBAH] Teks tata cara disesuaikan
 const HOW_TO_STEPS: Record<MidtransChannel, string[]> = {
   qris: [
-    "Buka aplikasi e-wallet / mobile banking yang mendukung QRIS.",
+    "Buka aplikasi e-wallet / m-banking lo (Dana, GoPay, OVO, ShopeePay, BCA, dll).",
     "Pilih menu Scan / QR Payment.",
-    "Arahkan kamera ke QR atau unggah gambar QR dari galeri.",
-    "Pastikan nominal pembayaran sesuai tagihan.",
-    "Konfirmasi pembayaran dan tunggu status BERHASIL.",
+    "Scan QR yang muncul di halaman bayar.",
+    "Pastikan nominalnya udah pas sama tagihan.",
+    "Konfirmasi & bayar. Selesai.",
   ],
   bca: [
     "Buka myBCA / KlikBCA / ATM BCA.",
     "Pilih menu Pembayaran > Virtual Account.",
-    "Masukkan Nomor VA yang tertera.",
-    "Periksa nama penerima & nominal, lalu konfirmasi.",
-    "Selesaikan pembayaran hingga status BERHASIL.",
+    "Masukkan Nomor VA yang muncul di tagihan.",
+    "Cek nama penerima (Turu Store) & nominal, lalu konfirmasi.",
+    "Selesaikan pembayaran.",
   ],
   bni: [
     "Buka BNI Mobile / iBanking / ATM BNI.",
@@ -132,33 +132,34 @@ const HOW_TO_STEPS: Record<MidtransChannel, string[]> = {
   ],
 };
 
+// [DIUBAH] Teks tips disesuaikan
 const HOW_TO_TIPS: Record<MidtransChannel, string[]> = {
   qris: [
-    "Jika QR tidak terbaca, gunakan tombol “Buka QR” lalu screenshot/zoom.",
-    "Hindari pembayaran parsial; nominal harus sama persis.",
-    "Saat traffic tinggi, tunggu ±1–3 menit hingga status update otomatis.",
+    "QR-nya nge-blur? Santai, tinggal klik 'Buka QR' terus screenshot/zoom.",
+    "Bayarnya harus pas, jangan dicicil atau dilebihin.",
+    "Lagi jam sibuk? Tunggu 1-3 menit, statusnya bakal update otomatis.",
   ],
   bca: [
-    "VA memiliki masa berlaku. Lakukan pembayaran sebelum kadaluarsa.",
-    "Jika nama penerima berbeda, batalkan & hubungi CS.",
-    "Simpan bukti transaksi (screenshot/struk) untuk percepatan pengecekan.",
+    "VA ada jam kedaluwarsanya. Jangan sampai turu kebablasan.",
+    "Nama penerima bukan Turu Store? Batalin & lapor admin.",
+    "Simpan bukti bayar (screenshot/struk) buat jaga-jaga.",
   ],
   bni: [
-    "Pastikan koneksi stabil saat konfirmasi.",
-    "Jika transaksi gagal namun saldo terpotong, tunggu auto-reversal atau hubungi bank.",
+    "Pastikan koneksi internet aman pas konfirmasi.",
+    "Gagal tapi saldo kepotong? Tenang, biasanya auto-refund atau lapor bank.",
   ],
   bri: [
-    "Gunakan BRIVA untuk proses lebih cepat.",
-    "Jika nominal tidak sesuai, buat pesanan baru agar VA terbit ulang.",
+    "Pakai BRIVA biar lebih cepat.",
+    "Kalau nominal salah, bikin pesanan baru aja biar VA-nya baru.",
   ],
   cimb: [
-    "Beberapa jam sibuk (malam hari) dapat menunda notifikasi; sistem tetap auto-check.",
-    "Cek limit harian agar transaksi tidak ditolak.",
+    "Kadang notifnya telat kalau bayar pas tengah malam. Santai, sistem auto-check.",
+    "Cek limit harian lo, jangan sampai ditolak gara-gara mentok.",
   ],
 };
 
-// dummy agregasi rating untuk visual
 const ratingSummary = {
+  // ... (data dummy tidak berubah) ...
   average: 4.8,
   total: 1287,
   breakdown: {
@@ -176,6 +177,7 @@ export default function GamePage({
   params: Promise<{ slug: string }>;
 }) {
   const resolvedParams = use(params);
+  // ... (State (category, products, selectedPackage, customerNo, dll) tidak berubah) ...
   const { user, isAuthenticated } = useAuth();
 
   const [category, setCategory] = useState<PublicProductCategory | null>(null);
@@ -204,7 +206,7 @@ export default function GamePage({
 
   // tab tata cara
   const [howToTab, setHowToTab] = useState<MidtransChannel>("qris");
-
+  // ... (Logika API calls & useEffects tidak berubah) ...
   const {
     data: categoryData,
     loading: categoryLoading,
@@ -327,7 +329,8 @@ export default function GamePage({
     return (
       <div className="min-h-screen bg-[#141316] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-rose-500 mx-auto mb-4" />
+          {/* [DIUBAH] Warna spinner */}
+          <Loader2 className="h-12 w-12 animate-spin text-yellow-400 mx-auto mb-4" />
         </div>
       </div>
     );
@@ -342,12 +345,13 @@ export default function GamePage({
             Gagal memuat produk
           </h1>
           <div className="space-x-4">
+            {/* [DIUBAH] Tombol "Coba Lagi" disesuaikan */}
             <button
               onClick={() => {
                 fetchCategory();
                 fetchProducts();
               }}
-              className="bg-rose-600 text-white px-6 py-3 rounded-lg hover:bg-rose-700 transition-colors"
+              className="bg-yellow-400 text-slate-900 font-semibold px-6 py-3 rounded-lg hover:bg-yellow-500 transition-colors"
             >
               Coba Lagi
             </button>
@@ -368,8 +372,9 @@ export default function GamePage({
     <div className="flex items-center gap-3">
       <span className="w-8 text-sm text-white/70">{label}</span>
       <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
+        {/* [DIUBAH] Gradien rating bar */}
         <div
-          className="h-full bg-gradient-to-r from-rose-500 to-rose-400"
+          className="h-full bg-gradient-to-r from-yellow-400 to-amber-400"
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -383,7 +388,8 @@ export default function GamePage({
       <div className="border-b border-white/10 bg-[#141316]">
         <div className="container mx-auto px-4 py-3">
           <nav className="flex items-center space-x-2 text-sm text-white/70">
-            <Link href="/" className="hover:text-rose-400">
+            {/* [DIUBAH] Hover link */}
+            <Link href="/" className="hover:text-yellow-400">
               Home
             </Link>
             <ChevronRight size={16} className="text-white/30" />
@@ -415,13 +421,14 @@ export default function GamePage({
                     <p className="mt-1 text-white/80">{category.sub_title}</p>
                   )}
                   <div className="mt-3 flex items-center gap-4 text-sm">
-                    <div className="inline-flex items-center gap-2 text-rose-400">
+                    {/* [DIUBAH] Teks dan warna aksen */}
+                    <div className="inline-flex items-center gap-2 text-yellow-400">
                       <Clock size={16} />
-                      <span>Proses Instan</span>
+                      <span>Proses Sambil Turu</span>
                     </div>
                     <div className="inline-flex items-center gap-2 text-emerald-400">
                       <Shield size={16} />
-                      <span>Support 24/7</span>
+                      <span>Admin Nolep 24/7</span>
                     </div>
                   </div>
                 </div>
@@ -435,7 +442,8 @@ export default function GamePage({
                 {paymentMethods.map((m, i) => (
                   <div
                     key={i}
-                    className="rounded-xl bg-[#0F0E12] ring-1 ring-white/10 p-4 text-center hover:ring-rose-500/50 transition"
+                    // [DIUBAH] Hover ring
+                    className="rounded-xl bg-[#0F0E12] ring-1 ring-white/10 p-4 text-center hover:ring-yellow-500/50 transition"
                   >
                     <div className="text-2xl mb-1">{m.logo}</div>
                     <div className="text-xs text-white/80">{m.name}</div>
@@ -447,10 +455,10 @@ export default function GamePage({
             {/* Tata Cara Pembayaran LENGKAP */}
             <section className="rounded-2xl bg-[#141316] ring-1 ring-white/10 p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold">Tata Cara Pembayaran</h2>
+                <h2 className="text-xl font-bold">Cara Bayar (Anti Ribet)</h2>
                 <div className="flex items-center gap-2 text-white/70 text-sm">
                   <Timer size={16} />
-                  <span>Panduan lengkap per metode</span>
+                  <span>Panduan biar sat-set</span>
                 </div>
               </div>
 
@@ -460,11 +468,12 @@ export default function GamePage({
                   <button
                     key={t}
                     onClick={() => setHowToTab(t)}
+                    // [DIUBAH] Style tab
                     className={[
-                      "px-4 py-2 rounded-xl border transition",
+                      "px-4 py-2 rounded-xl border transition font-semibold",
                       howToTab === t
-                        ? "bg-rose-600 border-rose-500"
-                        : "bg-[#0F0E12] border-white/10 hover:border-rose-500/50",
+                        ? "bg-yellow-400 border-yellow-500 text-slate-900"
+                        : "bg-[#0F0E12] border-white/10 hover:border-yellow-500/50",
                     ].join(" ")}
                   >
                     {t === "qris" ? "QRIS" : t.toUpperCase()}
@@ -483,7 +492,8 @@ export default function GamePage({
                     <ol className="space-y-3">
                       {HOW_TO_STEPS[howToTab].map((s, idx) => (
                         <li key={idx} className="flex items-start gap-3">
-                          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-rose-600 text-white text-sm font-bold grid place-items-center">
+                          {/* [DIUBAH] Warna nomor langkah */}
+                          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-yellow-400 text-slate-900 text-sm font-bold grid place-items-center">
                             {idx + 1}
                           </span>
                           <span className="text-white/90">{s}</span>
@@ -491,11 +501,11 @@ export default function GamePage({
                       ))}
                     </ol>
                     <div className="mt-4 rounded-lg bg-[#141316] ring-1 ring-white/10 p-3 text-sm text-white/80 flex items-start gap-2">
-                      <Info size={16} className="mt-0.5 text-rose-400" />
+                      {/* [DIUBAH] Warna ikon info */}
+                      <Info size={16} className="mt-0.5 text-yellow-400" />
                       <span>
                         Gunakan nomor VA/QR yang tampil di halaman pembayaran
-                        atau pop-up setelah checkout. Nomor bersifat unik untuk
-                        satu pesanan.
+                        atau pop-up setelah checkout. Nomornya unik per pesanan.
                       </span>
                     </div>
                   </div>
@@ -503,8 +513,9 @@ export default function GamePage({
 
                 <div className="md:col-span-2">
                   <div className="rounded-xl bg-[#0F0E12] ring-1 ring-white/10 p-4">
+                    {/* [DIUBAH] Teks tips */}
                     <h3 className="font-semibold mb-3">
-                      Tips & Troubleshooting
+                      Tips Biar Nggak Gagal
                     </h3>
                     <ul className="space-y-2">
                       {HOW_TO_TIPS[howToTab].map((tip, i) => (
@@ -521,10 +532,9 @@ export default function GamePage({
                       ))}
                     </ul>
                     <div className="mt-4 rounded-lg bg-[#141316] ring-1 ring-white/10 p-3 text-xs text-white/70">
-                      <b>S&K:</b> Pembayaran yang melewati batas waktu akan
-                      otomatis kadaluarsa. Jika saldo terpotong namun status
-                      belum masuk, sistem akan melakukan auto-check &
-                      auto-reversal sesuai kebijakan bank.
+                      <b>S&K:</b> Jangan kelamaan bayar, nanti VA/QR-nya
+                      kadaluwarsa. Kalau saldo kepotong tapi status pending,
+                      santai, sistem bakal cek otomatis.
                     </div>
                   </div>
                 </div>
@@ -537,12 +547,14 @@ export default function GamePage({
                 {/* left: summary */}
                 <div className="md:col-span-1 rounded-2xl bg-[#0F0E12] ring-1 ring-white/10 p-5 text-center">
                   <div className="text-sm text-white/70">Rating Rata-rata</div>
-                  <div className="mt-1 text-5xl font-extrabold text-rose-400">
+                  {/* [DIUBAH] Warna rating */}
+                  <div className="mt-1 text-5xl font-extrabold text-yellow-400">
                     {ratingSummary.average.toFixed(1)}
                   </div>
                   <div className="mt-1 text-white/60 text-xs">
                     dari {ratingSummary.total.toLocaleString("id-ID")} ulasan
                   </div>
+                  {/* [TETAP] Bintang sudah kuning */}
                   <div className="mt-4 flex items-center justify-center gap-1 text-amber-400">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star
@@ -560,6 +572,7 @@ export default function GamePage({
 
                 {/* middle: breakdown */}
                 <div className="md:col-span-1 space-y-2">
+                  {/* Komponen RatingBar sudah diubah di atas */}
                   <RatingBar label="5★" pct={ratingSummary.breakdown[5]} />
                   <RatingBar label="4★" pct={ratingSummary.breakdown[4]} />
                   <RatingBar label="3★" pct={ratingSummary.breakdown[3]} />
@@ -580,11 +593,12 @@ export default function GamePage({
                     ].map((chip, idx) => (
                       <button
                         key={idx}
+                        // [DIUBAH] Style filter chips
                         className={[
-                          "px-3 py-1.5 rounded-full text-sm border",
+                          "px-3 py-1.5 rounded-full text-sm border font-semibold",
                           idx === 0
-                            ? "bg-rose-600 border-rose-500"
-                            : "bg-[#0F0E12] border-white/10 hover:border-rose-500/50",
+                            ? "bg-yellow-400 border-yellow-500 text-slate-900"
+                            : "bg-[#0F0E12] border-white/10 hover:border-yellow-500/50",
                         ].join(" ")}
                       >
                         {chip}
@@ -593,7 +607,7 @@ export default function GamePage({
                   </div>
                   <div className="mt-4 text-xs text-white/60 flex items-center gap-2">
                     <ThumbsUp size={14} />
-                    <span>Ulasan terverifikasi oleh sistem transaksi.</span>
+                    <span>Ulasan terverifikasi dari pembeli.</span>
                   </div>
                 </div>
               </div>
@@ -623,12 +637,17 @@ export default function GamePage({
                         className="absolute inset-0 grid place-items-center bg-black/30 hover:bg-black/40 transition"
                         aria-label="Tonton di YouTube"
                       >
-                        <span className="w-12 h-12 rounded-full bg-rose-600 grid place-items-center">
-                          <Play className="text-white ml-0.5" size={22} />
+                        {/* [DIUBAH] Tombol play */}
+                        <span className="w-12 h-12 rounded-full bg-yellow-400 grid place-items-center">
+                          <Play
+                            className="text-slate-900 ml-0.5"
+                            size={22}
+                          />
                         </span>
                       </button>
                     </div>
                     <div className="p-4">
+                      {/* [TETAP] Bintang sudah kuning */}
                       <div className="flex items-center gap-1 text-amber-400 mb-1">
                         {Array.from({ length: 5 }).map((_, i) => (
                           <Star
@@ -657,10 +676,13 @@ export default function GamePage({
           <div className="lg:col-span-1">
             <div className="sticky top-8">
               <div className="overflow-hidden rounded-2xl ring-1 ring-white/10 bg-[#141316]">
-                <div className="bg-gradient-to-r from-rose-700 via-rose-600 to-rose-500 p-6 text-white">
-                  <h2 className="text-xl font-bold mb-1">Pesan Sekarang</h2>
-                  <p className="text-white/90 text-sm">
-                    Proses cepat • Aman • Resmi
+                {/* [DIUBAH] Header form */}
+                <div className="bg-gradient-to-r from-yellow-400 to-amber-500 p-6 text-slate-900">
+                  <h2 className="text-xl font-bold mb-1">
+                    Isi Form Sambil Turu
+                  </h2>
+                  <p className="text-slate-800/90 text-sm font-medium">
+                    Harga Rebah • Instan • 100% Legal
                   </p>
                 </div>
 
@@ -675,7 +697,8 @@ export default function GamePage({
                       value={customerNo}
                       onChange={(e) => setCustomerNo(e.target.value)}
                       placeholder="Game ID / Customer Number *"
-                      className="w-full px-4 py-3 rounded-lg bg-[#0F0E12] text-white placeholder-white/40 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-rose-600"
+                      // [DIUBAH] Focus ring
+                      className="w-full px-4 py-3 rounded-lg bg-[#0F0E12] text-white placeholder-white/40 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-yellow-500"
                     />
                   </div>
 
@@ -690,21 +713,24 @@ export default function GamePage({
                         value={customerName}
                         onChange={(e) => setCustomerName(e.target.value)}
                         placeholder="Nama (opsional)"
-                        className="w-full px-4 py-3 rounded-lg bg-[#0F0E12] text-white placeholder-white/40 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-rose-600"
+                        // [DIUBAH] Focus ring
+                        className="w-full px-4 py-3 rounded-lg bg-[#0F0E12] text-white placeholder-white/40 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-yellow-500"
                       />
                       <input
                         type="email"
                         value={customerEmail}
                         onChange={(e) => setCustomerEmail(e.target.value)}
-                        placeholder="Email (opsional)"
-                        className="w-full px-4 py-3 rounded-lg bg-[#0F0E12] text-white placeholder-white/40 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-rose-600"
+                        placeholder="Email (opsional, buat bukti bayar)"
+                        // [DIUBAH] Focus ring
+                        className="w-full px-4 py-3 rounded-lg bg-[#0F0E12] text-white placeholder-white/40 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-yellow-500"
                       />
                       <input
                         type="tel"
                         value={customerPhone}
                         onChange={(e) => setCustomerPhone(e.target.value)}
-                        placeholder="Nomor WhatsApp *"
-                        className="w-full px-4 py-3 rounded-lg bg-[#0F0E12] text-white placeholder-white/40 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-rose-600"
+                        placeholder="Nomor WA Aktif * (Buat notif)"
+                        // [DIUBAH] Focus ring
+                        className="w-full px-4 py-3 rounded-lg bg-[#0F0E12] text-white placeholder-white/40 ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-yellow-500"
                       />
                     </div>
                   </div>
@@ -722,11 +748,12 @@ export default function GamePage({
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => setSelectedPackage(p)}
+                            // [DIUBAH] Style paket
                             className={[
                               "p-4 rounded-lg text-left transition-all ring-1",
                               selectedPackage?.id === p.id
-                                ? "bg-rose-950/40 ring-rose-600"
-                                : "bg-[#0F0E12] ring-white/10 hover:ring-rose-500/40",
+                                ? "bg-yellow-950/40 ring-yellow-500"
+                                : "bg-[#0F0E12] ring-white/10 hover:ring-yellow-500/40",
                             ].join(" ")}
                           >
                             <div className="flex items-center justify-between gap-3">
@@ -739,7 +766,8 @@ export default function GamePage({
                                 )}
                               </div>
                               <div className="text-right">
-                                <div className="font-bold text-rose-400">
+                                {/* [DIUBAH] Warna harga */}
+                                <div className="font-bold text-yellow-400">
                                   {currency(p.sell_price)}
                                 </div>
                               </div>
@@ -748,16 +776,17 @@ export default function GamePage({
                         ))}
                       </div>
                     ) : (
+                      // [DIUBAH] Teks empty state
                       <div className="text-center py-8 rounded-lg bg-[#0F0E12] ring-1 ring-white/10">
                         <AlertCircle
                           size={48}
                           className="mx-auto text-white/40 mb-3"
                         />
                         <p className="text-white/80 font-medium mb-1">
-                          Paket belum tersedia.
+                          Paketnya lagi turu. zZz
                         </p>
                         <p className="text-white/60 text-sm">
-                          Coba lagi nanti ya 😅🙏
+                          Coba refresh atau cek lagi nanti.
                         </p>
                       </div>
                     )}
@@ -772,11 +801,12 @@ export default function GamePage({
                       <button
                         type="button"
                         onClick={() => setPaymentType("qris")}
+                        // [DIUBAH] Style tombol payment
                         className={[
-                          "px-4 py-2 rounded-lg ring-1 transition",
+                          "px-4 py-2 rounded-lg ring-1 transition font-semibold",
                           paymentType === "qris"
-                            ? "bg-rose-600 ring-rose-500 text-white"
-                            : "bg-[#0F0E12] ring-white/10 text-white/80 hover:ring-rose-500/40",
+                            ? "bg-yellow-400 ring-yellow-500 text-slate-900"
+                            : "bg-[#0F0E12] ring-white/10 text-white/80 hover:ring-yellow-500/40",
                         ].join(" ")}
                       >
                         QRIS
@@ -784,11 +814,12 @@ export default function GamePage({
                       <button
                         type="button"
                         onClick={() => setPaymentType("bank_transfer")}
+                        // [DIUBAH] Style tombol payment
                         className={[
-                          "px-4 py-2 rounded-lg ring-1 transition",
+                          "px-4 py-2 rounded-lg ring-1 transition font-semibold",
                           paymentType === "bank_transfer"
-                            ? "bg-rose-600 ring-rose-500 text-white"
-                            : "bg-[#0F0E12] ring-white/10 text-white/80 hover:ring-rose-500/40",
+                            ? "bg-yellow-400 ring-yellow-500 text-slate-900"
+                            : "bg-[#0F0E12] ring-white/10 text-white/80 hover:ring-yellow-500/40",
                         ].join(" ")}
                       >
                         Bank Transfer (VA)
@@ -801,8 +832,10 @@ export default function GamePage({
                             type="radio"
                             checked={paymentChannel === "qris"}
                             onChange={() => setPaymentChannel("qris")}
+                            // [DIUBAH] Radio button
+                            className="text-yellow-400 focus:ring-yellow-500"
                           />
-                          <span>QRIS (semua e-wallet & mobile banking)</span>
+                          <span>QRIS (semua e-wallet & m-banking)</span>
                         </label>
                       </div>
                     ) : (
@@ -812,15 +845,17 @@ export default function GamePage({
                         ).map((ch) => (
                           <label
                             key={ch}
+                            // [DIUBAH] Style radio
                             className={[
                               "p-3 rounded-lg ring-1 cursor-pointer text-center",
                               paymentChannel === ch
-                                ? "bg-rose-950/40 ring-rose-600"
-                                : "bg-[#0F0E12] ring-white/10 hover:ring-rose-500/40",
+                                ? "bg-yellow-950/40 ring-yellow-500"
+                                : "bg-[#0F0E12] ring-white/10 hover:ring-yellow-500/40",
                             ].join(" ")}
                           >
                             <input
-                              className="mr-2"
+                              // [DIUBAH] Radio button
+                              className="mr-2 text-yellow-400 focus:ring-yellow-500"
                               type="radio"
                               checked={paymentChannel === ch}
                               onChange={() => setPaymentChannel(ch)}
@@ -832,7 +867,7 @@ export default function GamePage({
                     )}
                   </div>
 
-                  {/* Error */}
+                  {/* [TETAP] Error state tetap merah */}
                   {checkoutError && (
                     <div className="rounded-lg p-4 bg-rose-950/30 ring-1 ring-rose-600/40">
                       <div className="flex items-center gap-2 text-rose-300">
@@ -855,10 +890,11 @@ export default function GamePage({
                     }}
                     onClick={handleCheckout}
                     disabled={!isFormValid || isCheckoutLoading}
+                    // [DIUBAH] Style tombol checkout
                     className={[
                       "w-full py-4 rounded-lg font-semibold text-lg transition-all",
                       isFormValid && !isCheckoutLoading
-                        ? "bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-900/30"
+                        ? "bg-yellow-400 hover:bg-yellow-500 text-slate-900 shadow-lg shadow-yellow-900/30"
                         : "bg-white/10 text-white/50 cursor-not-allowed",
                     ].join(" ")}
                   >
@@ -868,15 +904,16 @@ export default function GamePage({
                         <span>Memproses…</span>
                       </div>
                     ) : (
-                      "Buat Pesanan"
+                      "Bayar Sekarang"
                     )}
                   </motion.button>
 
                   <p className="text-xs text-white/60 text-center">
-                    Dengan menekan tombol di atas, Anda setuju dengan{" "}
+                    Dengan menekan tombol di atas, lo setuju dengan{" "}
                     <Link
                       href="/terms"
-                      className="text-rose-400 hover:underline"
+                      // [DIUBAH] Link terms
+                      className="text-yellow-400 hover:underline"
                     >
                       Syarat &amp; Ketentuan
                     </Link>
@@ -897,12 +934,13 @@ export default function GamePage({
             className="absolute inset-0 bg-black/70"
             onClick={() => setShowPayment(false)}
           />
-          <div className="relative z-50 max-w-xl mx-auto mt-20 rounded-2xl overflow-hidden ring-1 ring-rose-600/30 bg-[#141316]">
-            <div className="bg-gradient-to-r from-rose-700 via-rose-600 to-rose-500 p-5">
-              <h3 className="text-lg font-bold">
+          {/* [DIUBAH] Style header modal */}
+          <div className="relative z-50 max-w-xl mx-auto mt-20 rounded-2xl overflow-hidden ring-1 ring-yellow-600/30 bg-[#141316]">
+            <div className="bg-gradient-to-r from-yellow-500 to-amber-500 p-5">
+              <h3 className="text-lg font-bold text-slate-900">
                 Pembayaran {paymentData.midtrans_payment_type?.toUpperCase()}
               </h3>
-              <p className="text-white/90 text-sm">
+              <p className="text-slate-800/90 text-sm font-medium">
                 Order: {paymentData.order_id} • Ref: {paymentData.reference}
               </p>
             </div>
@@ -912,7 +950,8 @@ export default function GamePage({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="rounded-xl bg-[#0F0E12] ring-1 ring-white/10 p-4">
                   <div className="text-white/70 text-sm">Total Bayar</div>
-                  <div className="text-2xl font-extrabold text-rose-400">
+                  {/* [DIUBAH] Warna amount */}
+                  <div className="text-2xl font-extrabold text-yellow-400">
                     {currency(paymentData.amount)}
                   </div>
                 </div>
@@ -936,7 +975,8 @@ export default function GamePage({
                       href={paymentData.midtrans_account_number || "#"}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-rose-400 text-sm inline-flex items-center gap-1 hover:underline"
+                      // [DIUBAH] Link buka QR
+                      className="text-yellow-400 text-sm inline-flex items-center gap-1 hover:underline"
                     >
                       Buka QR <ExternalLink size={14} />
                     </a>
@@ -953,12 +993,13 @@ export default function GamePage({
                     )}
                   </div>
                   <div className="mt-4 flex items-center gap-2">
+                    {/* [DIUBAH] Tombol copy */}
                     <button
                       onClick={() =>
                         paymentData.midtrans_account_number &&
                         copy(paymentData.midtrans_account_number, "qr")
                       }
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-yellow-400 text-slate-900 font-semibold hover:bg-yellow-500"
                     >
                       <ClipboardCopy size={16} />
                       Salin Link QR
@@ -970,8 +1011,8 @@ export default function GamePage({
                     )}
                   </div>
                   <p className="text-white/60 text-xs mt-3">
-                    Bayar via e-wallet atau mobile banking yang mendukung QRIS.
-                    Pastikan nominal sesuai.
+                    Bayar via e-wallet atau m-banking yang support QRIS. Pastikan
+                    nominalnya pas.
                   </p>
                 </div>
               ) : (
@@ -987,12 +1028,13 @@ export default function GamePage({
                         {paymentData.midtrans_account_number ?? "-"}
                       </div>
                     </div>
+                    {/* [DIUBAH] Tombol copy */}
                     <button
                       onClick={() =>
                         paymentData.midtrans_account_number &&
                         copy(paymentData.midtrans_account_number, "va")
                       }
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-700"
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-400 text-slate-900 font-semibold hover:bg-yellow-500"
                     >
                       <ClipboardCopy size={16} />
                       Salin
@@ -1030,7 +1072,7 @@ export default function GamePage({
                     ? `Batas bayar: ${new Date(
                         paymentData.expires_at
                       ).toLocaleString("id-ID")}`
-                    : "Segera selesaikan pembayaran sebelum batas waktu berakhir."}
+                    : "Segera selesaikan pembayaran."}
                 </div>
                 <div className="flex gap-3">
                   {paymentData.payment_link && (
@@ -1043,9 +1085,10 @@ export default function GamePage({
                       Buka Halaman Payment
                     </a>
                   )}
+                  {/* [DIUBAH] Tombol Selesai */}
                   <button
                     onClick={() => setShowPayment(false)}
-                    className="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700"
+                    className="px-4 py-2 rounded-lg bg-yellow-400 text-slate-900 font-semibold hover:bg-yellow-500"
                   >
                     Selesai
                   </button>

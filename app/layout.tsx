@@ -15,7 +15,7 @@ const RussoOneMono = Russo_One({
 });
 
 export const metadata: Metadata = {
-  title: "KIOS TETTA",
+  title: "Turu Store",
   description: "Top Up Games & Voucher Murah, Aman, Cepat",
 };
 

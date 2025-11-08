@@ -38,6 +38,7 @@ type Item = {
 };
 
 const SAMPLE_ITEMS: Item[] = [
+  // ... (data sampel tidak berubah) ...
   {
     id: 1,
     title: "Roblox",
@@ -71,6 +72,7 @@ const SAMPLE_ITEMS: Item[] = [
 ];
 
 const POPULAR: Array<{ label: string; href: string }> = [
+  // ... (data sampel tidak berubah) ...
   { label: "Roblox", href: "/roblox" },
   { label: "Mobile Legends", href: "/mobile-legends" },
   { label: "Genshin Impact", href: "/genshin" },
@@ -89,7 +91,7 @@ export default function GameHeader() {
   const [openProfile, setOpenProfile] = React.useState(false);
   const [locale, setLocale] = React.useState<"id-IDR" | "en-USD">("id-IDR");
 
-  // Ctrl+K / /
+  // ... (useEffect untuk Ctrl+K tidak berubah) ...
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const isK = (e.key === "k" || e.key === "K") && (e.ctrlKey || e.metaKey);
@@ -103,13 +105,13 @@ export default function GameHeader() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // helper active nav
+  // ... (helper active nav tidak berubah) ...
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
     return pathname?.startsWith(href);
   };
 
-  // avatar initial
+  // ... (avatar initial tidak berubah) ...
   const initial = (
     session?.user?.name?.trim()?.charAt(0) ||
     session?.user?.email?.trim()?.charAt(0) ||
@@ -118,33 +120,38 @@ export default function GameHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 flex h-20 w-full items-center gap-4 border-b border-white/70 bg-[#37353E]/95 px-4 text-white backdrop-blur md:px-8">
+      <header className="sticky top-0 z-50 flex h-20 w-full items-center gap-4 border-b border-white/10 bg-[#37353E]/95 px-4 text-white backdrop-blur md:px-8">
         {/* LEFT: logo */}
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-red-700 ring-2 ring-red-500/40 shadow-md">
-            <Image
-              src="/images/LOGO.png"
-              alt="logo"
-              width={40}
-              height={40}
-              className="rounded-full"
-            />
-          </div>
+        <Link href="/">
+          <div className="flex items-center gap-3">
+              {/* [DIUBAH] Menghilangkan background gradien merah */}
+              <div className="flex h-12 w-12 items-center justify-center">
+                <Image
+                  src="/images/turu-store.webp" // Pastikan ini path ke logo baru Anda
+                  alt="Logo Turu Store - Maskot Hantu Gaming"
+                  width={48} // Sedikit dibesarkan agar pas
+                  height={48}
+                  className="rounded-full" // Asumsi logo Anda sudah circular
+                />
+              </div>
 
-          <div className="leading-none">
-            <span
-              className={`${oxanium.className} text-[1.5rem] md:text-[1.7rem] font-semibold tracking-[0.02em] text-white drop-shadow`}
-            >
-              Kios{" "}
-              <span className="bg-gradient-to-r from-red-400 via-red-200 to-amber-200 bg-clip-text text-transparent">
-                Tetta
-              </span>
-            </span>
-            <p className="mt-1 text-[0.65rem] uppercase tracking-[0.3em] text-white/35">
-              premium gaming store
-            </p>
+              <div className="leading-none">
+                <span
+                  className={`${oxanium.className} text-[1.5rem] md:text-[1.7rem] font-semibold tracking-[0.02em] text-white drop-shadow`}
+                >
+                  Turu{" "}
+                  {/* [DIUBAH] Gradien "Store" disesuaikan dengan palet baru */}
+                  <span className="bg-gradient-to-r from-yellow-300 via-cyan-400 to-yellow-300 bg-clip-text text-transparent">
+                    Store
+                  </span>
+                </span>
+                {/* [DIUBAH] Subtitle diubah ke slogan brand */}
+                <p className="mt-1 text-[0.65rem] uppercase tracking-[0.3em] text-white/40">
+                  top-up semudah turu
+                </p>
+              </div>
           </div>
-        </div>
+        </Link>
 
         {/* SEARCH trigger */}
         <div
@@ -152,18 +159,23 @@ export default function GameHeader() {
           tabIndex={0}
           onClick={() => setOpenSearch(true)}
           onKeyDown={(e) => {
+            // ... (logika onKeyDown tidak berubah) ...
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
               setOpenSearch(true);
             }
           }}
-          className="group hidden flex-1 items-center gap-2 rounded-md bg-[#5a6067] px-4 py-2 text-left text-sm text-white/90 transition hover:bg-[#6a7077] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 md:flex"
+          // [DIUBAH] Warna ring focus disesuaikan
+          className="group hidden flex-1 items-center gap-2 rounded-md bg-[#5a6067] px-4 py-2 text-left text-sm text-white/90 transition hover:bg-[#6a7077] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 md:flex"
         >
           <Search className="h-4 w-4 opacity-80" />
-          <span className="flex-1 truncate">Cari Game atau Voucher</span>
+          {/* [DIUBAH] Teks placeholder disesuaikan dengan tone */}
+          <span className="flex-1 truncate">
+            Cari game... (sambil merem jg bisa)
+          </span>
 
           {/* Locale pill */}
-          <button
+          {/* <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
@@ -220,11 +232,11 @@ export default function GameHeader() {
                 </button>
               </div>
             ) : null}
-          </button>
+          </button> */}
 
-          <kbd className="pointer-events-none hidden select-none items-center gap-1 rounded bg-[#101114] px-2 py-1 text-[10px] text-white/70 md:inline-flex">
+          {/* <kbd className="pointer-events-none hidden select-none items-center gap-1 rounded bg-[#101114] px-2 py-1 text-[10px] text-white/70 md:inline-flex">
             <Keyboard className="mr-1 h-3 w-3 opacity-70" /> Ctrl K
-          </kbd>
+          </kbd> */}
         </div>
 
         {/* RIGHT NAV */}
@@ -236,8 +248,22 @@ export default function GameHeader() {
             }`}
           >
             Topup
+            {/* [DIUBAH] Warna underline aktif */}
             {isActive("/") && (
-              <span className="absolute -bottom-[14px] left-0 right-0 mx-auto h-[2px] w-8 rounded-full bg-red-500" />
+              <span className="absolute -bottom-[14px] left-0 right-0 mx-auto h-[2px] w-8 rounded-full bg-yellow-400" />
+            )}
+          </Link>
+
+          <Link
+            href="/leaderboard"
+            className={`relative pb-1 transition ${
+              isActive("/leaderboard") ? "text-white" : "text-white/90 hover:text-white"
+            }`}
+          >
+            Leaderboard
+            {/* [DIUBAH] Warna underline aktif */}
+            {isActive("/leaderboard") && (
+              <span className="absolute -bottom-[14px] left-0 right-0 mx-auto h-[2px] w-8 rounded-full bg-yellow-400" />
             )}
           </Link>
 
@@ -250,8 +276,9 @@ export default function GameHeader() {
             }`}
           >
             Cek Transaksi
+            {/* [DIUBAH] Warna underline aktif */}
             {isActive("/riwayat") && (
-              <span className="absolute -bottom-[14px] left-0 right-0 mx-auto h-[2px] w-8 rounded-full bg-red-500" />
+              <span className="absolute -bottom-[14px] left-0 right-0 mx-auto h-[2px] w-8 rounded-full bg-yellow-400" />
             )}
           </Link>
         </nav>
@@ -270,10 +297,11 @@ export default function GameHeader() {
                 <LogIn className="h-4 w-4" />
                 Masuk
               </Button>
+              {/* [DIUBAH] Tombol "Daftar" disesuaikan dengan warna aksen */}
               <Button
                 type="button"
                 onClick={() => router.push("/register")}
-                className="hidden gap-1 bg-red-600 text-white hover:bg-red-700 md:inline-flex"
+                className="hidden gap-1 bg-yellow-400 font-semibold text-slate-900 hover:bg-yellow-500 md:inline-flex"
               >
                 <UserPlus className="h-4 w-4" />
                 Daftar
@@ -289,8 +317,8 @@ export default function GameHeader() {
                 aria-haspopup="menu"
                 aria-expanded={openProfile}
               >
-                {/* Avatar */}
-                <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-red-600 to-red-500 text-sm font-bold">
+                {/* [DIUBAH] Warna fallback avatar disesuaikan */}
+                <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-yellow-400 to-cyan-400 text-sm font-bold text-slate-900">
                   {session?.user?.image ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -320,10 +348,11 @@ export default function GameHeader() {
                     <User2 className="h-4 w-4 text-white/70" />
                     Profile
                   </Link>
+                  {/* Biarkan logout tetap merah, karena ini aksi "destruktif" */}
                   <button
                     type="button"
                     onClick={() => signOut({ callbackUrl: "/" })}
-                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-red-200 hover:bg-red-500/10"
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-red-300 hover:bg-red-500/10"
                   >
                     <LogOut className="h-4 w-4" />
                     Logout
@@ -333,7 +362,7 @@ export default function GameHeader() {
             </div>
           )}
 
-          {/* mobile search + menu */}
+          {/* ... (Tombol mobile tidak berubah) ... */}
           <button
             type="button"
             onClick={() => setOpenSearch(true)}
@@ -378,6 +407,7 @@ function SearchDialog({
   const [cursor, setCursor] = React.useState(0);
   const [recents, setRecents] = React.useState<string[]>([]);
 
+  // ... (logika React.useEffect tidak berubah) ...
   React.useEffect(() => {
     const raw = localStorage.getItem(RECENTS_KEY);
     if (raw) setRecents(JSON.parse(raw));
@@ -444,9 +474,11 @@ function SearchDialog({
                 setQ(e.target.value);
                 setCursor(0);
               }}
-              placeholder="Cari game, voucher, atau promo…"
+              // [DIUBAH] Placeholder modal search
+              placeholder="Cari game, voucher... zZz..."
               className="flex-1 bg-transparent text-sm text-white/90 outline-none placeholder:text-white/45"
             />
+            {/* ... (sisa modal tidak berubah) ... */}
             <kbd className="hidden select-none rounded bg:white/10 px-2 py-1 text-[10px] text-white/70 md:block">
               Esc
             </kbd>
@@ -464,6 +496,7 @@ function SearchDialog({
             {/* left */}
             <div className="space-y-2">
               {results.length === 0 ? (
+                // [DIUBAH] Passing props ke EmptyState
                 <EmptyState query={q} />
               ) : (
                 <ul className="max-h-[50vh] overflow-y-auto pr-1">
@@ -478,7 +511,7 @@ function SearchDialog({
                         }}
                         className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition ${
                           i === cursor
-                            ? "bg-white/10"
+                            ? "bg-white/10" // Sorotan tetap netral
                             : "hover:bg-white/5 active:bg-white/10"
                         }`}
                       >
@@ -518,7 +551,8 @@ function SearchDialog({
 
               <div>
                 <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-white/50">
-                  <Flame className="h-3.5 w-3.5 text-amber-300" /> Sedang ramai
+                  {/* [DIUBAH] Ikon disesuaikan dengan aksen */}
+                  <Flame className="h-3.5 w-3.5 text-yellow-300" /> Sedang ramai
                 </div>
                 <div className="space-y-1">
                   {POPULAR.map((p) => (
@@ -537,6 +571,7 @@ function SearchDialog({
           </div>
 
           <div className="flex items-center justify-between border-t border-white/10 px-4 py-2 text-[11px] text-white/50">
+            {/* ... (footer modal tidak berubah) ... */}
             <span>Tekan ↑ ↓ untuk navigasi • Enter untuk pilih</span>
             <span className="hidden md:inline">
               Pintasan: <kbd className="rounded bg-white/10 px-1">Ctrl</kbd>+
@@ -550,6 +585,7 @@ function SearchDialog({
   );
 }
 
+// ... (Komponen Recents tidak berubah) ...
 function Recents({
   recents,
   onPick,
@@ -579,6 +615,7 @@ function Recents({
   );
 }
 
+// ... (Komponen ItemIcon tidak berubah) ...
 function ItemIcon({ type }: { type: Item["icon"] }) {
   const base =
     "h-5 w-5 shrink-0 rounded-md bg-white/10 p-1.5 text-white/80 ring-1 ring-white/10";
@@ -587,18 +624,19 @@ function ItemIcon({ type }: { type: Item["icon"] }) {
   return <TicketPercent className={base} />;
 }
 
+// [DIUBAH] Komponen EmptyState disesuaikan
 function EmptyState({ query }: { query: string }) {
   return (
     <div className="flex h-[32vh] flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-white/10 bg-white/[0.02] text-center">
       <Search className="h-6 w-6 text-white/40" />
       <p className="text-sm text-white/70">
         {query
-          ? `Tidak ada hasil untuk “${query}”.`
-          : "Mulai ketik untuk mencari."}
+          ? `Nggak nemu apa-apa untuk “${query}”.`
+          : "Mulai ketik... jangan sampai turu beneran."}
       </p>
       {!query && (
         <p className="text-xs text-white/40">
-          {`Coba: “Roblox”, “ML 86”, atau “Google Play”.`}
+          {`Coba: “MLBB”, “Robux”, atau “Voucher... zZz”`}
         </p>
       )}
     </div>

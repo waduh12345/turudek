@@ -219,7 +219,7 @@ const ProdukPageContent = () => {
           <div className="relative max-w-2xl mx-auto">
             <input
               type="text"
-              placeholder="Cari di Kios Tetta"
+              placeholder="Cari di Turu Store"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-4 py-3 pl-12 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C02628] focus:border-transparent text-sm"

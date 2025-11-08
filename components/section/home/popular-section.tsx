@@ -23,30 +23,32 @@ const toSlug = (s: string) =>
 function PopularCard({
   title,
   imgSrc,
-  gradient = "from-[#5B6AA4] to-[#8AA3D6]",
 }: {
   title: string;
   imgSrc: string;
-  gradient?: string;
 }) {
   return (
-    <div className="relative group overflow-hidden rounded-2xl h-28 md:h-28 transform-gpu transition-all duration-500 cursor-pointer hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-black/40 ring-2 ring-white/15 hover:ring-rose-400/60">
+    // [DIUBAH] Warna ring hover diubah dari 'rose' ke 'yellow'
+    <div className="relative group overflow-hidden rounded-2xl h-28 md:h-28 transform-gpu transition-all duration-500 cursor-pointer hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-black/40 ring-2 ring-white/15 hover:ring-yellow-400/60">
       <div className="pointer-events-none absolute inset-0 rounded-2xl p-px">
         <div
           className="absolute inset-0 rounded-2xl opacity-70 transition-opacity duration-500 group-hover:opacity-100"
           style={{
+            // [DIUBAH] Warna gradien glow diubah dari RGBA 'rose' ke RGBA 'yellow' (250, 204, 21 adalah yellow-400)
             background:
-              "linear-gradient(135deg, rgba(255,255,255,.10), transparent 30%), linear-gradient(135deg, rgba(244,63,94,.35), rgba(244,63,94,.12))",
+              "linear-gradient(135deg, rgba(255,255,255,.10), transparent 30%), linear-gradient(135deg, rgba(250,204,21,.35), rgba(250,204,21,.12))",
           }}
         />
       </div>
 
+      {/* [DIUBAH] Menghilangkan prop 'gradient' dan memakai warna solid yang konsisten */}
       <div
-        className={`absolute inset-0 bg-gradient-to-r ${gradient} opacity-80`}
+        className={`absolute inset-0 bg-[#2b2a30] opacity-80`}
       />
 
       <div className="relative flex h-full items-center gap-4 p-4 md:p-6">
-        <div className="relative h-16 w-16 md:h-20 md:w-20 shrink-0 overflow-hidden rounded-xl ring-1 ring-white/15 transition duration-500 group-hover:ring-rose-400/60">
+        {/* [DIUBAH] Warna ring hover diubah dari 'rose' ke 'yellow' */}
+        <div className="relative h-16 w-16 md:h-20 md:w-20 shrink-0 overflow-hidden rounded-xl ring-1 ring-white/15 transition duration-500 group-hover:ring-yellow-400/60">
           <Image
             src={imgSrc || DUMMY_IMG}
             alt={title}
@@ -59,8 +61,9 @@ function PopularCard({
           <h3 className="truncate text-base md:text-lg font-semibold text-white">
             {title}
           </h3>
+          {/* [DIUBAH] Teks sub-card disesuaikan */}
           <p className="mt-1 truncate text-xs md:text-sm text-white/80 group-hover:text-white">
-            Populer sekarang
+            Lagi di-push rank
           </p>
         </div>
       </div>
@@ -99,7 +102,7 @@ export default function PopularSection() {
     if (subRes?.data?.data) setSubs(subRes.data.data);
   }, [parentRes, subRes]);
 
-  // ambil beberapa kategori populer dari parent "Games" jika ada; kalau tidak, pakai 6 subcategory pertama yang tersedia
+  // ... (logika 'popularItems' tidak berubah, sudah bagus) ...
   const popularItems = useMemo(() => {
     const gamesParent = parents.find(
       (p) =>
@@ -129,14 +132,19 @@ export default function PopularSection() {
 
   return (
     <>
+      {/* Background section sudah pas (bg-[#37353E]) */}
       <section className="w-full bg-[#37353E] py-8 md:py-12">
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex items-center gap-2">
             <span className="text-lg">🔥</span>
-            <h2 className="text-lg font-bold text-white">POPULER SEKARANG!</h2>
+            {/* [DIUBAH] Judul disesuaikan dengan voice 'Turu Store' */}
+            <h2 className="text-lg font-bold text-white">
+              YANG LAGI DI-GRINDING
+            </h2>
           </div>
+          {/* [DIUBAH] Sub-judul disesuaikan dengan voice 'Turu Store' */}
           <p className="mt-2 max-w-2xl text-sm text-white/75">
-            Berikut adalah beberapa produk yang paling populer saat ini.
+            Nih, yang lagi sering di-checkout sama kaum rebahan. Gas.
           </p>
 
           <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">

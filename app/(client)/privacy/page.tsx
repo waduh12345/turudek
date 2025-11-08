@@ -1,9 +1,10 @@
+// app/kebijakan-privasi/page.tsx
 import Link from "next/link";
 
 export const metadata = {
-  title: "Kebijakan Privasi | kios tetta",
+  title: "Kebijakan Privasi | Turu Store",
   description:
-    "Kebijakan Privasi kios tetta: jenis data yang kami kumpulkan, cara penggunaan, cookies, hak pengguna (GDPR/CCPA), dan informasi kontak.",
+    "Kebijakan Privasi Turu Store: jenis data yang kami kumpulkan, cara penggunaan, cookies, hak pengguna (GDPR/CCPA), dan informasi kontak.",
 };
 export default function PrivacyPolicyPage() {
   const updated = "3 Nov 2025";
@@ -13,14 +14,17 @@ export default function PrivacyPolicyPage() {
       {/* Hero */}
       <section className="border-b border-white/10 bg-[#26262b]">
         <div className="mx-auto max-w-7xl px-4 py-10">
-          <p className="text-center text-xs font-semibold tracking-widest text-rose-300">
-            PRIVACY POLICY
+          {/* [DIUBAH] Warna subtitle disesuaikan */}
+          <p className="text-center text-xs font-semibold tracking-widest text-yellow-400">
+            KEBIJAKAN PRIVASI
           </p>
+          {/* [DIUBAH] Judul dan aksen disesuaikan */}
           <h1 className="mx-auto mt-2 max-w-3xl text-center text-2xl font-extrabold md:text-3xl">
-            Kebijakan Privasi <span className="text-rose-300">kios tetta</span>
+            Data Lo Aman di <span className="text-yellow-400">Turu Store</span>
           </h1>
+          {/* [DIUBAH] Teks sub-judul disesuaikan */}
           <p className="mt-3 text-center text-sm text-white/70">
-            Terakhir diperbarui: {updated}
+            Kami serius soal privasi. (Terakhir diperbarui: {updated})
           </p>
         </div>
       </section>
@@ -165,11 +169,12 @@ export default function PrivacyPolicyPage() {
           <ul className="mt-2 list-disc space-y-1 pl-5">
             <li>
               Email:{" "}
+              {/* [DIUBAH] Warna link disesuaikan */}
               <Link
-                href="mailto:support@kiostetta.com"
-                className="text-rose-300 hover:underline"
+                href="mailto:support@turustore.com"
+                className="text-yellow-400 hover:underline"
               >
-                support@kiostetta.com
+                support@turustore.com
               </Link>
             </li>
             <li>
@@ -185,8 +190,8 @@ export default function PrivacyPolicyPage() {
           </ul>
         </PolicySection>
 
+        {/* [TETAP] Tombol "Kembali ke atas" sudah netral, tidak perlu diubah */}
         <div className="mt-10 flex justify-end">
-          {/* anchor ke #top, tanpa JS */}
           <a
             href="#top"
             className="rounded-full bg-[#2b2a30] px-4 py-2 text-sm ring-1 ring-white/10 hover:bg-[#34333a]"
@@ -211,7 +216,8 @@ function PolicySection({
   return (
     <section id={id} className="scroll-mt-24">
       <h2 className="text-lg font-bold text-white">
-        <span className="mr-2 inline-block h-2 w-2 translate-y-[-2px] rounded-full bg-rose-500" />
+        {/* [DIUBAH] Warna bullet point disesuaikan */}
+        <span className="mr-2 inline-block h-2 w-2 translate-y-[-2px] rounded-full bg-yellow-400" />
         {title}
       </h2>
       <div className="prose prose-invert prose-sm mt-3 max-w-none text-white/85">

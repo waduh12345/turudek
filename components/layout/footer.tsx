@@ -13,6 +13,10 @@ import {
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+// [DITAMBAH] Import font Oxanium untuk konsistensi brand
+import { Oxanium } from "next/font/google";
+
+const oxanium = Oxanium({ subsets: ["latin"], weight: ["600", "700"] });
 
 type NavLink = { name: string; href: string };
 type FooterModel = {
@@ -33,18 +37,19 @@ type FooterModel = {
   };
 };
 
+// [DIUBAH] DEFAULT_DATA disesuaikan dengan voice & logo Turu Store
 const DEFAULT_DATA: FooterModel = {
   about: {
-    name: "kios tetta",
+    name: "Turu Store",
     description:
-      "Kios Tetta adalah tempat top up games murah, cepat, dan terpercaya. Proses 1–3 detik, buka 24 jam, metode pembayaran lengkap. Jika ada kendala klik tombol Chat CS di kanan bawah.",
-    logoSrc: "/images/kios-tetta.png",
-    copyright: "© 2025 Kios Tetta. All rights reserved.",
+      "Turu Store adalah tempat top up games murah, cepat, dan terpercaya. Proses instan, gak pake lama. Kalo ada masalah, admin kami yang nolep 24/7 siap bantu di tombol Chat CS.",
+    logoSrc: "/images/turu-store.webp", // [DIUBAH] Logo baru
+    copyright: "© 2025 Turu Store. All rights reserved.",
   },
   socials: [
     { name: "Instagram", url: "#", icon: "ig" },
     { name: "TikTok", url: "#", icon: "tt" },
-    { name: "Email", url: "mailto:support@kiostetta.com", icon: "mail" },
+    { name: "Email", url: "mailto:support@turustore.com", icon: "mail" },
     { name: "YouTube", url: "#", icon: "yt" },
   ],
   sitemap: {
@@ -63,7 +68,7 @@ const DEFAULT_DATA: FooterModel = {
     links: [
       { name: "WhatsApp", href: "#" },
       { name: "Instagram", href: "#" },
-      { name: "Email", href: "mailto:support@kiostetta.com" },
+      { name: "Email", href: "mailto:support@turustore.com" },
     ],
   },
   legal: {
@@ -74,12 +79,12 @@ const DEFAULT_DATA: FooterModel = {
     ],
   },
   chat: {
-    label: "CHAT CS",
-    hint: "Butuh bantuan? Kami siap 24/7",
+    label: "Tanya Admin", // [DIUBAH] Teks lebih santai
+    hint: "Adminnya lagi melek. Tanya aja.", // [DIUBAH] Teks lebih on-brand
     channels: [
       { name: "WhatsApp", url: "#" },
       { name: "Instagram DM", url: "#" },
-      { name: "Email", url: "mailto:support@kiostetta.com" },
+      { name: "Email", url: "mailto:support@turustore.com" },
     ],
   },
 };
@@ -88,6 +93,7 @@ export default function Footer() {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<FooterModel>(DEFAULT_DATA);
 
+  // ... (useEffect untuk fetch data tidak berubah) ...
   useEffect(() => {
     (async () => {
       try {
@@ -102,7 +108,7 @@ export default function Footer() {
 
   return (
     <footer className="relative">
-      {/* BG gelap + aksen merah */}
+      {/* BG gelap (sudah pas dengan brand) */}
       <div className="w-full border-top border-white/5 bg-[#1c1c1f]">
         <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
           <div className="grid gap-10 lg:grid-cols-12">
@@ -111,13 +117,19 @@ export default function Footer() {
               <div className="flex items-center gap-3">
                 <Image
                   src={data.about.logoSrc}
-                  alt="kios tetta logo"
+                  alt="Turu Store logo"
                   width={64}
                   height={64}
-                  className="h-16 w-16 object-contain"
+                  className="h-16 w-16 rounded-full object-contain" // [DIUBAH] Dibuat rounded
                 />
-                <span className="text-2xl font-semibold text-rose-400">
-                  {data.about.name}
+                {/* [DIUBAH] Teks brand disesuaikan dengan style header */}
+                <span
+                  className={`${oxanium.className} text-2xl font-semibold text-white`}
+                >
+                  Turu{" "}
+                  <span className="bg-gradient-to-r from-yellow-300 via-cyan-400 to-yellow-300 bg-clip-text text-transparent">
+                    Store
+                  </span>
                 </span>
               </div>
 
@@ -131,7 +143,7 @@ export default function Footer() {
                     key={s.name}
                     href={s.url}
                     target="_blank"
-                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-white/90 ring-1 ring-white/10 transition hover:bg-white/10 hover:text-rose-300"
+                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-white/90 ring-1 ring-white/10 transition hover:bg-white/10 hover:text-yellow-400" // [DIUBAH] Hover color
                   >
                     {s.icon === "ig" && <IconBrandInstagram size={18} />}
                     {s.icon === "tt" && <IconBrandTiktok size={18} />}
@@ -160,7 +172,8 @@ export default function Footer() {
 
           <div className="flex flex-col items-start justify-between gap-4 py-6 text-sm text-white/60 sm:flex-row">
             <span>{data.about.copyright}</span>
-            <span>Didesain untuk gamer — nuansa merah Kios Tetta</span>
+            {/* [DIUBAH] Teks sub-copyright disesuaikan dengan voice 'Turu Store' */}
+            <span>Top-up sambil merem. zZz.</span>
           </div>
         </div>
       </div>
@@ -173,19 +186,21 @@ export default function Footer() {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         whileTap={{ scale: 0.97 }}
         whileHover={{ y: -2 }}
-        className="group fixed bottom-6 right-6 z-50 inline-flex items-center gap-3 rounded-2xl p-[2px] shadow-[0_20px_60px_-15px_rgba(239,68,68,.6)]
-                   bg-[conic-gradient(from_180deg_at_50%_50%,#ef4444_0deg,#ef4444_120deg,#fb7185_200deg,#111215_320deg)]
+        className="group fixed bottom-6 right-6 z-50 inline-flex items-center gap-3 rounded-2xl p-[2px] shadow-[0_20px_60px_-15px_rgba(250,204,21,.5)]
+                   bg-[conic-gradient(from_180deg_at_50%_50%,#facc15_0deg,#facc15_120deg,#22d3ee_200deg,#111215_320deg)]
                    transition"
       >
         {/* Inner pill */}
         <span className="relative inline-flex items-center gap-2 rounded-[14px] bg-[#121215] px-4 py-3 text-white ring-1 ring-white/10">
           {/* Glow halo */}
-          <span className="pointer-events-none absolute -inset-1 rounded-[16px] bg-red-500/10 blur-md opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          {/* [DIUBAH] Warna glow halo dari 'red' ke 'yellow' */}
+          <span className="pointer-events-none absolute -inset-1 rounded-[16px] bg-yellow-400/10 blur-md opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
           {/* Icon bubble */}
-          <span className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-rose-600 shadow-inner ring-1 ring-white/10">
+          {/* [DIUBAH] Warna bubble dari 'rose' ke 'yellow/cyan' */}
+          <span className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-cyan-400 shadow-inner ring-1 ring-white/10">
             <IconHeadphones size={18} />
-            {/* Online ping */}
+            {/* Online ping (emerald/green tetap, universal) */}
             <span className="absolute -right-0 -top-0">
               <span className="absolute inline-flex h-2.5 w-2.5 animate-ping rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-[#121215]" />
@@ -197,8 +212,9 @@ export default function Footer() {
             <span className="text-[13px] font-bold tracking-wide">
               {data.chat.label}
             </span>
+            {/* [DIUBAH] Teks hover disesuaikan */}
             <span className="mt-0.5 text-[10px] font-medium text-white/70 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-              24/7 online
+              Adminnya Nolep
             </span>
           </span>
         </span>
@@ -223,7 +239,8 @@ export default function Footer() {
               transition={{ duration: 0.25 }}
             >
               <div className="flex items-center gap-3 bg-[#1a1a1e] px-4 py-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-rose-500 text-white">
+                {/* [DIUBAH] Warna bubble modal dari 'rose' ke 'yellow/cyan' */}
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-cyan-400 text-white">
                   <IconHeadphones size={18} />
                 </div>
                 <div className="min-w-0">
@@ -266,7 +283,8 @@ export default function Footer() {
 function FooterCol({ title, links }: { title: string; links: NavLink[] }) {
   return (
     <div>
-      <h4 className="text-[15px] font-semibold text-rose-400">{title}</h4>
+      {/* [DIUBAH] Warna judul kolom dari 'rose' ke 'yellow' */}
+      <h4 className="text-[15px] font-semibold text-yellow-400">{title}</h4>
       <ul className="mt-4 space-y-3 text-white/85">
         {links.map((l) => (
           <li key={l.name}>

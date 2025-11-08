@@ -80,7 +80,7 @@ function LoginContent() {
     <AuthShell
       images={IMAGES}
       title="Masuk"
-      brand="Kios Tetta"
+      brand="Turu Store"
       slideIntervalMs={3000}
     >
       <form onSubmit={onSubmit} className="space-y-5">

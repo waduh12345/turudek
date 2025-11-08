@@ -388,7 +388,7 @@ const ProductDetailPage = ({
               {/* How to Top Up */}
               <div className="bg-white border border-gray-200 rounded-xl p-6">
                 <h3 className="text-xl font-bold text-gray-800 mb-4">
-                  Cara Melakukan Top Up {category.title} di Kios Tetta.com
+                  Cara Melakukan Top Up {category.title} di Turu Store.com
                 </h3>
                 <ol className="space-y-3 text-gray-700">
                   <li className="flex items-start gap-3">
@@ -468,7 +468,7 @@ const ProductDetailPage = ({
                     untuk berbagai keperluan seperti bermain match,
                     menyelesaikan misi, membeli aksesori, dan item premium
                     lainnya. Dapatkan {category.title} dengan harga termurah di
-                    Kios Tetta.com.
+                    Turu Store.com.
                   </p>
                 </div>
               </div>

@@ -14,8 +14,8 @@ type AuthShellProps = {
 
 export default function AuthShell({
   images,
-  title = "Kios Tetta",
-  brand = "Kios Tetta",
+  title = "Turu Store",
+  brand = "Turu Store",
   children,
   slideIntervalMs = 3000,
 }: AuthShellProps) {

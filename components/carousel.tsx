@@ -12,7 +12,7 @@ const SLIDES = [
     title: "DISKON ROBLOX SETIAP HARI",
     subtitle: "Gunakan kode: PROMOROBLOX",
     text: "Diskon 5K tiap jam 12.00 WIB, reset setiap hari",
-    badge: "Top Up di Kios Tetta",
+    badge: "Top Up di Turu Store",
     image:
       "https://sbclbzad8s.ufs.sh/f/vI07edVR8nimhjesnNrfOHsdF5ArRwGp1kiJ8NbcmBPn90h6",
   },
@@ -69,6 +69,7 @@ export function HeroCarousel() {
   }
 
   return (
+    // Background utama sudah pas dengan brand (Deep Purple / Midnight Blue)
     <section className="w-full h-[60vh] bg-[#37353E] py-4">
       <div
         className="relative mx-auto h-full w-[90%] overflow-hidden rounded-[28px]"
@@ -94,15 +95,15 @@ export function HeroCarousel() {
                 className="object-cover"
               />
 
-              {/* overlay gelap */}
+              {/* overlay gelap (netral, tidak perlu diubah) */}
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#111]/95 via-[#111]/50 to-transparent" />
 
               {/* content */}
               <div className="relative z-10 flex h-full flex-col justify-between gap-6 px-6 py-8 md:px-12 md:py-12">
-                {/* top */}
+                {/* top (netral, tidak perlu diubah) */}
                 <div className="flex items-center gap-2 text-white/70">
                   <span className="inline-flex h-7 items-center rounded-full bg-white/10 px-3 text-xs font-medium backdrop-blur">
-                    Kios Tetta
+                    Turu Store
                   </span>
                   <span className="text-xs text-white/50">
                     Promo gaming dan voucher
@@ -111,7 +112,8 @@ export function HeroCarousel() {
 
                 {/* middle */}
                 <div className="max-w-3xl space-y-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f4416e] md:text-sm">
+                  {/* [DIUBAH] Warna subtitle disesuaikan dengan aksen Neon Yellow */}
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-400 md:text-sm">
                     {slide.subtitle}
                   </p>
                   <h2 className="text-3xl font-bold leading-tight text-white drop-shadow md:text-5xl">
@@ -125,11 +127,12 @@ export function HeroCarousel() {
                 {/* bottom */}
                 <div className="flex items-center justify-between gap-4">
                   <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-medium text-white backdrop-blur md:text-sm">
-                    <span className="h-2 w-2 rounded-full bg-emerald-300" />
+                    {/* [DIUBAH] Warna "live dot" disesuaikan dengan aksen Electric Cyan */}
+                    <span className="h-2 w-2 rounded-full bg-cyan-400" />
                     {slide.badge}
                   </span>
 
-                  {/* dots */}
+                  {/* dots (netral, tidak perlu diubah) */}
                   <div className="flex gap-2">
                     {SLIDES.map((s, i) => (
                       <button
@@ -151,7 +154,7 @@ export function HeroCarousel() {
           ))}
         </div>
 
-        {/* arrow kiri */}
+        {/* arrow (netral, tidak perlu diubah) */}
         <button
           onClick={goPrev}
           className="absolute left-6 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white shadow-lg backdrop-blur transition hover:bg-black/60"
@@ -160,7 +163,7 @@ export function HeroCarousel() {
           <ChevronLeft className="h-5 w-5" />
         </button>
 
-        {/* arrow kanan */}
+        {/* arrow (netral, tidak perlu diubah) */}
         <button
           onClick={goNext}
           className="absolute right-6 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white shadow-lg backdrop-blur transition hover:bg-black/60"

@@ -40,7 +40,8 @@ function StarRow({ rating }: { rating: number }) {
       className="flex items-center gap-1"
       aria-label={`Rating ${rating} bintang`}
     >
-      {Array.from({ length: 5 }).map((_, i) => (
+      {/* [TETAP] Warna kuning ini sudah sempurna sesuai brand */
+      Array.from({ length: 5 }).map((_, i) => (
         <Star
           key={i}
           className={`h-4 w-4 ${
@@ -54,6 +55,7 @@ function StarRow({ rating }: { rating: number }) {
 
 /* ========= Dummy data (ganti ke API bila ada) ========= */
 const REVIEWS: Review[] = [
+  // ... (data tidak berubah) ...
   {
     id: "r1",
     game: "Mobile Legends",
@@ -184,8 +186,9 @@ function Chip({
       className={[
         "whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition",
         "ring-1",
+        // [DIUBAH] Warna chip aktif dari 'rose' ke 'yellow'
         active
-          ? "bg-rose-600 text-white ring-rose-500"
+          ? "bg-yellow-400 text-slate-900 ring-yellow-500"
           : "bg-[#2b2a30] text-white/80 ring-white/10 hover:bg-[#34333a]",
       ].join(" ")}
     >
@@ -222,8 +225,9 @@ function Segmented({
             onClick={() => onChange(o.key)}
             className={[
               "px-3 py-1.5 text-xs font-semibold transition",
+              // [DIUBAH] Warna segmented aktif dari 'rose' ke 'yellow'
               active
-                ? "bg-rose-600 text-white"
+                ? "bg-yellow-400 text-slate-900"
                 : "text-white/80 hover:bg-[#34333a]",
             ].join(" ")}
           >
@@ -237,24 +241,23 @@ function Segmented({
 
 /* ========= Page ========= */
 export default function ReviewsPage() {
+  // ... (State (visible, query, dll) tidak berubah) ...
   const [visible, setVisible] = useState<number>(9);
   const [query, setQuery] = useState<string>("");
   const [gameFilter, setGameFilter] = useState<string>("all");
   const [sort, setSort] = useState<SortKey>("latest");
   const [ratingGate, setRatingGate] = useState<RatingGate>("all");
 
-  // Unique games
+  // ... (Memo (games, scrollEl, filtered, data, canMore) tidak berubah) ...
   const games = useMemo<string[]>(
     () => ["all", ...Array.from(new Set(REVIEWS.map((r) => r.game)))],
     []
   );
 
-  // Horizontal scroller controls
   const [scrollEl, setScrollEl] = useState<HTMLDivElement | null>(null);
   const scrollBy = (dx: number) =>
     scrollEl?.scrollBy({ left: dx, behavior: "smooth" });
 
-  // Filtering
   const filtered = useMemo<Review[]>(() => {
     let list = [...REVIEWS];
 
@@ -292,6 +295,7 @@ export default function ReviewsPage() {
   const data = filtered.slice(0, visible);
   const canMore = visible < filtered.length;
 
+  // ... (Handler (clearAll, onSearchChange) tidak berubah) ...
   const clearAll = () => {
     setQuery("");
     setGameFilter("all");
@@ -306,16 +310,19 @@ export default function ReviewsPage() {
   };
 
   return (
+    // [TETAP] Background sudah pas (dark mode)
     <main className="min-h-screen bg-[#1f1f24] text-white">
       {/* Header mini */}
       <section className="border-b border-white/10 bg-[#26262b]">
         <div className="mx-auto max-w-7xl px-4 py-10">
-          <p className="text-center text-xs font-semibold tracking-widest text-rose-300">
-            ULASAN
+          {/* [DIUBAH] Subtitle disesuaikan dengan aksen & voice */}
+          <p className="text-center text-xs font-semibold tracking-widest text-yellow-400">
+            LIHAT KATA MEREKA
           </p>
+          {/* [DIUBAH] Judul disesuaikan dengan aksen & voice */}
           <h1 className="mx-auto mt-2 max-w-3xl text-center text-2xl font-extrabold md:text-3xl">
-            Terima kasih kepada semua pelanggan{" "}
-            <span className="text-rose-300">kios tetta</span>.
+            Ulasan dari Kaum Rebahan{" "}
+            <span className="text-yellow-400">Turu Store</span>.
           </h1>
 
           {/* Filter bar */}
@@ -329,7 +336,8 @@ export default function ReviewsPage() {
                   value={query}
                   onChange={onSearchChange}
                   placeholder="Cari di komentar atau produk…"
-                  className="w-full rounded-xl border-0 bg-[#2b2a30] pl-9 pr-9 py-2 text-sm text-white/90 outline-none ring-1 ring-white/10 placeholder:text-white/45 focus:ring-rose-500/50"
+                  // [DIUBAH] Warna focus ring dari 'rose' ke 'yellow'
+                  className="w-full rounded-xl border-0 bg-[#2b2a30] pl-9 pr-9 py-2 text-sm text-white/90 outline-none ring-1 ring-white/10 placeholder:text-white/45 focus:ring-yellow-500/50"
                 />
                 {query && (
                   <button
@@ -352,7 +360,7 @@ export default function ReviewsPage() {
                   }}
                 />
 
-                {/* Sort */}
+                {/* Sort (sudah netral, tidak perlu diubah) */}
                 <div className="inline-flex items-center gap-2 rounded-xl bg-[#2b2a30] px-2 py-1.5 text-xs ring-1 ring-white/10">
                   <span className="hidden text-white/60 sm:inline">
                     Urutkan
@@ -376,9 +384,11 @@ export default function ReviewsPage() {
 
             {/* Game chips (scrollable) */}
             <div className="relative">
+              {/* ... (scroll shadows tidak berubah) ... */}
               <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-[#26262b] to-transparent" />
               <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-[#26262b] to-transparent" />
               <div className="flex items-center gap-2">
+                {/* ... (scroll buttons tidak berubah) ... */}
                 <button
                   type="button"
                   aria-label="Scroll kiri"
@@ -422,6 +432,7 @@ export default function ReviewsPage() {
 
             {/* Active badges + Reset */}
             <div className="flex flex-wrap items-center gap-2 text-xs">
+              {/* ... (active badges tidak berubah, sudah netral) ... */}
               {gameFilter !== "all" && (
                 <span className="rounded-full bg-white/10 px-3 py-1 ring-1 ring-white/10">
                   Game: <strong className="ml-1">{gameFilter}</strong>
@@ -441,9 +452,10 @@ export default function ReviewsPage() {
                 </span>
               )}
               {(gameFilter !== "all" || ratingGate !== "all" || query) && (
+                // [DIUBAH] Tombol Reset dari 'rose' ke 'yellow'
                 <button
                   onClick={clearAll}
-                  className="ml-auto inline-flex items-center gap-1 rounded-full bg-rose-600 px-3 py-1 font-medium ring-1 ring-rose-500/60 hover:brightness-110"
+                  className="ml-auto inline-flex items-center gap-1 rounded-full bg-yellow-400 px-3 py-1 font-semibold text-slate-900 ring-1 ring-yellow-500/60 hover:brightness-110"
                 >
                   Reset
                   <X className="h-3.5 w-3.5" />
@@ -457,8 +469,9 @@ export default function ReviewsPage() {
       {/* Grid reviews */}
       <section className="mx-auto max-w-7xl px-4 py-10">
         {data.length === 0 ? (
+          // [DIUBAH] Teks "no results" disesuaikan
           <div className="rounded-xl border border-white/10 bg-white/5 p-6 text-center text-sm text-white/70">
-            Belum ada ulasan untuk filter ini.
+            Nggak nemu ulasan. Coba ganti filter.
           </div>
         ) : (
           <>
@@ -475,7 +488,8 @@ export default function ReviewsPage() {
               {data.map((r) => (
                 <article
                   key={r.id}
-                  className="rounded-2xl bg-[#26252b] p-4 ring-1 ring-white/10 transition hover:ring-rose-500/40"
+                  // [DIUBAH] Warna hover ring dari 'rose' ke 'yellow'
+                  className="rounded-2xl bg-[#26252b] p-4 ring-1 ring-white/10 transition hover:ring-yellow-500/40"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -515,7 +529,8 @@ export default function ReviewsPage() {
               onClick={() => setVisible((v) => v + 6)}
               className="inline-flex items-center gap-1 rounded-full bg-[#2b2a30] px-4 py-2 text-sm font-medium text-white/90 ring-1 ring-white/10 transition hover:bg-[#34333a]"
             >
-              Muat Lebih Banyak
+              {/* [DIUBAH] Teks tombol disesuaikan dengan voice */}
+              Muat Lagi... zZz
               <ChevronDown className="h-4 w-4" />
             </button>
           </div>

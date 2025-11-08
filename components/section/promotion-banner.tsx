@@ -2,6 +2,10 @@
 
 import Image from "next/image";
 import React from "react";
+// [DITAMBAH] Import font Oxanium untuk konsistensi brand
+import { Oxanium } from "next/font/google";
+
+const oxanium = Oxanium({ subsets: ["latin"], weight: ["600", "700"] });
 
 const PromotionBanner = () => {
   return (
@@ -12,9 +16,9 @@ const PromotionBanner = () => {
         text-white
       "
       style={{
-        // Layer base: deep dark + radial red glow (gaming vibe)
+        // [DIUBAH] Layer base: deep dark + radial YELLOW dan CYAN glow
         background:
-          "radial-gradient(1200px 600px at 80% -10%, rgba(192, 38, 40, 0.55), transparent 55%), radial-gradient(900px 500px at 10% 110%, rgba(244, 63, 94, 0.35), transparent 60%), #17181d",
+          "radial-gradient(1200px 600px at 80% -10%, rgba(250, 204, 21, 0.35), transparent 55%), radial-gradient(900px 500px at 10% 110%, rgba(34, 211, 238, 0.3), transparent 60%), #17181d",
       }}
     >
       {/* --- Decorative grid (scanline) --- */}
@@ -40,13 +44,14 @@ const PromotionBanner = () => {
         }}
       />
 
-      {/* --- Neon red border glow --- */}
+      {/* --- Neon YELLOW border glow --- */}
       <div className="pointer-events-none absolute inset-0 p-px">
         <div
           className="absolute inset-0"
           style={{
+            // [DIUBAH] Gradien border dari 'rose' ke 'yellow'
             background:
-              "linear-gradient(135deg, rgba(244,63,94,.45), rgba(244,63,94,.12))",
+              "linear-gradient(135deg, rgba(250,204,21,.35), rgba(250,204,21,.12))",
             mask: "linear-gradient(#000, #000) content-box, linear-gradient(#000, #000)",
             WebkitMask:
               "linear-gradient(#000, #000) content-box, linear-gradient(#000, #000)",
@@ -54,38 +59,53 @@ const PromotionBanner = () => {
         />
       </div>
 
-      {/* --- diagonals light sweep top/bottom --- */}
+      {/* --- diagonals light sweep (netral, biarkan) --- */}
       <div className="absolute -top-20 left-0 h-40 w-full rotate-6 bg-gradient-to-r from-transparent via-white/15 to-transparent blur-lg opacity-30" />
       <div className="absolute -bottom-20 left-0 h-40 w-full -rotate-6 bg-gradient-to-r from-transparent via-white/10 to-transparent blur-lg opacity-20" />
 
       {/* --- Floating shapes (pads/triangles) --- */}
-      <div className="absolute -left-10 top-6 h-24 w-24 rounded-full bg-rose-500/20 blur-2xl" />
-      <div className="absolute right-10 bottom-6 h-28 w-28 rounded-full bg-red-400/20 blur-2xl" />
+      {/* [DIUBAH] Warna floating shapes dari 'rose'/'red' ke 'yellow'/'cyan' */}
+      <div className="absolute -left-10 top-6 h-24 w-24 rounded-full bg-yellow-400/20 blur-2xl" />
+      <div className="absolute right-10 bottom-6 h-28 w-28 rounded-full bg-cyan-400/20 blur-2xl" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4">
         {/* Brand */}
         <div className="mb-8 flex items-center justify-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/95 shadow">
-            <Image src="/images/LOGO.png" alt="logo" width={100} height={100}  className="rounded-xl"/>
+          {/* [DIUBAH] Logo container disesuaikan jadi 'rounded-full' */}
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/95 shadow">
+            <Image
+              src="/images/turu-store.webp"
+              alt="logo"
+              width={100}
+              height={100}
+              className="rounded-full" // Pastikan gambar logo juga circular
+            />
           </div>
-          <span className="text-3xl font-extrabold tracking-tight md:text-4xl">
-            kiostetta<span className="text-rose-400">.</span>COM
+          {/* [DIUBAH] Teks brand disesuaikan dengan style header */}
+          <span
+            className={`${oxanium.className} text-3xl font-bold tracking-tight md:text-4xl`}
+          >
+            Turu{" "}
+            <span className="bg-gradient-to-r from-yellow-300 via-cyan-400 to-yellow-300 bg-clip-text text-transparent">
+              Store
+            </span>
           </span>
         </div>
 
         {/* Headline */}
-        <h1 className="mx-auto max-w-4xl text-center text-2xl font-bold leading-tight md:text-4xl">
-          Top Up Game & Voucher{" "}
-          <span className="text-rose-400">20% Lebih Murah</span>,{" "}
-          <span className="text-white/90">Cepat</span> dan{" "}
-          <span className="text-white/90">Aman</span>
+        {/* [DIUBAH] Headline disesuaikan dengan voice 'Turu Store' */}
+        <h1 className="mx-auto max-w-6xl text-center text-2xl font-bold leading-tight md:text-4xl">
+          Top Up Sambil Turu?{" "}
+          <span className="text-yellow-400">Bisa.</span>{" "}
+          <span className="text-white/90">Harga Rebah,</span>{" "}
+          <span className="text-white/90">Proses Instan.</span>
         </h1>
 
         {/* Subcopy */}
+        {/* [DIUBAH] Subcopy disesuaikan dengan voice 'Turu Store' */}
         <p className="mx-auto mt-4 max-w-4xl text-center text-base leading-relaxed text-white/80 md:text-lg">
-          Beli Diamond ML, Free Fire, PUBG UC, Steam Wallet, HOK, Genshin dan
-          lainnya. Transaksi instan, harga promo tiap hari, bonus menarik,
-          dukungan 24/7.
+          Gas diamond ML, Robux, Valorant, Steam, apa aja. Gak pake lama, gak
+          pake ribet. Biar kami yang melek, lo tinggal main.
         </p>
 
         {/* CTAs */}
@@ -94,9 +114,9 @@ const PromotionBanner = () => {
             href="#topup"
             className="
               inline-flex items-center justify-center rounded-xl
-              bg-gradient-to-br from-rose-500 to-red-500
-              px-5 py-3 text-sm font-semibold text-white shadow-lg
-              transition-all duration-300 hover:scale-[1.03] hover:shadow-rose-500/30
+              bg-gradient-to-br from-yellow-400 to-yellow-500
+              px-5 py-3 text-sm font-semibold text-slate-900 shadow-lg
+              transition-all duration-300 hover:scale-[1.03] hover:shadow-yellow-400/30
             "
           >
             Mulai Top Up
@@ -115,23 +135,24 @@ const PromotionBanner = () => {
         </div>
 
         {/* Trust badges / marquee mini */}
-        <div className="mx-auto mt-8 grid max-w-4xl grid-cols-2 gap-3 text-center text-xs text-white/70 sm:grid-cols-4">
+        {/* [DIUBAH] Teks trust badges disesuaikan dengan voice 'Turu Store' */}
+        <div className="mx-auto mt-8 grid max-w-4xl grid-cols-2 gap-2 text-center text-xs text-white/70 sm:grid-cols-4">
           <div className="rounded-lg bg-white/5 px-3 py-2 ring-1 ring-white/10">
-            ⚡ Instan
+            ⚡ Proses Cepat (Gak Pake Turu)
           </div>
           <div className="rounded-lg bg-white/5 px-3 py-2 ring-1 ring-white/10">
-            🔒 Aman & Terpercaya
+            🔒 100% Amanah
           </div>
           <div className="rounded-lg bg-white/5 px-3 py-2 ring-1 ring-white/10">
-            🎁 Promo Harian
+            🎁 Diskon Kaum Rebahan
           </div>
           <div className="rounded-lg bg-white/5 px-3 py-2 ring-1 ring-white/10">
-            🕐 24/7 Support
+            🕐 Admin Nolep 24/7
           </div>
         </div>
       </div>
 
-      {/* Spotlight mask for hero center */}
+      {/* Spotlight mask (netral, biarkan) */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"

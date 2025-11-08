@@ -2,9 +2,9 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Syarat & Ketentuan | kios tetta",
+  title: "Syarat & Ketentuan | Turu Store",
   description:
-    "Syarat dan Ketentuan penggunaan situs dan layanan kios tetta: lisensi, cookies, komentar, tautan, penafian, hukum yang berlaku, dan kontak.",
+    "Syarat dan Ketentuan penggunaan situs dan layanan Turu Store: lisensi, cookies, komentar, tautan, penafian, hukum yang berlaku, dan kontak.",
 };
 
 export default function TermsPage() {
@@ -15,12 +15,13 @@ export default function TermsPage() {
       {/* Hero */}
       <section className="border-b border-white/10 bg-[#26262b]">
         <div className="mx-auto max-w-7xl px-4 py-10">
-          <p className="text-center text-xs font-semibold tracking-widest text-rose-300">
-            TERMS & CONDITIONS
+          {/* [DIUBAH] Warna subtitle disesuaikan */}
+          <p className="text-center text-xs font-semibold tracking-widest text-yellow-400">
+            SYARAT & KETENTUAN
           </p>
+          {/* [DIUBAH] Judul dan aksen disesuaikan */}
           <h1 className="mx-auto mt-2 max-w-3xl text-center text-2xl font-extrabold md:text-3xl">
-            Syarat & Ketentuan Penggunaan{" "}
-            <span className="text-rose-300">kios tetta</span>
+            Aturan Main di <span className="text-yellow-400">Turu Store</span>
           </h1>
           <p className="mt-3 text-center text-sm text-white/70">
             Terakhir diperbarui: {updated}
@@ -33,7 +34,7 @@ export default function TermsPage() {
         <Block id="welcome" title="Selamat Datang">
           <p>
             Syarat & Ketentuan ini mengatur penggunaan situs web dan layanan{" "}
-            <b>kios tetta</b> (“kami”). Dengan mengakses atau menggunakan
+            <b>Turu Store</b> (“kami”). Dengan mengakses atau menggunakan
             situs/layanan, Anda menyetujui ketentuan ini. Bila Anda tidak
             setuju, mohon hentikan penggunaan layanan kami.
           </p>
@@ -52,7 +53,7 @@ export default function TermsPage() {
           <ul className="list-disc space-y-2 pl-5">
             <li>
               Kecuali dinyatakan lain, seluruh materi (teks, grafis, antarmuka)
-              adalah milik atau berlisensi kepada kios tetta.
+              adalah milik atau berlisensi kepada Turu Store.
             </li>
             <li>
               Anda diberikan lisensi terbatas untuk mengakses dan menggunakan
@@ -112,7 +113,11 @@ export default function TermsPage() {
         <Block id="privacy" title="Privasi Anda">
           <p>
             Silakan tinjau{" "}
-            <Link href="/privacy" className="text-rose-300 hover:underline">
+            {/* [DIUBAH] Warna link disesuaikan */}
+            <Link
+              href="/privacy"
+              className="text-yellow-400 hover:underline"
+            >
               Kebijakan Privasi
             </Link>{" "}
             untuk detail mengenai pemrosesan data pribadi.
@@ -166,11 +171,12 @@ export default function TermsPage() {
           <ul className="mt-2 list-disc space-y-1 pl-5">
             <li>
               Email:{" "}
+              {/* [DIUBAH] Warna link disesuaikan */}
               <Link
-                href="mailto:support@kiostetta.com"
-                className="text-rose-300 hover:underline"
+                href="mailto:support@turustore.com"
+                className="text-yellow-400 hover:underline"
               >
-                support@kiostetta.com
+                support@turustore.com
               </Link>
             </li>
             <li>
@@ -180,6 +186,7 @@ export default function TermsPage() {
           </ul>
         </Block>
 
+        {/* [TETAP] Tombol "Kembali ke atas" sudah netral */}
         <div className="mt-10 flex justify-end">
           <a
             href="#top"
@@ -205,7 +212,8 @@ function Block({
   return (
     <section id={id} className="scroll-mt-24">
       <h2 className="text-lg font-bold text-white">
-        <span className="mr-2 inline-block h-2 w-2 translate-y-[-2px] rounded-full bg-rose-500" />
+        {/* [DIUBAH] Warna bullet point disesuaikan */}
+        <span className="mr-2 inline-block h-2 w-2 translate-y-[-2px] rounded-full bg-yellow-400" />
         {title}
       </h2>
       <div className="prose prose-invert prose-sm mt-3 max-w-none text-white/85">

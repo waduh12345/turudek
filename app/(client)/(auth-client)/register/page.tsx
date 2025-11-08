@@ -95,7 +95,7 @@ function RegisterContent() {
     <AuthShell
       images={IMAGES}
       title="Daftar"
-      brand="Kios Tetta"
+      brand="Turu Store"
       slideIntervalMs={3000}
     >
       <p className="mb-6 text-white/80">

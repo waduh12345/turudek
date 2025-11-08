@@ -217,7 +217,7 @@ export default function AdminLayout({
           <div className="flex items-center gap-3">
             <Image
               src="/images/kios-tetta.png"
-              alt="Kios Tetta"
+              alt="Turu Store"
               width={56}
               height={56}
               className="rounded-xl"
@@ -225,7 +225,7 @@ export default function AdminLayout({
             {!sidebarCollapsed && (
               <div>
                 <h1 className="text-base font-semibold tracking-wide">
-                  KIOS TETTA
+                  Turu Store
                 </h1>
                 <p className="text-[11px] text-white/70">Admin Panel</p>
               </div>
@@ -388,7 +388,7 @@ export default function AdminLayout({
               <Gamepad2 className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-base font-semibold">KIOS TETTA</h1>
+              <h1 className="text-base font-semibold">Turu Store</h1>
               <p className="text-[11px] text-white/70">Admin Panel</p>
             </div>
           </div>

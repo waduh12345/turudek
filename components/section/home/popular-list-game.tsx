@@ -49,10 +49,10 @@ function Tabs({
             onClick={() => onChange(t.key)}
             className={[
               "rounded-2xl px-5 py-3 text-base font-semibold transition-colors",
-              "ring-1 ring-white/10 shadow-sm",
+              "ring-1 shadow-sm", // [DIUBAH] Memisahkan warna ring
               isActive
-                ? "bg-[#DC143C] text-white"
-                : "bg-[#3A3F45] text-white/90 hover:bg-[#454A51]",
+                ? "bg-yellow-400 text-slate-900 ring-yellow-400/50" // [DIUBAH] Style aktif pakai Neon Yellow
+                : "bg-[#3A3F45] text-white/90 hover:bg-[#454A51] ring-white/10", // Style non-aktif tetap
             ].join(" ")}
           >
             {t.label}
@@ -65,8 +65,10 @@ function Tabs({
 
 function GameCard({ title, imgSrc }: { title: string; imgSrc: string }) {
   return (
-    <div className="group relative overflow-hidden rounded-2xl bg-[#2B2A2F] ring-1 ring-white/10 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[1.04] hover:shadow-2xl hover:shadow-black/30 hover:ring-rose-500/50 cursor-pointer">
-      <div className="relative aspect-[3/4] w-full rounded-2xl ring-1 ring-transparent transition duration-500 group-hover:ring-rose-500/40">
+    // [DIUBAH] Warna ring hover diubah dari 'rose' ke 'yellow'
+    <div className="group relative overflow-hidden rounded-2xl bg-[#2B2A2F] ring-1 ring-white/10 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[1.04] hover:shadow-2xl hover:shadow-black/30 hover:ring-yellow-400/50 cursor-pointer">
+      {/* [DIUBAH] Warna ring hover diubah dari 'rose' ke 'yellow' */}
+      <div className="relative aspect-[3/4] w-full rounded-2xl ring-1 ring-transparent transition duration-500 group-hover:ring-yellow-400/40">
         <Image
           src={imgSrc || DUMMY_IMG}
           alt={title}
@@ -88,8 +90,9 @@ function GameCard({ title, imgSrc }: { title: string; imgSrc: string }) {
         <div
           className="absolute inset-0 rounded-2xl opacity-70 transition-opacity duration-500 group-hover:opacity-100"
           style={{
+            // [DIUBAH] Gradien glow diubah dari RGBA 'rose' ke RGBA 'yellow' (250, 204, 21)
             background:
-              "linear-gradient(135deg, rgba(244,63,94,.35), rgba(244,63,94,.15))",
+              "linear-gradient(135deg, rgba(250, 204, 21, .35), rgba(250, 204, 21, .15))",
           }}
         />
       </div>
@@ -108,6 +111,7 @@ export default function PopularGridExplore() {
   const [parents, setParents] = useState<PublicProductCategory[]>([]);
   const [subs, setSubs] = useState<PublicProductCategory[]>([]);
 
+  // ... (Logika fetch data tidak berubah) ...
   const { data: parentRes, execute: fetchParents } = useApiCall(() =>
     publicProductCategoriesService.getProductCategories({
       page: 1,
@@ -135,7 +139,7 @@ export default function PopularGridExplore() {
     if (subRes?.data?.data) setSubs(subRes.data.data);
   }, [parentRes, subRes]);
 
-  // Build tabs dynamically from parent categories (exclude Games)
+  // ... (Logika build tabs tidak berubah) ...
   useEffect(() => {
     if (!parents.length) return;
 
@@ -160,7 +164,7 @@ export default function PopularGridExplore() {
     if (!allKeys.has(active)) setActive("topup");
   }, [parents]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Visible counter per tab (dependent on dynamic tabs)
+  // ... (Logika visible counter tidak berubah) ...
   const [visibleByTab, setVisibleByTab] = useState<Record<string, number>>({});
   useEffect(() => {
     // init visibility for any new keys
@@ -173,7 +177,7 @@ export default function PopularGridExplore() {
     });
   }, [tabs]);
 
-  // Helper: filter by tab
+  // ... (Logika filter items tidak berubah) ...
   const items: Item[] = useMemo(() => {
     const byTitle = (s: string) => s.toLowerCase();
     let rows: PublicProductCategory[] = [];
@@ -238,14 +242,16 @@ export default function PopularGridExplore() {
               onClick={onLoadMore}
               className="rounded-full bg-[#3A393F] px-5 py-2 text-sm font-medium text-white/90 ring-1 ring-white/10 shadow-sm transition hover:bg-[#45444b]"
             >
-              Tampilkan Lainnya…
+              {/* [DIUBAH] Teks disesuaikan dengan voice 'Turu Store' */}
+              Tampilkan Lainnya… zZz
             </button>
           ) : (
             <button
               disabled
               className="cursor-not-allowed rounded-full bg-[#3A393F] px-5 py-2 text-sm font-medium text-white/60 ring-1 ring-white/10"
             >
-              Sudah semua
+              {/* [DIUBAH] Teks disesuaikan dengan voice 'Turu Store' */}
+              Udah mentok.
             </button>
           )}
         </div>
