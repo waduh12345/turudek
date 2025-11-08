@@ -1,3 +1,4 @@
+// services/api/checkout.ts
 import BaseApiService from "./base";
 import { ApiResponse } from "@/lib/types";
 
@@ -15,6 +16,34 @@ export interface CheckoutRequest {
   midtrans_channel: MidtransChannel;
 }
 
+export interface CheckoutProductDetails {
+  id: number;
+  sku: string;
+  name: string;
+  slug: string;
+  status: number;
+  buy_price: string;
+  created_at: string;
+  sell_price: string;
+  updated_at: string;
+  description: string;
+  product_category_id: number;
+}
+
+export interface CheckoutProduct {
+  id: number;
+  product_category_id: number;
+  name: string;
+  slug: string;
+  sku: string;
+  description: string;
+  buy_price: string;
+  sell_price: string;
+  status: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface CheckoutResponse {
   id: number;
   user_id: number | null;
@@ -23,20 +52,9 @@ export interface CheckoutResponse {
   reference: string;
   ref_number: number;
   order_id: string;
-  product_details: {
-    id: number;
-    sku: string;
-    name: string;
-    slug: string;
-    status: number;
-    buy_price: string;
-    created_at: string;
-    sell_price: string;
-    updated_at: string;
-    description: string;
-    product_category_id: number;
-  };
-  response: any;
+  product_details: CheckoutProductDetails;
+  /** payload dari provider; biarkan unknown lalu lakukan narrowing saat dipakai */
+  response: unknown;
   customer_no: string;
   customer_name: string | null;
   customer_email: string | null;
@@ -48,8 +66,10 @@ export interface CheckoutResponse {
   // Midtrans fields
   midtrans_payment_type?: MidtransPaymentType;
   midtrans_transaction_id?: string | null;
-  midtrans_account_number?: string | null; // URL QR (qris) atau nomor VA (VA)
-  midtrans_account_code?: string | null; // kode tambahan jika ada
+  /** URL QR (qris) atau nomor VA (VA) */
+  midtrans_account_number?: string | null;
+  /** kode tambahan jika ada */
+  midtrans_account_code?: string | null;
   midtrans_channel?: MidtransChannel;
 
   expires_at: string | null;
@@ -58,19 +78,7 @@ export interface CheckoutResponse {
   status: number;
   created_at: string;
   updated_at: string;
-  product: {
-    id: number;
-    product_category_id: number;
-    name: string;
-    slug: string;
-    sku: string;
-    description: string;
-    buy_price: string;
-    sell_price: string;
-    status: number;
-    created_at: string;
-    updated_at: string;
-  };
+  product: CheckoutProduct;
 }
 
 class CheckoutService extends BaseApiService {
