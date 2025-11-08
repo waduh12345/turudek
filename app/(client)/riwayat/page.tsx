@@ -201,12 +201,12 @@ export default function RiwayatPage() {
                     Mulai Top Up
                   </Link>
                   {/* [TETAP] Tombol sekunder sudah netral */}
-                  <a
+                  <Link
                     href="/news"
                     className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold text-white/90 hover:bg-white/10"
                   >
                     Lihat Promo
-                  </a>
+                  </Link>
                 </div>
               </div>
 
