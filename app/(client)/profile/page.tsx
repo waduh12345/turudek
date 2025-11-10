@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, FormEvent } from "react";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import {
@@ -23,6 +23,7 @@ import {
   Filter,
 } from "lucide-react";
 import { extractErrorMessage } from "@/lib/http-error";
+import { topupReviewsService } from "@/services/api/review";
 
 // ==================== TIPE-DATA ====================
 type TransactionProduct = {
@@ -148,10 +149,32 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  // ====== STATE FORM REVIEW ======
+  const [revName, setRevName] = useState<string>("");
+  const [revText, setRevText] = useState<string>("");
+  const [revRating, setRevRating] = useState<number>(5);
+  const [revLoading, setRevLoading] = useState<boolean>(false);
+  const [revError, setRevError] = useState<string | null>(null);
+  const [revSuccess, setRevSuccess] = useState<string | null>(null);
+
   // ========== TOKEN & USER DARI SESSION ==========
   const accessToken =
     typeof session?.accessToken === "string" ? session.accessToken : null;
-  const userId = typeof session?.user?.id === "string" ? session.user.id : null;
+  const userId = (() => {
+    const raw = session?.user?.id;
+    if (typeof raw === "string") {
+      const n = Number(raw);
+      return Number.isFinite(n) ? n : undefined;
+    }
+    if (typeof raw === "number") return raw;
+    return undefined;
+  })();
+
+  useEffect(() => {
+    if (session?.user?.name && !revName) {
+      setRevName(session.user.name);
+    }
+  }, [session?.user?.name, revName]);
 
   // ========== FETCH ==========
   const fetchTransactions = async () => {
@@ -162,7 +185,7 @@ export default function ProfilePage() {
     const filters = new URLSearchParams();
     filters.append("page", String(currentPage));
     filters.append("paginate", "10");
-    filters.append("user_id", userId);
+    filters.append("user_id", String(userId));
     if (dateRange.startDate) filters.append("started_at", dateRange.startDate);
     if (dateRange.endDate) filters.append("ended_at", dateRange.endDate);
     if (statusPaymentFilter !== "all")
@@ -203,7 +226,7 @@ export default function ProfilePage() {
         } catch (e) {
           if (parsed === null)
             throw new Error(`HTTP ${res.status} ${res.statusText}`);
-          throw e;
+          throw e as Error;
         }
       }
 
@@ -308,6 +331,57 @@ export default function ProfilePage() {
     a.download = `transactions_${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  // ====== SUBMIT REVIEW ======
+  const onSubmitReview = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setRevError(null);
+    setRevSuccess(null);
+
+    if (!selectedTransaction) {
+      setRevError("Transaksi tidak ditemukan.");
+      return;
+    }
+    const orderIdPath = selectedTransaction.order_id?.trim();
+    if (!orderIdPath) {
+      setRevError("Order ID tidak tersedia untuk transaksi ini.");
+      return;
+    }
+    if (!revName.trim() || !revText.trim()) {
+      setRevError("Nama dan ulasan wajib diisi.");
+      return;
+    }
+    if (revRating < 0 || revRating > 5) {
+      setRevError("Rating harus di antara 0 hingga 5.");
+      return;
+    }
+
+    try {
+      setRevLoading(true);
+
+      // PENTING: endpoint POST yang benar adalah /transaction/topups/order/:orderId
+      const resp = await topupReviewsService.createReviewByOrder(orderIdPath, {
+        user_id: userId,
+        name: revName.trim(),
+        review: revText.trim(),
+        rating: Number(revRating),
+      });
+
+      setRevSuccess("Terima kasih! Ulasan kamu sudah dikirim.");
+
+      // Redirect ke /order/:orderid
+      const orderIdFromApi = resp?.data?.order_id ?? null;
+      const orderId = orderIdFromApi || orderIdPath || null;
+
+      if (orderId) {
+        window.location.href = `/order/${orderId}`;
+      }
+    } catch (err) {
+      setRevError(extractErrorMessage(err));
+    } finally {
+      setRevLoading(false);
+    }
   };
 
   // ========== UI STATES ==========
@@ -624,7 +698,14 @@ export default function ProfilePage() {
                             </td>
                             <td className="px-6 py-4 align-top text-right">
                               <button
-                                onClick={() => setSelectedTransaction(t)}
+                                onClick={() => {
+                                  setSelectedTransaction(t);
+                                  // reset form review saat buka modal
+                                  setRevText("");
+                                  setRevRating(5);
+                                  setRevError(null);
+                                  setRevSuccess(null);
+                                }}
                                 className="p-2 rounded-lg text-amber-300 hover:text-black hover:bg-amber-400 transition-colors"
                                 aria-label="Lihat detail"
                               >
@@ -696,7 +777,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* MODAL DETAIL */}
+      {/* MODAL DETAIL + FORM REVIEW */}
       {selectedTransaction && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -878,6 +959,84 @@ export default function ProfilePage() {
                   </div>
                 </div>
               )}
+
+              {/* ====== FORM ULASAN ====== */}
+              <div>
+                <h3 className="text-lg font-medium text-amber-100 mb-4">
+                  Beri Ulasan
+                </h3>
+
+                <form
+                  onSubmit={onSubmitReview}
+                  className="rounded-xl bg-[#101010] ring-1 ring-amber-400/10 p-4 space-y-4"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm text-amber-300/80 mb-1">
+                        Nama
+                      </label>
+                      <input
+                        value={revName}
+                        onChange={(e) => setRevName(e.target.value)}
+                        className="w-full rounded-lg bg-[#0E0E0E] px-3 py-2 text-amber-100 ring-1 ring-amber-400/20 focus:ring-2 focus:ring-amber-400/40 outline-none"
+                        placeholder="Namamu (opsional boleh samakan dengan akun)"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-amber-300/80 mb-1">
+                        Rating (0—5)
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={5}
+                        step={0.1}
+                        value={revRating}
+                        onChange={(e) => setRevRating(Number(e.target.value))}
+                        className="w-full rounded-lg bg-[#0E0E0E] px-3 py-2 text-amber-100 ring-1 ring-amber-400/20 focus:ring-2 focus:ring-amber-400/40 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-amber-300/80 mb-1">
+                      Ulasan
+                    </label>
+                    <textarea
+                      value={revText}
+                      onChange={(e) => setRevText(e.target.value)}
+                      rows={3}
+                      className="w-full rounded-lg bg-[#0E0E0E] px-3 py-2 text-amber-100 ring-1 ring-amber-400/20 focus:ring-2 focus:ring-amber-400/40 outline-none"
+                      placeholder="Ceritakan pengalamanmu…"
+                    />
+                  </div>
+
+                  {revError && (
+                    <p className="text-sm text-rose-300">{revError}</p>
+                  )}
+                  {revSuccess && (
+                    <p className="text-sm text-emerald-300">{revSuccess}</p>
+                  )}
+
+                  <div className="flex items-center justify-end">
+                    <button
+                      type="submit"
+                      disabled={revLoading}
+                      className="inline-flex items-center gap-2 rounded-xl bg-amber-400 px-4 py-2 font-semibold text-black ring-1 ring-amber-500/40 transition hover:brightness-110 disabled:opacity-60"
+                    >
+                      {revLoading && (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      )}
+                      Kirim Ulasan & Lanjut
+                    </button>
+                  </div>
+
+                  <p className="mt-2 text-xs text-amber-300/60">
+                    * Order ID bisa kamu lihat di WhatsApp. Setelah ulasan
+                    terkirim, kamu akan diarahkan ke halaman pesananmu.
+                  </p>
+                </form>
+              </div>
             </div>
           </motion.div>
         </motion.div>
